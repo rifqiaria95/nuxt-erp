@@ -1,46 +1,97 @@
+// nuxt.config.ts
 export default defineNuxtConfig({
   devtools: {
     enabled: true
   },
 
+  modules: [
+    '@pinia/nuxt',
+    'nuxt-toast',
+  ],
+
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: 'http://localhost:3333', // Your AdonisJS backend URL
+      authBaseUrl: '/auth/api',
+    }
+  },
+
   app: {
     head: {
+      title: 'Kainnova Digital Solutions',
+      htmlAttrs: {
+        lang: 'en',
+        dir: 'ltr',
+      },
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0' },
+        { name: 'description', content: '' }
+      ],
       link: [
-        { rel: "stylesheet", href: "/vendors/feather/feather.css" },
-        { rel: "stylesheet", href: "/vendors/mdi/css/materialdesignicons.min.css" },
-        { rel: "stylesheet", href: "/vendors/ti-icons/css/themify-icons.css" },
-        { rel: "stylesheet", href: "/vendors/font-awesome/css/font-awesome.min.css" },
-        { rel: "stylesheet", href: "/vendors/typicons/typicons.css" },
-        { rel: "stylesheet", href: "/vendors/simple-line-icons/css/simple-line-icons.css" },
-        { rel: "stylesheet", href: "/vendors/css/vendor.bundle.base.css" },
-        { rel: "stylesheet", href: "/vendors/bootstrap-datepicker/bootstrap-datepicker.min.css" },
-        { rel: "stylesheet", href: "/vendors/datatables.net-bs4/dataTables.bootstrap4.css" },
-        { rel: "stylesheet", type: "text/css", href: "/js/select.dataTables.min.css" },
-        { rel: "stylesheet", href: "/css/style.css" }
+        // Favicon
+        { rel: 'icon', type: 'image/x-xicon', href: '/img/favicon/favicon.ico' },
+
+        // Fonts
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap', rel: 'stylesheet' },
+
+        // Icons
+        { rel: 'stylesheet', href: '/vendor/fonts/remixicon/remixicon.css' },
+        { rel: 'stylesheet', href: '/vendor/fonts/flag-icons.css' },
+
+        // Menu waves
+        { rel: 'stylesheet', href: '/vendor/libs/node-waves/node-waves.css' },
+
+        // Core CSS
+        { rel: 'stylesheet', href: '/vendor/css/rtl/core.css' },
+        { rel: 'stylesheet', href: '/vendor/css/rtl/theme-default.css' },
+        { rel: 'stylesheet', href: '/css/demo.css' },
+
+        // Vendors CSS
+        { rel: 'stylesheet', href: '/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/typeahead-js/typeahead.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/apex-charts/apex-charts.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/swiper/swiper.css' },
+
+        // Page CSS
+        { rel: 'stylesheet', href: '/vendor/css/pages/cards-statistics.css' },
+        { rel: 'stylesheet', href: '/vendor/css/pages/cards-analytics.css' },
+        { rel: 'stylesheet', href: '/vendor/css/pages/page-auth.css' },
       ],
       script: [
-    // @ts-ignore
-    { src: "/vendors/js/vendor.bundle.base.js", body: true },
-    // @ts-ignore
-    { src: "/vendors/bootstrap-datepicker/bootstrap-datepicker.min.js", body: true },
-    // @ts-ignore
-    { src: "/vendors/chart.js/chart.umd.js", body: true },
-    // @ts-ignore
-    { src: "/vendors/progressbar.js/progressbar.min.js", body: true },
-    // @ts-ignore
-    { src: "/js/off-canvas.js", body: true },
-    // @ts-ignore
-    { src: "/js/template.js", body: true },
-    // @ts-ignore
-    { src: "/js/settings.js", body: true },
-    // @ts-ignore
-    { src: "/js/hoverable-collapse.js", body: true },
-    // @ts-ignore
-    { src: "/js/todolist.js", body: true },
-    // @ts-ignore
-    { src: "/js/jquery.cookie.js", type: "text/javascript", body: true },
-    // @ts-ignore
-    { src: "/js/dashboard.js", body: true }
+        // Helpers & Config (biasanya dimuat di head)
+        { src: '/vendor/js/helpers.js', type: 'text/javascript' },
+        { src: '/js/config.js', type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/vendor/libs/jquery/jquery.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/popper/popper.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/js/bootstrap.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/node-waves/node-waves.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/perfect-scrollbar/perfect-scrollbar.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/hammer/hammer.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/typeahead-js/typeahead.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/js/menu.js', body: true, type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/vendor/libs/apex-charts/apexcharts.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/swiper/swiper.js', body: true, type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/js/main.js', body: true, type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/js/dashboards-analytics.js', body: true, type: 'text/javascript' }
       ]
     }
   },

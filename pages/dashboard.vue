@@ -1,329 +1,773 @@
 <template>
-    <div class="content-wrapper container py-4">
-        <div class="row">
-
-            <!-- CARD JUMLAH USER LOGIN -->
-            <div class="col-md-12 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-body text-center">
-                <h5 class="card-title">User Aktif</h5>
-                <p class="card-text fs-4">
-                    <span v-if="loadingActiveUsers">Loading...</span>
-                    <span v-else>{{ activeUsers }} user login</span>
-                </p>
-                </div>
+  <div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row g-6">
+      <div class="col-md-12 col-xxl-8">
+        <div class="card">
+          <div class="d-flex align-items-end row">
+            <div class="col-md-6 order-2 order-md-1">
+              <div class="card-body">
+                <h4 class="card-title mb-4">Congratulations <span class="fw-bold">{{ userStore.user?.fullName || 'Guest' }}</span> 🎉</h4>
+                <p class="mb-0">You have done 68% 😎 more sales today.</p>
+                <p>Check your new badge in your profile.</p>
+                <a href="javascript:;" class="btn btn-primary">View Profile</a>
+              </div>
             </div>
+            <div class="col-md-6 text-center text-md-end order-1 order-md-2">
+              <div class="card-body pb-0 px-0 pt-2">
+                <img
+                  src="/img/illustrations/illustration-john-light.png" height="186"
+                  class="scaleX-n1-rtl"
+                  alt="View Profile"
+                  data-app-light-img="illustrations/illustration-john-light.png"
+                  data-app-dark-img="illustrations/illustration-john-dark.png" />
+              </div>
             </div>
-            
-            <!-- MOTIVASI HARI INI -->
-            <div class="col-md-12 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <div>
-                            <h2 class="text-2xl font-bold text-center">Motivasi Hari Ini</h2>
-                            <div v-if="data" class="mt-3 text-center">
-                            <blockquote>{{ data.quote }}</blockquote>
-                            <p>- {{ data.author }}</p>
-                            </div>
-                            <div v-else-if="error">
-                            Gagal mengambil kutipan 😞
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TASK LIST -->
-            <div class="col-md-12 mb-4 mt-5">
-            <h2 class="text-center">Task List</h2>
-            </div>
-
-            <!-- Columns for Tasks -->
-            <div v-for="(column, columnIndex) in columns" :key="columnIndex" class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header bg-primary text-white">
-                <div class="d-flex justify-content-between">
-                    <span>{{ column.title }}</span>
-                    <button class="btn btn-primary btn-sm" @click="showAddTaskForm(columnIndex)">Add Task</button>
-                </div>
-                </div>
-                <div class="card-body">
-                <draggable
-                    v-model="column.tasks"
-                    :group="'tasks'"
-                    item-key="_id"
-                    class="min-vh-50"
-                    ghost-class="bg-light"
-                    :data-status="column.status"
-                    @end="onDragEnd"
-                >
-                    <template #item="{ element }">
-                    <div class="card mb-3 task-card" :data-id="element._id">
-                        <div class="card-body p-2">
-                        <h5 class="card-title mb-1">{{ element.title }}</h5>
-                        <p class="card-text small text-muted">{{ element.description }}</p>
-                        <div class="d-flex justify-content-start">
-                            <button @click="editTask(columnIndex, element)" class="btn btn-sm btn-light">
-                            <i class="menu-icon mdi mdi-pencil"></i>
-                            </button>
-                            <button @click="deleteTask(columnIndex, element._id)" class="btn btn-sm btn-light ms-2">
-                            <i class="menu-icon mdi mdi-trash-can"></i>
-                            </button>
-                        </div>
-                        </div>
-                    </div>
-                    </template>
-                </draggable>
-                </div>
-            </div>
-            </div>
-
-            <!-- Modal Add Task -->
-            <div v-if="showModal" class="modal fade show" tabindex="-1" style="display: block;" aria-modal="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ isEditing ? 'Edit Task' : 'Add New Task' }}</h5>
-                    <button type="button" class="btn-close" @click="closeModal"></button>
-                </div>
-                <div class="modal-body">
-                    <form @submit.prevent="saveTask">
-                    <div class="mb-3">
-                        <label for="taskTitle" class="form-label">Task Title</label>
-                        <input type="text" id="taskTitle" v-model="newTask.title" class="form-control" required />
-                    </div>
-                    <div class="mb-3">
-                        <label for="taskDescription" class="form-label">Task Description</label>
-                        <textarea id="taskDescription" v-model="newTask.description" class="form-control"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">{{ isEditing ? 'Save Changes' : 'Add Task' }}</button>
-                    </form>
-                </div>
-                </div>
-            </div>
-            </div>
-
+          </div>
         </div>
-    </div>
+      </div>
+      <div class="col-xxl-2 col-sm-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+              <div class="avatar">
+                <div class="avatar-initial bg-label-primary rounded-3">
+                  <i class="ri-shopping-cart-2-line ri-24px"></i>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <p class="mb-0 text-success me-1">+22%</p>
+                <i class="ri-arrow-up-s-line text-success"></i>
+              </div>
+            </div>
+            <div class="card-info mt-5">
+              <h5 class="mb-1">155k</h5>
+              <p>Total Orders</p>
+              <div class="badge bg-label-secondary rounded-pill">Last 4 Month</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xxl-2 col-sm-6">
+        <div class="card h-100">
+          <div class="card-header pb-0">
+            <div class="d-flex align-items-center mb-1 flex-wrap">
+              <h5 class="mb-0 me-1">$38.5k</h5>
+              <p class="mb-0 text-success">+62%</p>
+            </div>
+            <span class="d-block card-subtitle">Sessions</span>
+          </div>
+          <div class="card-body">
+            <div id="sessions"></div> </div>
+        </div>
+      </div>
+      <div class="col-12 col-xxl-8">
+        <div class="card h-100">
+          <div class="row row-bordered g-0 h-100">
+            <div class="col-md-7 col-12 order-2 order-md-0">
+              <div class="card-header">
+                <h5 class="mb-0">Total Transactions</h5>
+              </div>
+              <div class="card-body">
+                <div id="totalTransactionChart"></div> </div>
+            </div>
+            <div class="col-md-5 col-12">
+              <div class="card-header">
+                <div class="d-flex justify-content-between">
+                  <h5 class="mb-1">Report</h5>
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                      type="button"
+                      id="totalTransaction"
+                      data-bs-toggle="dropdown"
+                      aria-haspopup="true"
+                      aria-expanded="false">
+                      <i class="ri-more-2-line ri-20px"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="totalTransaction">
+                      <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
+                      <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                      <a class="dropdown-item" href="javascript:void(0);">Update</a>
+                    </div>
+                  </div>
+                </div>
+                <p class="mb-0 card-subtitle">Last month transactions $234.40k</p>
+              </div>
+              <div class="card-body pt-6">
+                <div class="row">
+                  <div class="col-6 border-end">
+                    <div class="d-flex flex-column align-items-center">
+                      <div class="avatar">
+                        <div class="avatar-initial bg-label-success rounded-3">
+                          <div class="ri-pie-chart-2-line ri-24px"></div>
+                        </div>
+                      </div>
+                      <p class="mt-3 mb-1">This Week</p>
+                      <h6 class="mb-0">+82.45%</h6>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="d-flex flex-column align-items-center">
+                      <div class="avatar">
+                        <div class="avatar-initial bg-label-primary rounded-3">
+                          <div class="ri-money-dollar-circle-line ri-24px"></div>
+                        </div>
+                      </div>
+                      <p class="mt-3 mb-1">This Week</p>
+                      <h6 class="mb-0">-24.86%</h6>
+                    </div>
+                  </div>
+                </div>
+                <hr class="my-5" />
+                <div class="d-flex justify-content-around align-items-center flex-wrap gap-2">
+                  <div>
+                    <p class="mb-1">Performance</p>
+                    <h6 class="mb-0">+94.15%</h6>
+                  </div>
+                  <div>
+                    <button class="btn btn-primary" type="button">view report</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-xxl-4 col-md-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h5 class="mb-1">Performance</h5>
+              <div class="dropdown">
+                <button
+                  class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                  type="button"
+                  id="performanceDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">
+                  <i class="ri-more-2-line ri-20px"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="performanceDropdown">
+                  <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="performanceChart"></div> </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xxl-4">
+        <div class="card h-100">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <h5 class="card-title m-0 me-2">Project Statistics</h5>
+            <div class="dropdown">
+              <button
+                class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                type="button"
+                id="projectStatus"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+                <i class="ri-more-2-line ri-20px"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="projectStatus">
+                <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
+                <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
+                <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between p-4 border-bottom">
+            <p class="mb-0 fs-xsmall">NAME</p>
+            <p class="mb-0 fs-xsmall">BUDGET</p>
+          </div>
+          <div class="card-body">
+            <ul class="p-0 m-0">
+              <li class="d-flex align-items-center mb-6">
+                <div class="avatar avatar-md flex-shrink-0 me-4">
+                  <div class="avatar-initial bg-light-gray rounded-3">
+                    <div>
+                      <img src="/img/icons/misc/3d-illustration.png" alt="User" class="h-25" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-1">3D Illustration</h6>
+                    <small>Blender Illustration</small>
+                  </div>
+                  <div class="badge bg-label-primary rounded-pill">$6,500</div>
+                </div>
+              </li>
+              <li class="d-flex align-items-center mb-6">
+                <div class="avatar avatar-md flex-shrink-0 me-4">
+                  <div class="avatar-initial bg-light-gray rounded-3">
+                    <div>
+                      <img src="/img/icons/misc/finance-app-design.png" alt="User" class="h-25" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-1">Finance App Design</h6>
+                    <small>Figma UI Kit</small>
+                  </div>
+                  <div class="badge bg-label-primary rounded-pill">$4,290</div>
+                </div>
+              </li>
+              <li class="d-flex align-items-center mb-6">
+                <div class="avatar avatar-md flex-shrink-0 me-4">
+                  <div class="avatar-initial bg-light-gray rounded-3">
+                    <div>
+                      <img src="/img/icons/misc/4-square.png" alt="User" class="h-25" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-1">4 Square</h6>
+                    <small>Android Application</small>
+                  </div>
+                  <div class="badge bg-label-primary rounded-pill">$44,500</div>
+                </div>
+              </li>
+              <li class="d-flex align-items-center mb-6">
+                <div class="avatar avatar-md flex-shrink-0 me-4">
+                  <div class="avatar-initial bg-light-gray rounded-3">
+                    <div>
+                      <img src="/img/icons/misc/delta-web-app.png" alt="User" class="h-25" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-1">Delta Web App</h6>
+                    <small>React Dashboard</small>
+                  </div>
+                  <div class="badge bg-label-primary rounded-pill">$12,690</div>
+                </div>
+              </li>
+              <li class="d-flex align-items-center">
+                <div class="avatar avatar-md flex-shrink-0 me-4">
+                  <div class="avatar-initial bg-light-gray rounded-3">
+                    <div>
+                      <img src="/img/icons/misc/ecommerce-website.png" alt="User" class="h-25" />
+                    </div>
+                  </div>
+                </div>
+                <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                  <div class="me-2">
+                    <h6 class="mb-1">eCommerce Website</h6>
+                    <small>Vue + Laravel</small>
+                  </div>
+                  <div class="badge bg-label-primary rounded-pill">$10,850</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 col-xxl-4">
+        <div class="row g-4">
+          <div class="col-md-6 col-sm-6">
+            <div class="card h-100">
+              <div class="card-header pb-xl-8">
+                <div class="d-flex align-items-center mb-1 flex-wrap">
+                  <h5 class="mb-0 me-1">$42.5k</h5>
+                  <p class="mb-0 text-danger">-22%</p>
+                </div>
+                <span class="d-block card-subtitle">Total Revenue</span>
+              </div>
+              <div class="card-body">
+                <div id="totalRevenue"></div> </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                  <div class="avatar">
+                    <div class="avatar-initial bg-label-success rounded-3">
+                      <i class="ri-handbag-line ri-24px"></i>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <p class="mb-0 text-success me-1">+38%</p>
+                    <i class="ri-arrow-up-s-line text-success"></i>
+                  </div>
+                </div>
+                <div class="card-info mt-5 mt-xl-8">
+                  <h5 class="mb-1">$13.4k</h5>
+                  <p>Total Sales</p>
+                  <div class="badge bg-label-secondary rounded-pill">Last Six Month</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-sm-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                  <div class="avatar">
+                    <div class="avatar-initial bg-label-info rounded-3">
+                      <i class="ri-links-line ri-24px"></i>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <p class="mb-0 text-success me-1">+62%</p>
+                    <i class="ri-arrow-up-s-line text-success"></i>
+                  </div>
+                </div>
+                <div class="card-info mt-5 mt-xl-8">
+                  <h5 class="mb-1">142.8k</h5>
+                  <p>Total Impression</p>
+                  <div class="badge bg-label-secondary rounded-pill">Last One Year</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 col-sm-6">
+            <div class="card h-100">
+              <div class="card-header pb-xl-7">
+                <div class="d-flex align-items-center mb-1 flex-wrap">
+                  <h5 class="mb-0 me-1">$67.1k</h5>
+                  <p class="mb-0 text-success">+49%</p>
+                </div>
+                <span class="d-block card-subtitle">Overview</span>
+              </div>
+              <div class="card-body pb-xl-8">
+                <div id="overviewChart" class="d-flex align-items-center"></div> </div>
+            </div>
+          </div>
+          </div>
+      </div>
+      <div class="col-12 col-xxl-4 col-md-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h5 class="mb-1">Sales Country</h5>
+              <div class="dropdown">
+                <button
+                  class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                  type="button"
+                  id="salesCountryDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">
+                  <i class="ri-more-2-line ri-20px"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="salesCountryDropdown">
+                  <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
+                </div>
+              </div>
+            </div>
+            <p class="mb-0 card-subtitle">Total $42,580 Sales</p>
+          </div>
+          <div class="card-body pb-1 px-0">
+            <div id="salesCountryChart"></div> </div>
+        </div>
+      </div>
+      <div class="col-12 col-xxl-8">
+        <div class="card h-100">
+          <div class="card-header d-flex justify-content-between">
+            <div>
+              <h5 class="card-title mb-1">Top Referral Sources</h5>
+              <p class="card-subtitle mb-0">Number of Sales</p>
+            </div>
+            <div class="dropdown">
+              <button
+                class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                type="button"
+                id="earningReportsTabsId"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+                <i class="ri-more-2-line ri-20px"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end" aria-labelledby="earningReportsTabsId">
+                <a class="dropdown-item" href="javascript:void(0);">View More</a>
+                <a class="dropdown-item" href="javascript:void(0);">Delete</a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body pb-0">
+            <ul class="nav nav-tabs nav-tabs-widget pb-6 gap-4 mx-1 d-flex flex-nowrap" role="tablist">
+              <li class="nav-item">
+                <a
+                  href="javascript:void(0);"
+                  class="nav-link btn active d-flex flex-column align-items-center justify-content-center"
+                  role="tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#navs-orders-id"
+                  aria-controls="navs-orders-id"
+                  aria-selected="true">
+                  <div class="avatar avatar-sm">
+                    <img src="/img/icons/brands/google.png" alt="User" />
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="javascript:void(0);"
+                  class="nav-link btn d-flex flex-column align-items-center justify-content-center"
+                  role="tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#navs-sales-id"
+                  aria-controls="navs-sales-id"
+                  aria-selected="false">
+                  <div class="avatar avatar-sm">
+                    <img src="/img/icons/brands/facebook-rounded.png" alt="User" />
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="javascript:void(0);"
+                  class="nav-link btn d-flex flex-column align-items-center justify-content-center"
+                  role="tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#navs-profit-id"
+                  aria-controls="navs-profit-id"
+                  aria-selected="false">
+                  <div class="avatar avatar-sm">
+                    <img src="/img/icons/brands/instagram-rounded.png" alt="User" />
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="javascript:void(0);"
+                  class="nav-link btn d-flex flex-column align-items-center justify-content-center"
+                  role="tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#navs-income-id"
+                  aria-controls="navs-income-id"
+                  aria-selected="false">
+                  <div class="avatar avatar-sm">
+                    <img src="/img/icons/brands/reddit-rounded.png" alt="User" />
+                  </div>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  href="javascript:void(0);"
+                  class="nav-link btn d-flex align-items-center justify-content-center disabled"
+                  role="tab"
+                  data-bs-toggle="tab"
+                  aria-selected="false">
+                  <div class="avatar avatar-sm">
+                    <div class="avatar-initial bg-label-secondary text-body rounded">
+                      <i class="ri-add-line ri-22px"></i>
+                    </div>
+                  </div>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="tab-content p-0">
+            <div class="tab-pane fade show active" id="navs-orders-id" role="tabpanel">
+              <div class="table-responsive text-nowrap">
+                <table class="table border-top">
+                  <thead>
+                    <tr>
+                      <th class="bg-transparent border-bottom">Product Name</th>
+                      <th class="bg-transparent border-bottom">STATUS</th>
+                      <th class="text-end bg-transparent border-bottom">Profit</th>
+                      <th class="text-end bg-transparent border-bottom">REVENUE</th>
+                    </tr>
+                  </thead>
+                  <tbody class="table-border-bottom-0">
+                    <tr>
+                      <td>Email Marketing Campaign</td>
+                      <td>
+                        <div class="badge bg-label-primary rounded-pill">Active</div>
+                      </td>
+                      <td class="text-success fw-medium text-end">+24%</td>
+                      <td class="text-end fw-medium">$42,857</td>
+                    </tr>
+                    <tr>
+                      <td>Google Workspace</td>
+                      <td>
+                        <div class="badge bg-label-success rounded-pill">Completed</div>
+                      </td>
+                      <td class="text-danger fw-medium text-end">-12%</td>
+                      <td class="text-end fw-medium">$850</td>
+                    </tr>
+                    <tr>
+                      <td>Affiliation Program</td>
+                      <td>
+                        <div class="badge bg-label-primary rounded-pill">Active</div>
+                      </td>
+                      <td class="text-success fw-medium text-end">+24%</td>
+                      <td class="text-end fw-medium">$5,576</td>
+                    </tr>
+                    <tr>
+                      <td>Google Adsense</td>
+                      <td>
+                        <div class="badge bg-label-info rounded-pill">In Draft</div>
+                      </td>
+                      <td class="text-success fw-medium text-end">+0%</td>
+                      <td class="text-end fw-medium">0</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="tab-pane fade" id="navs-sales-id" role="tabpanel">
+              </div>
+            <div class="tab-pane fade" id="navs-profit-id" role="tabpanel">
+              </div>
+            <div class="tab-pane fade" id="navs-income-id" role="tabpanel">
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-xxl-4 col-md-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h5 class="mb-1">Weekly Sales</h5>
+              <div class="dropdown">
+                <button
+                  class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                  type="button"
+                  id="weeklySalesDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">
+                  <i class="ri-more-2-line ri-20px"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="weeklySalesDropdown">
+                  <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Update</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                </div>
+              </div>
+            </div>
+            <p class="mb-0 card-subtitle">Total 85.4k Sales</p>
+          </div>
+          <div class="card-body">
+            <div class="row mb-7 mb-xl-12">
+              <div class="col-6 d-flex align-items-center">
+                <div class="avatar">
+                  <div class="avatar-initial bg-label-primary rounded">
+                    <i class="ri-funds-line ri-24px"></i>
+                  </div>
+                </div>
+                <div class="ms-3 d-flex flex-column">
+                  <p class="mb-0">Net Income</p>
+                  <h6 class="mb-0">$438.5K</h6>
+                </div>
+              </div>
+              <div class="col-6 d-flex align-items-center">
+                <div class="avatar">
+                  <div class="avatar-initial bg-label-warning rounded">
+                    <i class="ri-money-dollar-circle-line ri-24px"></i>
+                  </div>
+                </div>
+                <div class="ms-3 d-flex flex-column">
+                  <p class="mb-0">Expense</p>
+                  <h6 class="mb-0">$22.4K</h6>
+                </div>
+              </div>
+            </div>
+            <div id="weeklySalesChart"></div> </div>
+        </div>
+      </div>
+      <div class="col-12 col-xxl-4 col-md-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h5 class="mb-1">Visits by Day</h5>
+              <div class="dropdown">
+                <button
+                  class="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
+                  type="button"
+                  id="visitsByDayDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">
+                  <i class="ri-more-2-line ri-20px"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="visitsByDayDropdown">
+                  <a class="dropdown-item" href="javascript:void(0);">Refresh</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Update</a>
+                  <a class="dropdown-item" href="javascript:void(0);">Share</a>
+                </div>
+              </div>
+            </div>
+            <p class="mb-0 card-subtitle">Total 248.5k Visits</p>
+          </div>
+          <div class="card-body pt-xl-5">
+            <div id="visitsByDayChart"></div> <div class="d-flex justify-content-between mt-6">
+              <div>
+                <h6 class="mb-0">Most Visited Day</h6>
+                <p class="mb-0 small">Total 62.4k Visits on Thursday</p>
+              </div>
+              <div class="avatar">
+                <div class="avatar-initial bg-label-warning rounded">
+                  <i class="ri-arrow-right-s-line ri-24px scaleX-n1-rtl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-xxl-8">
+        <div class="card h-100">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h5 class="mb-0">Activity Timeline</h5>
+            </div>
+          </div>
+          <div class="card-body pt-4">
+            <ul class="timeline card-timeline mb-0">
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-primary"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-3">
+                    <h6 class="mb-0">12 Invoices have been paid</h6>
+                    <small class="text-muted">12 min ago</small>
+                  </div>
+                  <p class="mb-2">Invoices have been paid to the company</p>
+                  <div class="d-flex align-items-center mb-1">
+                    <div class="badge bg-lighter rounded-3">
+                      <img src="/img/icons/misc/pdf.png" alt="img" width="15" class="me-2" />
+                      <span class="h6 mb-0">invoices.pdf</span>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-success"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-3">
+                    <h6 class="mb-0">Client Meeting</h6>
+                    <small class="text-muted">45 min ago</small>
+                  </div>
+                  <p class="mb-2">Project meeting with john @10:15am</p>
+                  <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <div class="d-flex flex-wrap align-items-center">
+                      <div class="avatar avatar-sm me-2">
+                        <img src="/img/avatars/1.png" alt="Avatar" class="rounded-circle" />
+                      </div>
+                      <div>
+                        <p class="mb-0 small fw-medium">Lester McCarthy (Client)</p>
+                        <small>CEO of ThemeSelection</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li class="timeline-item timeline-item-transparent">
+                <span class="timeline-point timeline-point-info"></span>
+                <div class="timeline-event">
+                  <div class="timeline-header mb-3">
+                    <h6 class="mb-0">Create a new project for client</h6>
+                    <small class="text-muted">2 Day Ago</small>
+                  </div>
+                  <p class="mb-2">6 team members in a project</p>
+                  <ul class="list-group list-group-flush">
+                    <li
+                      class="list-group-item d-flex justify-content-between align-items-center flex-wrap border-top-0 p-0">
+                      <div class="d-flex flex-wrap align-items-center">
+                        <ul class="list-unstyled users-list d-flex align-items-center avatar-group m-0 me-2">
+                          <li
+                            data-bs-toggle="tooltip"
+                            data-popup="tooltip-custom"
+                            data-bs-placement="top"
+                            title="Vinnie Mostowy"
+                            class="avatar pull-up">
+                            <img class="rounded-circle" src="/img/avatars/5.png" alt="Avatar" />
+                          </li>
+                          <li
+                            data-bs-toggle="tooltip"
+                            data-popup="tooltip-custom"
+                            data-bs-placement="top"
+                            title="Allen Rieske"
+                            class="avatar pull-up">
+                            <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
+                          </li>
+                          <li
+                            data-bs-toggle="tooltip"
+                            data-popup="tooltip-custom"
+                            data-bs-placement="top"
+                            title="Julee Rossignol"
+                            class="avatar pull-up">
+                            <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
+                          </li>
+                          <li class="avatar">
+                            <span
+                              class="avatar-initial rounded-circle pull-up text-heading"
+                              data-bs-toggle="tooltip"
+                              data-bs-placement="bottom"
+                              title="3 more"
+                              >+3</span
+                            >
+                          </li>
+                        </ul>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      </div>
+  </div>
 </template>
-  
+
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import draggable from 'vuedraggable';
-import { useFetch } from '#app';
+import { useUserStore } from '~/stores/user'
+import { onMounted } from 'vue';
 
-// Ambil Motivasi
-const url = 'https://dummyjson.com/quotes/random';
-const { data, error } = await useFetch(url);
-
-if (error) {
-  console.error('Error:', error);
-} else {
-  console.log('Data:', data);
-}
-
-// === [ BAGIAN BARU ] ===
-// Data untuk jumlah user login
-const activeUsers = ref(0)
-const loadingActiveUsers = ref(true)
-
-const fetchActiveUsers = async () => {
-  try {
-    const { data, error } = await useFetch('http://localhost:3001/auth/active-users')
-    if (error.value) throw new Error(error.value)
-    activeUsers.value = data.value.activeUsers
-  } catch (err) {
-    console.error('Gagal fetch active users:', err)
-  } finally {
-    loadingActiveUsers.value = false
-  }
-}
-// === [ END BAGIAN BARU ] ===
-
-const columns = ref([
-  { title: 'To Do', status: 'todo', tasks: [] },
-  { title: 'In Progress', status: 'in-progress', tasks: [] },
-  { title: 'Done', status: 'done', tasks: [] }
-]);
-
-const showModal           = ref(false);
-const newTask             = ref({ title: '', description: '' });
-const selectedColumnIndex = ref(null);
-const selectedTaskId      = ref(null);
-const isEditing           = ref(false);
-
-const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-
-// Menambah task baru ke backend dan frontend
-const saveTask = async () => {
-  try {
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-
-    if (!token) {
-      alert('Token is missing. Please log in again.');
-      return;
-    }
-
-    if (isEditing.value) {
-      const response = await axios.put(`http://localhost:3001/todos/${selectedTaskId.value}`, {
-        title: newTask.value.title,
-        description: newTask.value.description,
-        status: 'todo',
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      const column = columns.value.find(col => col.tasks.some(task => task._id === selectedTaskId.value));
-      const taskIndex = column.tasks.findIndex(task => task._id === selectedTaskId.value);
-      if (taskIndex !== -1) {
-        column.tasks[taskIndex] = response.data;
-      }
-    } else {
-      const response = await axios.post('http://localhost:3001/todos', {
-        title: newTask.value.title,
-        description: newTask.value.description,
-        status: 'todo',
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      const column = columns.value.find(col => col.title === 'To Do');
-      column.tasks.push(response.data);
-    }
-
-    newTask.value = { title: '', description: '' };
-    showModal.value = false;
-
-  } catch (error) {
-    console.error('Error saving task:', error);
-    alert('Failed to save task. Please try again.');
-  }
-};
-
-const showAddTaskForm = (columnIndex) => {
-  selectedColumnIndex.value = columnIndex;
-  isEditing.value = false;
-  newTask.value = { title: '', description: '' };
-  showModal.value = true;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-  newTask.value = { title: '', description: '' };
-};
-
-const editTask = (columnIndex, task) => {
-  selectedColumnIndex.value = columnIndex;
-  selectedTaskId.value = task._id;
-  newTask.value = { title: task.title, description: task.description };
-  isEditing.value = true;
-  showModal.value = true;
-};
-
-const deleteTask = async (columnIndex, taskId) => {
-  const column = columns.value[columnIndex];
-  const taskIndex = column.tasks.findIndex(task => task._id === taskId);
-  if (taskIndex !== -1) {
-    try {
-      await axios.delete(`http://localhost:3001/todos/${taskId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      column.tasks.splice(taskIndex, 1);
-    } catch (error) {
-      console.error('Error deleting task:', error);
-      alert('Failed to delete task. Please try again.');
-    }
-  }
-};
-
-const onDragEnd = async (event) => {
-  const { to, item } = event;
-
-  const todoId = item.dataset.id;
-  const newStatus = to.closest('[data-status]')?.dataset.status;
-
-  if (!newStatus || !todoId) {
-    console.error('New status or todoId not found');
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-
-    await axios.put(`http://localhost:3001/todos/${todoId}`, {
-      status: newStatus
-    }, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    console.log('Updated todo status successfully');
-    await fetchTodos();
-  } catch (err) {
-    console.error('Failed to update todo status', err);
-    if (err.response) {
-      console.error('Server response:', err.response.data);
-    }
-  }
-};
-
-const fetchTodos = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await axios.get('http://localhost:3001/todos', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-
-    const todos = response.data;
-
-    columns.value.forEach(col => col.tasks = []);
-
-    const statusToColumnMap = columns.value.reduce((map, col) => {
-      map[col.status] = col;
-      return map;
-    }, {});
-
-    todos.forEach(todo => {
-      const col = statusToColumnMap[todo.status];
-      if (col) col.tasks.push(todo);
-    });
-
-  } catch (err) {
-    console.error('Error fetching todos:', err);
-  }
-};
-
-// Panggil fetchTodos & fetchActiveUsers ketika komponen di-mount
-onMounted(() => {
-  fetchTodos();
-  fetchActiveUsers();
-  setInterval(fetchActiveUsers, 5000);
+definePageMeta({
+  layout: 'default',
+  middleware: 'auth',
 });
+
+const userStore = useUserStore()
+
+onMounted(() => {
+  userStore.loadUser()
+  
+  const dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+  dropdownElementList.map(function (dropdownToggleEl) {
+    // Pastikan library Bootstrap sudah dimuat dan tersedia
+    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+      return new bootstrap.Dropdown(dropdownToggleEl);
+    }
+  });
+
+  // Inisialisasi Tooltips (jika digunakan dan belum ditangani)
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    }
+  })
+
+  // Inisialisasi Tabs (jika digunakan dan belum ditangani)
+  const triggerTabList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tab"]'))
+  triggerTabList.forEach(function (triggerEl) {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+      const tabTrigger = new bootstrap.Tab(triggerEl)
+    }
+  })
+
+});
+
 </script>
 
-  
-  <style>
-    .bg-light {
-        opacity: 0.7;
-    }
-    .task-card {
-    transition: background-color 0.2s;
-    }
-
-    .task-card:hover {
-        cursor: pointer;
-        background-color: #f0f0f0;
-    }
-
-  </style>
-  
+<style scoped>
+/* Gaya spesifik untuk halaman ini jika diperlukan */
+</style>

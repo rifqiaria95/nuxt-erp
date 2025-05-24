@@ -11,7 +11,7 @@ export default defineNuxtPlugin(() => {
     const interval = setInterval(() => {
       // Pastikan window.Menu ada
       if (window.Menu) {
-        window.Menu.init(); // Panggil init() dari menu.js
+        window.Menu.init();
         clearInterval(interval);
       }
     }, 100);

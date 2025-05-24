@@ -1,12 +1,26 @@
 <template>
-    <footer class="footer">
-        <div class="d-sm-flex justify-content-center justify-content-sm-between">
-            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Made By Rifqi <a href="https://portfolio-rifqi-aria.laravel.cloud/" target="_blank">Todo App</a> from Rifqi Aria.</span>
-            <span class="float-none float-sm-end d-block mt-1 mt-sm-0 text-center">Copyright © {{ new Date().getFullYear() }}. All rights reserved.</span>
+    <footer class="content-footer footer bg-footer-theme">
+      <div class="container-xxl">
+        <div class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
+          <div class="text-body mb-2 mb-md-0">
+            © {{ new Date().getFullYear() }}, made with <span class="text-danger"><i class="tf-icons ri-heart-fill"></i></span> by
+            <a href="https://pixinvent.com" target="_blank" class="footer-link">Pixinvent</a>
+          </div>
+          <div class="d-none d-lg-inline-block">
+            <a href="https://themeforest.net/licenses/standard" class="footer-link me-4" target="_blank">License</a>
+            <a href="https://1.envato.market/pixinvent_portfolio" target="_blank" class="footer-link me-4">More Themes</a>
+            <a href="https://demos.pixinvent.com/materialize-html-admin-template/documentation/" target="_blank" class="footer-link me-4">Documentation</a>
+            <a href="https://pixinvent.ticksy.com/" target="_blank" class="footer-link d-none d-sm-inline-block">Support</a>
+          </div>
         </div>
+      </div>
     </footer>
   </template>
   
   <script setup>
-  // No script needed for now
+  // No specific script needed for this static footer, but good to have the block.
   </script>
+  
+  <style scoped>
+  /* Component-specific styles */
+  </style>

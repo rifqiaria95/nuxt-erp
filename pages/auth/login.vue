@@ -1,129 +1,156 @@
 <template>
-    <div class="container-scroller">
-      <div class="container-fluid page-body-wrapper full-page-wrapper">
-        <div class="content-wrapper d-flex align-items-center auth px-0">
-          <div class="row w-100 mx-0">
-            <div class="col-lg-4 mx-auto">
-              <div class="auth-form-light text-left py-5 px-4 px-sm-5">
-                <div class="brand-logo">
-                  <img src="/images/logo.png" alt="logo">
-                </div>
-                <h4>Hello! let's get started</h4>
-                <h6 class="fw-light">Sign in to continue.</h6>
-                <form @submit.prevent="handleLogin" class="pt-3">
-                  <!-- Username Field -->
-                  <div class="form-group">
-                    <input 
-                      type="text" 
-                      class="form-control form-control-lg" 
-                      v-model="username" 
-                      placeholder="Username" 
-                      required
-                    >
-                  </div>
-                  
-                  <!-- Password Field -->
-                  <div class="form-group">
-                    <input 
-                      type="password" 
-                      class="form-control form-control-lg" 
-                      v-model="password" 
-                      placeholder="Password" 
-                      required
-                    >
-                  </div>
-  
-                  <!-- Login Button -->
-                  <div class="mt-3 d-grid gap-2">
-                    <button 
-                      type="submit" 
-                      class="btn btn-block btn-primary btn-lg fw-medium auth-form-btn"
-                    >
-                      SIGN IN
-                    </button>
-                  </div>
-  
-                  <!-- Other Options -->
-                  <div class="my-2 d-flex justify-content-between align-items-center">
-                    <div class="form-check">
-                      <label class="form-check-label text-muted">
-                        <input type="checkbox" class="form-check-input"> Keep me signed in
-                      </label>
+  <div class="position-relative">
+    <div class="authentication-wrapper authentication-basic container-p-y p-4 p-sm-0">
+      <div class="authentication-inner py-6">
+        <div class="card p-md-7 p-1">
+          <div class="app-brand justify-content-center mt-5">
+            <a href="/" class="app-brand-link gap-2">
+              <span class="app-brand-logo demo">
+                <img src="/public/img/branding/logo.png" alt="" height="40" />
+              </span>
+              <span class="app-brand-text demo text-heading fw-semibold">Kainnova</span>
+            </a>
+          </div>
+          <div class="card-body mt-1">
+            <h4 class="mb-1">Welcome to Kainnova! 👋</h4>
+            <p class="mb-5">Please sign-in to your account and start the adventure</p>
+
+            <form class="mb-5" @submit.prevent="handleLogin">
+              <div class="form-floating form-floating-outline mb-5">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="email"
+                  v-model="email"
+                  placeholder="Enter your email or username"
+                  autofocus
+                  required
+                />
+                <label for="email">Email or Username</label>
+              </div>
+              <div class="mb-5">
+                <div class="form-password-toggle">
+                  <div class="input-group input-group-merge">
+                    <div class="form-floating form-floating-outline">
+                      <input
+                        :type="showPassword ? 'text' : 'password'"
+                        id="password"
+                        class="form-control"
+                        v-model="password"
+                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                        required
+                        aria-describedby="password"
+                      />
+                      <label for="password">Password</label>
                     </div>
-                    <a href="#" class="auth-link text-black">Forgot password?</a>
+                    <span class="input-group-text cursor-pointer" @click="togglePassword">
+                      <i :class="showPassword ? 'ri-eye-line' : 'ri-eye-off-line'"></i>
+                    </span>
                   </div>
-                </form>
-  
-                <!-- Social Login Option (Optional) -->
-                <div class="mb-2 d-grid gap-2">
-                  <button type="button" class="btn btn-block btn-facebook auth-form-btn">
-                    <i class="ti-facebook me-2"></i> Connect using Facebook
-                  </button>
-                </div>
-  
-                <!-- Register Option -->
-                <div class="text-center mt-4 fw-light">
-                  Don't have an account? <a href="register.html" class="text-primary">Create</a>
                 </div>
               </div>
-            </div>
+              <div class="mb-5 d-flex justify-content-between mt-5">
+                <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" id="remember-me" />
+                  <label class="form-check-label" for="remember-me"> Remember Me </label>
+                </div>
+                <NuxtLink to="/auth/forgot-password" class="float-end mb-1 mt-2">
+                  <span>Forgot Password?</span>
+                </NuxtLink>
+              </div>
+              <div class="mb-5">
+                <button class="btn btn-primary d-grid w-100" type="submit" :disabled="pending">
+                  <span v-if="pending">Signing In...</span>
+                  <span v-else>Sign in</span>
+                </button>
+              </div>
+            </form>
+            <p v-if="error" class="text-danger mt-3">{{ error }}</p>
           </div>
         </div>
+        <img
+          alt="mask"
+          src="/img/illustrations/auth-basic-login-mask-light.png"
+          class="authentication-image d-none d-lg-block"
+        />
       </div>
     </div>
+  </div>
 </template>
-  
+
 <script setup>
+  definePageMeta({
+      layout: 'auth',
+      middleware: 'redirect-auth',
+  })
 
-    definePageMeta({
-        layout: 'auth'
-    })
+  import { ref, onMounted } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useUserStore } from '~/stores/user';
+  import { useNuxtApp } from '#app';
 
-    import { ref } from 'vue';
-    import axios from 'axios';
-    import { useRouter } from 'vue-router';
-    
-    // Variables for login form inputs
-    const username = ref('');
-    const password = ref('');
-    const router = useRouter();
-    
-    // Handle login
-    const handleLogin = async () => {
-        try {
-            const response = await axios.post('http://localhost:3001/auth/login', {
-            username: username.value,
-            password: password.value,
-            });
+  const { $axios } = useNuxtApp();
+  const email      = ref('');
+  const password   = ref('');
+  const router     = useRouter();
+  const pending    = ref(false);
+  const error      = ref(null);
+  const toast      = useToast();
+  const userStore  = useUserStore();
 
-            const token = response.data.token;
+  const fetchCsrfToken = async () => {
+    await $axios.get('/csrf-token');
+  };
 
-            localStorage.setItem('token', token);
+  onMounted(async () => {
+    await fetchCsrfToken();
+  });
 
-            router.push('/');
-        } catch (error) {
-            console.error('Login failed:', error.response?.data?.message || error.message);
-            alert('Login failed. Please check your credentials.');
-        }
-    };
+  // Handle login
+  const handleLogin = async () => {
+    pending.value = true;
+    error.value = null;
+    try {
+      const response = await $axios.post('/auth/api/login', {
+        email: email.value,
+        password: password.value,
+      });
+      localStorage.setItem('token', response.data.token.token);
+      userStore.setUser(response.data.user)
+      toast.success({
+        title: 'Login Berhasil!',
+        icon: 'ri-check-line',
+        message: 'Selamat datang',
+        timeout: 3000,
+        position: 'topRight',
+        layout: 2,
+      })
+      router.push('/dashboard');
+    } catch (err) {
+      if (err.response?.status === 419) {
+        await fetchCsrfToken();
+        await handleLogin();
+      } else {
+        error.value = err.response?.data?.message || err.message;
+        toast.error({
+          title: 'Login Gagal!',
+          icon: 'ri-close-line',
+          message: `Gagal login: ${error.value}`,
+          timeout: 3000,
+          position: 'topRight',
+          layout: 2,
+        });
+      }
+    } finally {
+      pending.value = false;
+    }
+  };
 
+  const showPassword = ref(false);
+  const togglePassword = () => {
+    showPassword.value = !showPassword.value;
+  };
 </script>
-  
+
 <style scoped>
-    .auth-form-light {
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 30px;
-        background-color: #f9f9f9;
-    }
-
-    .auth-form-btn {
-        background-color: #007bff;
-        color: white;
-    }
-
-    .auth-form-btn:hover {
-        background-color: #0056b3;
-    }
 </style>
-  

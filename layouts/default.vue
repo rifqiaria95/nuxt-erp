@@ -1,20 +1,30 @@
 <template>
-  <div class="container-scroller">
-    <Navbar />
-    <div class="container-fluid page-body-wrapper">
-      <SidebarMenu />
-      <div class="main-panel">
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+      <Sidebar />
+
+      <div class="layout-page">
+        <Navbar />
         <div class="content-wrapper">
           <slot />
           <Footer />
         </div>
       </div>
+
+      <div class="layout-overlay layout-menu-toggle"></div>
+      <div class="drag-target"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import SidebarMenu from '@/components/SidebarMenu.vue'
-import Navbar from '@/components/Navbar.vue'
-import Footer from '@/components/Footer.vue'
+// Import your components
+import Sidebar from '~/components/Sidebar.vue';
+import Navbar from '~/components/Navbar.vue';
+import Footer from '~/components/Footer.vue';
+
 </script>
+
+<style>
+
+</style>
