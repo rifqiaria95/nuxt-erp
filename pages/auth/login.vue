@@ -99,7 +99,7 @@
   const userStore  = useUserStore();
 
   const fetchCsrfToken = async () => {
-    await $axios.get('/csrf-token');
+    await $axios.get('/auth/api/csrf-token');
   };
 
   onMounted(async () => {

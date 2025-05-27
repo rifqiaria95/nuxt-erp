@@ -11,10 +11,15 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'http://localhost:3333', // Your AdonisJS backend URL
+      apiBaseUrl: 'http://localhost:3333',
       authBaseUrl: '/auth/api',
     }
   },
+
+  plugins: [
+    '~/plugins/jquery.client.ts',
+    '~/plugins/api.client.ts',
+  ],
 
   app: {
     head: {
@@ -52,6 +57,8 @@ export default defineNuxtConfig({
         // Vendors CSS
         { rel: 'stylesheet', href: '/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' },
         { rel: 'stylesheet', href: '/vendor/libs/typeahead-js/typeahead.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/datatables-bs5/datatables.bootstrap5.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' },
         { rel: 'stylesheet', href: '/vendor/libs/apex-charts/apex-charts.css' },
         { rel: 'stylesheet', href: '/vendor/libs/swiper/swiper.css' },
 
@@ -67,6 +74,10 @@ export default defineNuxtConfig({
 
         // @ts-ignore
         { src: '/vendor/libs/jquery/jquery.js', body: true, type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/vendor/libs/datatables-bs5/datatables-bootstrap5.js', body: true, type: 'text/javascript' },
+        
         // @ts-ignore
         { src: '/vendor/libs/popper/popper.js', body: true, type: 'text/javascript' },
         // @ts-ignore
@@ -81,12 +92,12 @@ export default defineNuxtConfig({
         { src: '/vendor/libs/typeahead-js/typeahead.js', body: true, type: 'text/javascript' },
         // @ts-ignore
         { src: '/vendor/js/menu.js', body: true, type: 'text/javascript' },
-
+        
         // @ts-ignore
         { src: '/vendor/libs/apex-charts/apexcharts.js', body: true, type: 'text/javascript' },
         // @ts-ignore
         { src: '/vendor/libs/swiper/swiper.js', body: true, type: 'text/javascript' },
-
+        
         // @ts-ignore
         { src: '/js/main.js', body: true, type: 'text/javascript' },
 

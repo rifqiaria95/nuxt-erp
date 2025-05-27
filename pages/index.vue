@@ -1,11 +1,14 @@
 <script setup>
-import { navigateTo } from '#app'
+import { useRouter } from '#app'
 
+const router = useRouter()
 const token = process.client ? localStorage.getItem('token') : null
 
-if (token) {
-  navigateTo('/dashboard')
-} else {
-  navigateTo('/auth/login')
+if (process.client) {
+  if (token) {
+    router.push('/dashboard')
+  } else {
+    router.push('/auth/login')
+  }
 }
 </script>
