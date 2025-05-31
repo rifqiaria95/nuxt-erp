@@ -7,11 +7,6 @@
       </Head>
 
     <slot />
-
-    <ClientOnly>
-      <Script src="/vendor/js/helpers.js" type="text/javascript" body />
-      <Script src="/js/config.js" type="text/javascript" body />
-      </ClientOnly>
   </div>
 </template>
 

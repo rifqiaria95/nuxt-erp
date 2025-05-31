@@ -340,7 +340,7 @@
  
                  <div class="col-12">
                      <h4 class="mt-6 mb-1">Total users with their roles</h4>
-                     <p class="mb-0">Find all of your company’s administrator accounts and their associate roles.</p>
+                     <p class="mb-0">Find all of your company's administrator accounts and their associate roles.</p>
                  </div>
                  <div class="col-12">
                      <!-- Role Table -->
@@ -373,6 +373,13 @@
                             <h4 class="role-title mb-2 pb-0">Add New Role</h4>
                             <p>Set role permissions</p>
                             </div>
+                            <div v-if="validationErrors.length" class="alert alert-danger">
+                                <ul>
+                                    <li v-for="err in validationErrors" :key="err.message || err">
+                                    {{ typeof err === 'string' ? err : err.message }}
+                                    </li>
+                                </ul>
+                            </div>
                             <!-- Add role form -->
                             <form id="addRoleForm" class="row g-3" onsubmit="return false">
                                 <div class="col-12 mb-3">
@@ -398,25 +405,26 @@
                                             <td class="text-nowrap fw-medium">{{ menuDetail.name }}</td>
                                             <td>
                                                 <div class="d-flex justify-content-end flex-wrap">
-                                                <div
-                                                    v-for="perm in menuDetail.permissions"
-                                                    :key="perm.id"
-                                                    class="form-check mb-1 me-4"
-                                                >
-                                                    <input
-                                                    class="form-check-input"
-                                                    type="checkbox"
-                                                    :id="`perm_${menuDetail.id}_${perm.id}`"
-                                                    :value="perm.id"
-                                                    v-model="selectedPermissions"
-                                                    />
-                                                    <label
-                                                    class="form-check-label"
-                                                    :for="`perm_${menuDetail.id}_${perm.id}`"
+                                                    <div
+                                                        v-for="perm in menuDetail.permissions"
+                                                        :key="perm.id"
+                                                        class="form-check mb-1 me-4"
                                                     >
-                                                    {{ perm.name }}
-                                                    </label>
-                                                </div>
+                                                        <input
+                                                            class="form-check-input"
+                                                            type="checkbox"
+                                                            :id="`perm_${menuDetail.id}_${perm.id}`"
+                                                            :value="perm.id"
+                                                            v-model="selectedPermissions"
+                                                            :checked="selectedPermissions.includes(perm.id)"
+                                                        />
+                                                        <label
+                                                            class="form-check-label"
+                                                            :for="`perm_${menuDetail.id}_${perm.id}`"
+                                                        >
+                                                            {{ perm.name }}
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </td>
                                             </tr>
@@ -431,19 +439,19 @@
                                     </table>
                                     </div>
                                 </div>
-                            <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-                                <button class="btn btn-primary"
-                                    @click="selectedRole && selectedRole.id ? submitUpdatedPermissions() : submitNewRole()">
-                                    Submit
-                                </button>
-                                <button
-                                type="reset"
-                                class="btn btn-outline-secondary"
-                                data-bs-dismiss="modal"
-                                aria-label="Close">
-                                Cancel
-                                </button>
-                            </div>
+                                <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+                                    <button class="btn btn-primary"
+                                        @click="selectedRole && selectedRole.id ? submitUpdatedPermissions() : submitNewRole()">
+                                        Submit
+                                    </button>
+                                    <button
+                                    type="reset"
+                                    class="btn btn-outline-secondary"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close">
+                                    Cancel
+                                    </button>
+                                </div>
                             </form>
                             <!--/ Add role form -->
                         </div>
@@ -468,9 +476,10 @@ import Swal from 'sweetalert2'
 
 const { $api } = useNuxtApp()
 
-const permissions = ref([])
-const selectedRole = ref(null)
+const permissions         = ref([])
+const selectedRole        = ref(null)
 const selectedPermissions = ref([])
+const validationErrors    = ref([])
 
 // Tambahkan computed ini:
 const validSelectedPermissions = computed(() =>
@@ -543,81 +552,6 @@ const menuDetailsWithPermissions = computed(() => {
     return sortedMenuDetails;
 });
 
-function openAddRoleModal() {
-    selectedRole.value = null;
-    document.getElementById('modalRoleName').value = '';
-    selectedPermissions.value = [];
-    if (window.roleModal) {
-        window.roleModal.show();
-    } else {
-        const modalEl = document.getElementById('RoleModal');
-        window.roleModal = new bootstrap.Modal(modalEl);
-        window.roleModal.show();
-    }
-}
-
-async function openEditRoleModal(role) {
-    try {
-        if (!role || !role.id) {
-            throw new Error('Role tidak valid');
-        }
-
-        // Simpan role yang dipilih
-        selectedRole.value = role;
-        
-        // Set nilai input
-        const modalRoleName = document.getElementById('modalRoleName');
-        if (modalRoleName) {
-            modalRoleName.value = role.name || '';
-        }
-
-        // Set permissions yang dipilih
-        if (role.permissions && Array.isArray(role.permissions)) {
-            selectedPermissions.value = role.permissions
-                .map(p => p.id)
-                .filter(id => id && id > 0);
-        } else {
-            selectedPermissions.value = [];
-        }
-
-        console.log('Role data loaded:', role);
-    } catch (error) {
-        console.error('Error in openEditRoleModal:', error);
-        alert('Error: ' + error.message);
-    }
-}
-
-const fetchPermissions = async () => {
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch($api.getPermissions(), {
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: 'include'
-        });
-
-        if (!res.ok) {
-            console.error('HTTP Error fetching all permissions:', res.status, res.statusText);
-            permissions.value = [];
-            return;
-        }
-
-        const apiResponse = await res.json();
-        permissions.value = apiResponse.data || apiResponse;
-
-        console.log('Actual API Response for /api/getPermissions:', permissions.value);
-        
-        if (permissions.value && permissions.value.length > 0) {
-            console.log('Permissions data successfully loaded. First item:', permissions.value[0]);
-        } else {
-            console.warn('Permissions data is empty or invalid after fetch.');
-        }
-
-    } catch (error) {
-        console.error('Network or JSON parsing error fetching all permissions:', error);
-        permissions.value = [];
-    }
-}
-
 // Di bagian onMounted, ganti event handler untuk tombol edit dengan ini:
 onMounted(async () => {
     await fetchPermissions();
@@ -658,12 +592,25 @@ onMounted(async () => {
                     return `
                         <div class="d-flex align-items-center">
                             <span class="text-nowrap">
-                                <button class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-record text-body waves-effect me-1" data-id="${row.id}">
-                                    <i class="icon-base ri ri-delete-bin-7-line icon-20px"></i>
-                                </button>
-                                <button class="btn btn-icon btn-text-secondary rounded-pill edit-role-btn" data-id="${row.id}">
-                                    <i class="icon-base ri ri-edit-box-line icon-20px"></i>
-                                </button>
+                                <button 
+                                        class="btn btn-icon btn-text-secondary rounded-pill edit-role-btn" 
+                                        data-id="${row.id}" 
+                                        aria-label="Edit Role"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="top"
+                                        title="Edit Role"
+                                    >
+                                        <i class="icon-base ri ri-edit-box-line icon-20px"></i>
+                                    </button>
+                                    <button
+                                    class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-record text-body waves-effect me-1" data-id="${row.id}"
+                                    aria-label="Delete Role"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Delete Role"
+                                    >
+                                        <i class="icon-base ri ri-delete-bin-7-line icon-20px"></i>
+                                    </button>
                             </span>
                         </div>
                     `;
@@ -714,6 +661,122 @@ onMounted(async () => {
     rolesStore.fetchRoles();
 });
 
+function openAddRoleModal() {
+    selectedRole.value = null;
+    document.getElementById('modalRoleName').value = '';
+    selectedPermissions.value = [];
+    if (window.roleModal) {
+        window.roleModal.show();
+    } else {
+        const modalEl = document.getElementById('RoleModal');
+        window.roleModal = new bootstrap.Modal(modalEl);
+        window.roleModal.show();
+    }
+    // Bersihkan backdrop jika ada setelah modal ditutup
+    const modalEl = document.getElementById('RoleModal');
+    if (modalEl) {
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.style.overflow = '';
+        }, { once: true });
+    }
+}
+
+async function openEditRoleModal(role) {
+    try {
+        if (!role || !role.id) {
+            throw new Error('Role tidak valid');
+        }
+
+        // Debug: log role data yang diterima
+        console.log('Role data loaded (openEditRoleModal):', role);
+
+        // Simpan role yang dipilih
+        selectedRole.value = role;
+
+        // Set nilai input
+        const modalRoleName = document.getElementById('modalRoleName');
+        if (modalRoleName) {
+            modalRoleName.value = role.name || '';
+        }
+
+        // Set permissions yang dipilih, pastikan selalu array baru
+        selectedPermissions.value = [];
+        
+        // Handle both response formats (API might return permissions as array of objects or just IDs)
+        if (role.permissions && Array.isArray(role.permissions)) {
+            if (role.permissions.length > 0) {
+                if (typeof role.permissions[0] === 'object') {
+                    // Format: [{id: 1, name: 'view_user'}, ...]
+                    selectedPermissions.value = role.permissions
+                        .map(p => p.id)
+                        .filter(id => id && id > 0);
+                } else {
+                    // Format: [1, 2, 3]
+                    selectedPermissions.value = role.permissions
+                        .filter(id => id && id > 0);
+                }
+            }
+        }
+
+        // Debug: log selectedPermissions after set
+        console.log('selectedPermissions after openEditRoleModal:', selectedPermissions.value);
+
+        // Tampilkan modal
+        if (window.roleModal) {
+            window.roleModal.show();
+        } else {
+            const modalEl = document.getElementById('RoleModal');
+            window.roleModal = new bootstrap.Modal(modalEl);
+            window.roleModal.show();
+        }
+        
+        // Bersihkan backdrop jika ada setelah modal ditutup
+        const modalEl = document.getElementById('RoleModal');
+        if (modalEl) {
+            modalEl.addEventListener('hidden.bs.modal', () => {
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.style.overflow = '';
+            }, { once: true });
+        }
+
+    } catch (error) {
+        console.error('Error in openEditRoleModal:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+const fetchPermissions = async () => {
+    const token = localStorage.getItem('token');
+    try {
+        const res = await fetch($api.getPermissions(), {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: 'include'
+        });
+
+        if (!res.ok) {
+            console.error('HTTP Error fetching all permissions:', res.status, res.statusText);
+            permissions.value = [];
+            return;
+        }
+
+        const apiResponse = await res.json();
+        permissions.value = apiResponse.data || apiResponse;
+
+        console.log('Actual API Response for /api/getPermissions:', permissions.value);
+        
+        if (permissions.value && permissions.value.length > 0) {
+            console.log('Permissions data successfully loaded. First item:', permissions.value[0]);
+        } else {
+            console.warn('Permissions data is empty or invalid after fetch.');
+        }
+
+    } catch (error) {
+        console.error('Network or JSON parsing error fetching all permissions:', error);
+        permissions.value = [];
+    }
+}
+
 const submitNewRole = async () => {
     console.log('Fungsi: submitNewRole dipanggil');
     try {
@@ -757,6 +820,16 @@ const submitNewRole = async () => {
                     document.body.style.overflow = '';
                 }, { once: true });
             }
+        } else {
+            const errorData = await response.json();
+            if (errorData.errors) {
+            // Jika errors adalah object, flatten ke array
+            validationErrors.value = Array.isArray(errorData.errors)
+                ? errorData.errors
+                : Object.values(errorData.errors).flat();
+            } else {
+                alert(errorData.message || 'Gagal membuat role');
+            }  
         }
     } catch (error) {
         console.error('Create error:', error);
@@ -779,7 +852,7 @@ const submitUpdatedPermissions = async () => {
         });
 
         const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
+        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
         const url = $api.roleUpdate(roleIdToUpdate);
         console.log('URL yang akan dituju:', url);
@@ -800,27 +873,48 @@ const submitUpdatedPermissions = async () => {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
-                'X-CSRF-TOKEN': csrfToken || ''
+                'X-CSRF-TOKEN': csrfToken
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            credentials: 'include'
         });
 
         if (response.ok) {
             const data = await response.json();
             $('#table-roles').DataTable().ajax.reload(null, false);
-            
+
+            // Reset selectedRole and selectedPermissions after update
+            selectedRole.value = null;
+            selectedPermissions.value = [];
+            // Optionally clear the modal input
+            const modalRoleName = document.getElementById('modalRoleName');
+            if (modalRoleName) modalRoleName.value = '';
+
+            // Refresh rolesStore data
+            rolesStore.fetchRoles();
+
             // Tutup modal dengan benar
             const modalEl = document.getElementById('RoleModal');
             if (modalEl) {
                 const modal = bootstrap.Modal.getInstance(modalEl);
                 modal.hide();
-                
+
                 // Bersihkan backdrop setelah modal tertutup
                 modalEl.addEventListener('hidden.bs.modal', () => {
                     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
                     document.body.style.overflow = '';
                 }, { once: true });
             }
+        } else {
+            const errorData = await response.json();
+            if (errorData.errors) {
+            // Jika errors adalah object, flatten ke array
+            validationErrors.value = Array.isArray(errorData.errors)
+                ? errorData.errors
+                : Object.values(errorData.errors).flat();
+            } else {
+                alert(errorData.message || 'Gagal membuat role');
+            }  
         }
 
     } catch (error) {
@@ -846,25 +940,48 @@ const deleteRole = async (roleId) => {
 
     if (result.isConfirmed) {
         try {
+            // Validasi ID role yang akan dihapus
+            if (!roleId) {
+                console.error('ID role tidak ditemukan untuk proses hapus.');
+                throw new Error('Role yang dipilih tidak memiliki ID. Tidak dapat menghapus.');
+            }
+
+            // Ambil token dari localStorage
             const token = localStorage.getItem('token');
-            const response = await fetch($api.roleDelete(roleId), {
+
+            // Ambil CSRF token
+            const csrfResponse = await fetch($api.csrfToken(), {
+                credentials: 'include'
+            });
+            const csrfData = await csrfResponse.json();
+            const csrfToken = csrfData.token;
+
+            // Endpoint hapus role
+            const url = $api.roleDelete(roleId);
+            console.log('URL hapus role:', url);
+
+            // Request hapus role
+            const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                credentials: 'include'
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to delete role');
+                throw new Error(errorData.message || 'Gagal menghapus role');
             }
 
+            // Reload tabel
             $('#table-roles').DataTable().ajax.reload(null, false);
 
             await Swal.fire({
-                title: 'Deleted!',
-                text: 'Role has been deleted.',
+                title: 'Berhasil!',
+                text: 'Role berhasil dihapus.',
                 icon: 'success'
             });
 

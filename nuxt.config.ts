@@ -11,16 +11,20 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'http://localhost:3333',
-      authBaseUrl: '/auth/api',
+      apiBase: process.env.NUXT_PUBLIC_API_BASE,
+      authBase: process.env.NUXT_PUBLIC_AUTH_BASE,
     }
   },
-
+  imports: {
+    dirs: ['utils']
+  },
   plugins: [
     '~/plugins/jquery.client.ts',
     '~/plugins/api.client.ts',
   ],
-
+  css: [
+    '~/public/vendor/libs/select2/select2.css'
+  ],
   app: {
     head: {
       title: 'Kainnova Digital Solutions',
@@ -60,8 +64,10 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/vendor/libs/datatables-bs5/datatables.bootstrap5.css' },
         { rel: 'stylesheet', href: '/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' },
         { rel: 'stylesheet', href: '/vendor/libs/apex-charts/apex-charts.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/tagify/tagify.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/bootstrap-select/bootstrap-select.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/select2/select2.css' },
         { rel: 'stylesheet', href: '/vendor/libs/swiper/swiper.css' },
-
         // Page CSS
         { rel: 'stylesheet', href: '/vendor/css/pages/cards-statistics.css' },
         { rel: 'stylesheet', href: '/vendor/css/pages/cards-analytics.css' },
@@ -88,6 +94,10 @@ export default defineNuxtConfig({
         { src: '/vendor/libs/perfect-scrollbar/perfect-scrollbar.js', body: true, type: 'text/javascript' },
         // @ts-ignore
         { src: '/vendor/libs/hammer/hammer.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/select2/select2.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/bootstrap-select/bootstrap-select.js', body: true, type: 'text/javascript' },
         // @ts-ignore
         { src: '/vendor/libs/typeahead-js/typeahead.js', body: true, type: 'text/javascript' },
         // @ts-ignore

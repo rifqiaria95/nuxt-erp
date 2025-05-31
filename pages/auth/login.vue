@@ -87,36 +87,48 @@
   import { ref, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useUserStore } from '~/stores/user';
-  import { useNuxtApp } from '#app';
 
-  const { $axios } = useNuxtApp();
+  const { $api }  = useNuxtApp()
+  const toast     = useToast();
+  const userStore = useUserStore();
+  const router    = useRouter();
+
   const email      = ref('');
   const password   = ref('');
-  const router     = useRouter();
   const pending    = ref(false);
   const error      = ref(null);
-  const toast      = useToast();
-  const userStore  = useUserStore();
 
-  const fetchCsrfToken = async () => {
-    await $axios.get('/auth/api/csrf-token');
-  };
-
-  onMounted(async () => {
-    await fetchCsrfToken();
-  });
+  let csrfToken = null;
+  try {
+    const res = await fetch($api.csrfToken(), { credentials: 'include' });
+    const data = await res.json();
+    csrfToken = data.token;
+  } catch (e) {
+    // handle error
+  }
 
   // Handle login
   const handleLogin = async () => {
     pending.value = true;
     error.value = null;
     try {
-      const response = await $axios.post('/auth/api/login', {
-        email: email.value,
-        password: password.value,
+      console.log('Login endpoint:', $api.login());
+      const response = await fetch($api.login(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify({
+          email: email.value,
+          password: password.value,
+        }),
+        credentials: 'include'
       });
-      localStorage.setItem('token', response.data.token.token);
-      userStore.setUser(response.data.user)
+      const data = await response.json();
+      console.log('Login response:', data);
+      localStorage.setItem('token', data.token.token);
+      userStore.setUser(data.user)
       toast.success({
         title: 'Login Berhasil!',
         icon: 'ri-check-line',
@@ -127,11 +139,10 @@
       })
       router.push('/dashboard');
     } catch (err) {
-      if (err.response?.status === 419) {
-        await fetchCsrfToken();
+      if (err?.status === 419) {
         await handleLogin();
       } else {
-        error.value = err.response?.data?.message || err.message;
+        error.value = err?.data?.message || err.message;
         toast.error({
           title: 'Login Gagal!',
           icon: 'ri-close-line',

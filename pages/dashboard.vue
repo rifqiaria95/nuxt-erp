@@ -728,7 +728,6 @@
 
 <script setup>
 import { useUserStore } from '~/stores/user'
-import { onMounted } from 'vue';
 
 definePageMeta({
   layout: 'default',
@@ -738,34 +737,8 @@ definePageMeta({
 const userStore = useUserStore()
 
 onMounted(() => {
-  userStore.loadUser()
-  
-  const dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
-  dropdownElementList.map(function (dropdownToggleEl) {
-    // Pastikan library Bootstrap sudah dimuat dan tersedia
-    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
-      return new bootstrap.Dropdown(dropdownToggleEl);
-    }
-  });
-
-  // Inisialisasi Tooltips (jika digunakan dan belum ditangani)
-  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-  tooltipTriggerList.map(function (tooltipTriggerEl) {
-    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
-      return new bootstrap.Tooltip(tooltipTriggerEl)
-    }
-  })
-
-  // Inisialisasi Tabs (jika digunakan dan belum ditangani)
-  const triggerTabList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tab"]'))
-  triggerTabList.forEach(function (triggerEl) {
-    if (typeof bootstrap !== 'undefined' && bootstrap.Tab) {
-      const tabTrigger = new bootstrap.Tab(triggerEl)
-    }
-  })
-
+  userStore.loadUser();
 });
-
 </script>
 
 <style scoped>
