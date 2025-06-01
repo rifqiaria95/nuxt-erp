@@ -323,27 +323,61 @@
                  </div>
  
                  <div class="col-12">
-                     <h4 class="mt-6 mb-1">Total Roles with their Pegawai</h4>
+                     <h4 class="mt-6 mb-1">Total Pegawai</h4>
                      <p class="mb-0">Find all of your company's administrator accounts and their associate Pegawai.</p>
                  </div>
                  <div class="col-12">
                      <!-- pegawai Table -->
                      <div class="card">
-                         <div class="card-datatable table-responsive py-5 px-3">
-                             <table id="table-pegawai" class="datatables-basic table">
-                             <thead>
-                                 <tr>
-                                 <th>#</th>
-                                 <th>Name</th>
-                                 <th>Email</th>
-                                 <th>Date of Birth</th>
-                                 <th>Place of Birth</th>
-                                 <th>Address</th>
-                                 <th>Status</th>
-                                 <th>Actions</th>
-                                 </tr>
-                             </thead>
-                             </table>
+                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+                                 <span class="me-2">Baris:</span>
+                                 <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                             </div>
+                             <div class="d-flex align-items-center">
+                                 <span class="p-input-icon-left">
+                                     <InputText v-model="lazyParams.search" placeholder="Cari pegawai..." @keyup.enter="handleSearch" style="width: 20rem;" />
+                                 </span>
+                             </div>
+                         </div>
+                         <div class="card-datatable table-responsive py-3 px-3">
+                            <MyDataTable 
+                                :data="pegawai" 
+                                :rows="lazyParams.rows" 
+                                :loading="loading"
+                                :totalRecords="totalRecords"
+                                :lazy="true"
+                                @page="onPage($event)"
+                                @sort="onSort($event)"
+                                responsiveLayout="scroll" 
+                                paginatorPosition="bottom"
+                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
+                                >
+                                <Column field="id_pegawai" header="#" :sortable="true"></Column> 
+                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true"></Column>
+                                <Column field="email" header="Email" :sortable="true"></Column>
+                                <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true">
+                                    <template #body="slotProps">
+                                        {{ new Date(slotProps.data.tgl_lahir_pegawai).toLocaleDateString() }}
+                                    </template>
+                                </Column>
+                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true"></Column>
+                                <Column field="alamat_pegawai" header="Alamat" :sortable="true"></Column>
+                                <Column field="status_pegawai" header="Status" :sortable="true">
+                                    <template #body="slotProps">
+                                        <span :class="getStatusBadge(slotProps.data.status_pegawai).class">
+                                            {{ getStatusBadge(slotProps.data.status_pegawai).text }}
+                                        </span>
+                                    </template>
+                                </Column>
+                                <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                    <template #body="slotProps">
+                                        <button @click="openEditPegawaiModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="deletePegawai(slotProps.data.id_pegawai)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                    </template>
+                                </Column>
+                            </MyDataTable>
                          </div>
                      </div>
                      <!--/ pegawai Table -->
@@ -383,11 +417,24 @@ import 'vue-select/dist/vue-select.css'
 
 // Import komponen modal
 import PegawaiModal from '~/components/pegawai/PegawaiModal.vue'
+import MyDataTable from '~/components/table/MyDataTable.vue'
 
 const { $api } = useNuxtApp()
 
 const pegawai             = ref([])
 const selectedPegawai     = ref(null)
+const loading             = ref(false);
+const totalRecords        = ref(0);
+const lazyParams          = ref({
+    first: 0,
+    rows: 10,
+    sortField: null,
+    sortOrder: null,
+    draw: 1,
+    search: '',
+});
+
+const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
 // State untuk menu groups dan details (data utama tetap di parent)
 const jabatan = ref([])
@@ -447,14 +494,17 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
             console.log('Form data being sent for update:', Object.fromEntries(formData));
 
             response = await fetch(url, {
-                method: 'PUT',
+                method: 'POST',
                 body: formData,
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || ''
+                    'X-CSRF-TOKEN': csrfToken || '',
                 },
                 credentials: 'include'
             });
+             if (isEditMode.value) {
+                formData.append('_method', 'PUT');
+            }
 
         } else {
             url = $api.pegawai();
@@ -472,8 +522,7 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
         }
 
         if (response.ok) {
-            $('#table-pegawai').DataTable().ajax.reload(null, false);
-            pegawaiStore.fetchPegawai(); 
+            loadLazyData();
             handleCloseModal();
             Swal.fire(
                 'Berhasil!',
@@ -548,7 +597,7 @@ try {
 }
 }
 
-// Fungsi untuk mengambil data menu details berdasarkan group
+// Fungsi untuk mengambil data cabang berdasarkan perusahaan
 const fetchCabang = async (perusahaanId) => {
     if (!perusahaanId) {
         cabang.value = [];
@@ -577,26 +626,27 @@ const fetchCabang = async (perusahaanId) => {
     }
 };
 
+// Fungsi untuk mengambil data divisi
 const fetchDivisi = async () => {
-try {
-    const token = localStorage.getItem('token')
-    const response = await fetch($api.divisi(), {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    
-    if (!response.ok) throw new Error('Gagal mengambil data divisi')
-    
-    const data = await response.json()
-    divisi.value = data.data || data
-} catch (error) {
-    console.error('Error fetching divisi:', error)
-}
+    try {
+        const token = localStorage.getItem('token')
+        const response = await fetch($api.divisi(), {
+            headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        
+        if (!response.ok) throw new Error('Gagal mengambil data divisi')
+        
+        const data = await response.json()
+        divisi.value = data.data || data
+    } catch (error) {
+        console.error('Error fetching divisi:', error)
+    }
 }
 
-// Fungsi untuk mengambil data menu details berdasarkan group
+// Fungsi untuk mengambil data departemen berdasarkan divisi
 const fetchDepartemen = async (divisiId) => {
     if (!divisiId) {
         departemen.value = [];
@@ -625,145 +675,83 @@ const fetchDepartemen = async (divisiId) => {
     }
 };
 
-// Di bagian onMounted
-onMounted(async () => {
-try {
-    await fetchJabatan()
-    await fetchDivisi()
-    await fetchPerusahaan()
+const loadLazyData = async () => {
+    loading.value = true;
+    try {
+        const token = localStorage.getItem('token');
+        const params = new URLSearchParams({
+            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
+            rows     : lazyParams.value.rows,
+            sortField: lazyParams.value.sortField || '',
+            sortOrder: lazyParams.value.sortOrder || '',
+            draw     : lazyParams.value.draw || 1,
+            search   : lazyParams.value.search || '',
+        });
 
-    // Inisialisasi DataTable
-    $('#table-pegawai').DataTable({
-        serverSide: true,
-        processing: true,
-        responsive: true,
-        autoWidth: true,
-        order: [[0, 'desc']],
-        ajax: {
-            url: $api.pegawai(),
-            type: 'GET',
-            dataSrc: function(json) {
-                return json.data || json
-            },
-            beforeSend: function (xhr) {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-                }
-            },
-            xhrFields: {
-                withCredentials: true
-            },
-            cache: false
-        },
-        columns: [
-            { data: null, render: (data, type, row, meta) => meta.row + 1 + '.' },
-            { data: 'nm_pegawai', defaultContent: '-' },
-            { data: 'email', defaultContent: '-' },
-            { 
-                data: 'tgl_lahir_pegawai', 
-                defaultContent: '-', 
-                render: function(data, type, row) {
-                    if (!data) return '-';
-                    const dateObj = new Date(data);
-                    if (isNaN(dateObj)) return '-';
-                    // Format: DD-MM-YYYY
-                    const day = String(dateObj.getDate()).padStart(2, '0');
-                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-                    const year = dateObj.getFullYear();
-                    return `${day}-${month}-${year}`;
-                }
-            },
-            { data: 'tmp_lahir_pegawai', defaultContent: '-' },
-            { data: 'alamat_pegawai', defaultContent: '-' },
-            { 
-                data: 'status_pegawai', 
-                defaultContent: '-', 
-                render: function(data, type, row) {
-                    if (data === 1) return '<span class="badge rounded-pill bg-label-primary">PKWTT</span>';
-                    if (data === 2) return '<span class="badge rounded-pill bg-label-secondary">PKWT</span>';
-                    if (data === 3) return '<span class="badge rounded-pill bg-label-warning text-dark">Outsource</span>';
-                    if (data === 4) return '<span class="badge rounded-pill bg-label-warning text-danger">Resign</span>';
-                    if (data === 5) return '<span class="badge rounded-pill bg-label-dark">Tidak diketahui</span>';
-                    return '-';
-                }
-            },
-            { 
-                data: null, 
-                render: function(data, type, row) {
-                    return `
-                        <div class="d-flex align-items-center">
-                            <span class="text-nowrap">
-                                <button 
-                                    class="btn btn-icon btn-text-secondary rounded-pill edit-pegawai-btn" 
-                                    data-id="${row.id_pegawai || row.idPegawai || row.id}" 
-                                    aria-label="Edit Pegawai"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Edit Pegawai"
-                                >
-                                    <i class="icon-base ri ri-edit-box-line icon-20px"></i>
-                                </button>
-                                <button
-                                class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-record text-body waves-effect me-1" data-id="${row.id_pegawai || row.idPegawai || row.id}"
-                                aria-label="Delete Pegawai"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="top"
-                                title="Delete Pegawai"
-                                >
-                                    <i class="icon-base ri ri-delete-bin-7-line icon-20px"></i>
-                                </button>
-                            </span>
-                        </div>
-                    `
-                }
+        const response = await fetch(`${$api.pegawai()}?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
             }
-        ]
-    })
+        });
 
-    // Event handlers untuk tombol edit dan delete
-    $('#table-pegawai tbody').off('click', '.edit-pegawai-btn').on('click', '.edit-pegawai-btn', async function () {
-        const pegawaiId = $(this).data('id')
-        try {
-            const response = await fetch($api.pegawai(pegawaiId), {
-                headers: { 
-                    Authorization: `Bearer ${localStorage.getItem('token')}` 
-                }
-            })
-            
-            if (!response.ok) {
-                throw new Error('Gagal mengambil data pegawai')
-            }
-            
-            const pegawaiData = await response.json()
-            const pegawaiRaw = pegawaiData.data || pegawaiData
-            const pegawaiObj = Array.isArray(pegawaiRaw)
-            ? pegawaiRaw.find(p => p.id_pegawai == pegawaiId || p.idPegawai == pegawaiId)
-            : pegawaiRaw;
-            openEditPegawaiModal(pegawaiObj)
-        } catch (error) {
-            alert('Gagal memuat data pegawai: ' + error.message)
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data pegawai dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data pegawai');
         }
-    })
 
-    $('#table-pegawai tbody').off('click', '.delete-record').on('click', '.delete-record', async function (e) {
-        e.preventDefault()
-        e.stopPropagation()
-        const pegawaiId = $(this).data('id')
-        await deletePegawai(pegawaiId)
-    })
+        const result = await response.json();
+        pegawai.value = result.data || []; 
+        totalRecords.value = parseInt(result.recordsTotal) || 0;
+        if (result.draw) {
+             lazyParams.value.draw = parseInt(result.draw);
+        }
 
-} catch (error) {
-    console.error('Error:', error)
-}
-})
+    } catch (error) {
+        console.error('Error loading lazy data for pegawai:', error);
+        pegawai.value = [];
+        totalRecords.value = 0;
+        Swal.fire('Error', `Tidak dapat memuat data pegawai: ${error.message}`, 'error');
+    } finally {
+        loading.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchJabatan();
+    fetchPerusahaan();
+    fetchDivisi();
+    loadLazyData();
+});
+
+const onPage = (event) => {
+    lazyParams.value.first = event.first;
+    lazyParams.value.rows = event.rows;
+    loadLazyData();
+};
+
+const handleRowsChange = () => {
+    lazyParams.value.first = 0;
+    loadLazyData();
+};
+
+const handleSearch = () => {
+    lazyParams.value.first = 0;
+    loadLazyData();
+};
+
+const onSort = (event) => {
+    lazyParams.value.sortField = event.sortField;
+    lazyParams.value.sortOrder = event.sortOrder;
+    loadLazyData();
+};
 
 function openAddPegawaiModal() {
     isEditMode.value = false;
     selectedPegawai.value = {};
     validationErrors.value = [];
 
-    // Reset pilihan dan data dependen di parent saat membuka modal untuk Tambah
     selectedPerusahaan.value = null;
     selectedDivisi.value = null;
     cabang.value = [];
@@ -783,15 +771,6 @@ async function openEditPegawaiModal(pegawai) {
     selectedPegawai.value = JSON.parse(JSON.stringify(pegawai));
     validationErrors.value = [];
 
-    // Untuk mode edit, kita perlu pre-fetch cabang dan departemen jika perusahaan/divisi sudah ada
-    // const history = pegawai.history; // Tidak pre-fetch di sini lagi
-    // if (history && history.perusahaan?.id) {
-    //     await fetchCabang(history.perusahaan.id);
-    // }
-    // if (history && history.divisi?.id) {
-    //     await fetchDepartemen(history.divisi.id);
-    // }
-
     const modalEl = document.getElementById('PegawaiModal');
     if (modalEl && window.bootstrap) {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -801,14 +780,13 @@ async function openEditPegawaiModal(pegawai) {
     }
 }
 
-// Fungsi untuk reset form di parent (hanya state parent)
 const resetParentFormState = () => {
     selectedPegawai.value = null;
     isEditMode.value = false;
     validationErrors.value = [];
 };
 
-const deletePegawai= async (pegawaiId) => {
+const deletePegawai = async (pegawaiId) => {
 if (!pegawaiId) return;
 
 const result = await Swal.fire({
@@ -826,10 +804,19 @@ if (result.isConfirmed) {
     try {
         const token = localStorage.getItem('token');
 
+        // Ambil CSRF token
+        const csrfResponse = await fetch($api.csrfToken(), {
+            credentials: 'include'
+        });
+        const csrfData = await csrfResponse.json();
+        const csrfToken = csrfData.token;
+
         const response = await fetch($api.pegawaiDelete(pegawaiId), {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             },
             credentials: 'include'
         });
@@ -839,7 +826,7 @@ if (result.isConfirmed) {
             throw new Error(errorData.message || 'Gagal menghapus pegawai');
         }
 
-        $('#table-pegawai').DataTable().ajax.reload(null, false);
+        loadLazyData();
 
         await Swal.fire({
             title: 'Berhasil!',
@@ -889,6 +876,23 @@ const handleCompanySelectedInModal = (perusahaanId) => {
 
 const handleDivisionSelectedInModal = (divisiId) => {
     fetchDepartemen(divisiId);
+};
+
+const getStatusBadge = (status) => {
+    switch (status) {
+        case 1:
+            return { text: 'PKWTT', class: 'badge rounded-pill bg-label-primary' };
+        case 2:
+            return { text: 'PKWT', class: 'badge rounded-pill bg-label-secondary' };
+        case 3:
+            return { text: 'Outsource', class: 'badge rounded-pill bg-label-warning text-dark' };
+        case 4:
+            return { text: 'Resign', class: 'badge rounded-pill bg-label-danger' };
+        case 5:
+            return { text: 'Tidak Diketahui', class: 'badge rounded-pill bg-label-dark' };
+        default:
+            return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    }
 };
 
 </script>

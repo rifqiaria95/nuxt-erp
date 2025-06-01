@@ -3,12 +3,13 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true
   },
-
   modules: [
     '@pinia/nuxt',
     'nuxt-toast',
   ],
-
+  build: {
+    transpile: ['primevue'],
+  },
   runtimeConfig: {
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
@@ -21,9 +22,10 @@ export default defineNuxtConfig({
   plugins: [
     '~/plugins/jquery.client.ts',
     '~/plugins/api.client.ts',
+    '~/plugins/primevue.ts',
   ],
   css: [
-    '~/public/vendor/libs/select2/select2.css'
+    '~/public/vendor/libs/select2/select2.css',
   ],
   app: {
     head: {
