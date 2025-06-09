@@ -453,7 +453,7 @@
                                     :options="menuGroup"
                                     label="name"
                                     :reduce="menuGroup => menuGroup.id"
-                                    placeholder="-- Pilih Menu Detail --"
+                                    placeholder="-- Pilih Menu Group --"
                                     id="menuGroupId"
                                     class="menuGroupId"
                                 />   
@@ -641,7 +641,7 @@ const handleSaveMenuDetail = async () => {
             }
             await Swal.fire(
                 'Berhasil!',
-                `Menu group berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+                `Menu detail berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
                 'success'
             );
         } else {
@@ -812,7 +812,7 @@ const deleteMenuDetail = async (menuDetailId) => {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Gagal menghapus menu detail');
             }
-
+            await menuGroupStore.fetchMenuGroups();
             loadLazyData();
 
             await Swal.fire({

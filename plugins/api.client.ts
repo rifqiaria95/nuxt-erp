@@ -35,13 +35,14 @@ export default defineNuxtPlugin(() => {
 
     // Users
     users: () => `${apiBase}/users`,
-
+    countTotalUsers: () => `${apiBase}/users/countTotalUsers`,
     // Menu
     menuGroups: () => `${apiBase}/menu-groups`,
     menuDetails: () => `${apiBase}/menu-details`,
 
     // Jabatan, Perusahaan, Cabang, Divisi, Departemen, Cuti, Pegawai
     jabatan: () => `${apiBase}/jabatan`,
+    countPegawaiByJabatan: () => `${apiBase}/jabatan/countPegawaiByJabatan`,
     perusahaan: () => `${apiBase}/perusahaan`,
     cabang: () => `${apiBase}/cabang`,
     divisi: () => `${apiBase}/divisi`,
@@ -50,6 +51,7 @@ export default defineNuxtPlugin(() => {
     pegawai: () => `${apiBase}/pegawai`,
     pegawaiUpdate: (id: number | string) => `${apiBase}/pegawai/update/${id}`,
     pegawaiDelete: (id: number | string) => `${apiBase}/pegawai/delete/${id}`,
+    pegawaiCountByStatus: () => `${apiBase}/pegawai/countByStatus`,
   };
 
   // Inject ke context Nuxt

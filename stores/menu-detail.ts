@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useNuxtApp } from '#app'
 
 export interface MenuGroup {
   id: number
@@ -35,8 +36,19 @@ export const useMenuDetailsStore = defineStore('menuDetails', {
   actions: {
     async fetchMenuDetails() {
       this.loading = true
+      const { $api } = useNuxtApp()
+      const token = localStorage.getItem('token')
+
       try {
-        const response = await fetch('http://localhost:3333/api/menu-details')
+        const response = await fetch($api.menuDetails(), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
         const data = await response.json()
         this.menuDetails = data.data // ambil dari data.data
       } catch (error) {

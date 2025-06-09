@@ -7,319 +7,44 @@
             List jabatan yang terdaftar di sistem
             </p>
             <!-- jabatan cards -->
+            <div class="row g-6 mb-6">
+                <!-- Card untuk Tambah Pegawai -->
+                    <!-- Cards untuk Statistik Pegawai -->
+                <CardBox
+                    v-if="stats.total !== undefined"
+                    title="Total Jabatan"
+                    :total="stats.total + ' Jabatan'"
+                />
+                <CardBox
+                    v-if="stats.direktur_utama !== undefined"
+                    title="Direktur Utama"
+                    :total="stats.direktur_utama + ' Orang'"
+                />
+                <CardBox
+                    v-if="stats.direktur_keuangan !== undefined"
+                    title="Direktur Keuangan"
+                    :total="stats.direktur_keuangan + ' Orang'"
+                />
+                <CardBox
+                    v-if="stats.direktur_operasional !== undefined"
+                    title="Direktur Operasional"
+                    :total="stats.direktur_operasional + ' Orang'"
+                />
+                <CardBox
+                    v-if="stats.general_manager !== undefined"
+                    title="General Manager"
+                    :total="stats.general_manager + ' Orang'"
+                />
+                <CardBox
+                    :isAddButtonCard="true"
+                    image-src="/img/illustrations/add-new-role-illustration.png"
+                    image-alt="Tambah Jabatan"
+                    button-text="Tambah Jabatan"
+                    modal-target="#Modal" 
+                    @button-click="openAddJabatanModal"
+                />
+            </div>
             <div class="row g-6">
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 4 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Vinnie Mostowy"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/5.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Allen Rieske"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Julee Rossignol"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Super Admin</h5>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 7 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Jimmy Ressula"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/4.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="John Doe"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/1.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kristi Lawker"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/2.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Admin</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#PegawaiModal"
-                            class="pegawai-edit-modal">
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 5 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Andrew Tye"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Rishi Swaat"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Rossie Kim"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Users</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#PegawaiModal"
-                            class="pegawai-edit-modal">
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 3 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kim Karlos"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/3.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Katy Turner"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Peter Adward"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Support</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#PegawaiModal"
-                            class="pegawai-edit-modal">
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 2 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kim Merchent"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/10.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Sam D'souza"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/13.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Nurvi Karlos"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Restricted User</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#PegawaiModal"
-                            class="pegawai-edit-modal">
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card h-100">
-                    <div class="row h-100">
-                        <div class="col-5">
-                        <div class="d-flex align-items-end h-100 justify-content-center">
-                            <img
-                            src="/img/illustrations/add-new-role-illustration.png"
-                            class="img-fluid"
-                            alt="Image"
-                            width="68" />
-                        </div>
-                        </div>
-                        <div class="col-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
-                            data-bs-target="#Modal"
-                            data-bs-toggle="modal"
-                            class="btn btn-sm btn-primary mb-4 text-nowrap add-new-pegawai"
-                            @click="openAddJabatanModal"
-                            >
-                            Tambah Jabatan
-                            </button>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-
                 <div class="col-12">
                     <h4 class="mt-6 mb-1">Total Jabatan</h4>
                     <p class="mb-0">Find all of your company's administrator accounts and their associate Jabatan.</p>
@@ -368,7 +93,7 @@
             </div>
             <!--/ jabatan cards -->
 
-            <!-- Placeholder untuk MenuModal component -->
+            <!-- Placeholder untuk JabatanModal component -->
             <Modal 
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
@@ -418,6 +143,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Modal from '~/components/modal/Modal.vue'
+import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
 import { useJabatanStore } from '~/stores/jabatan'
@@ -442,6 +168,14 @@ const lazyParams        = ref({
 const formJabatan = ref({
   nm_jabatan: '',
 });
+
+const stats = ref({
+  direktur_utama: undefined,
+  direktur_keuangan: undefined,
+  direktur_operasional: undefined,
+  general_manager: undefined,
+  total: undefined
+})
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
@@ -553,6 +287,47 @@ const handleSaveJabatan = async () => {
     }
 };
 
+const fetchStats = async () => {
+  const defaultStats = {
+    total: undefined,
+    direktur_utama: undefined,
+    direktur_keuangan: undefined,
+    direktur_operasional: undefined,
+    general_manager: undefined,
+  };
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch($api.countPegawaiByJabatan(), {
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result && typeof result === 'object' && result !== null) {
+        stats.value = {
+            total: result.total,
+            direktur_utama: result.direktur_utama,
+            direktur_keuangan: result.direktur_keuangan,
+            direktur_operasional: result.direktur_operasional,
+            general_manager: result.general_manager,
+        };
+      } else {
+        stats.value = defaultStats;
+        console.warn('Data statistik dari API tidak dalam format objek yang diharapkan atau null:', result);
+      }
+    } else {
+        stats.value = defaultStats;
+        console.error('Gagal mengambil data statistik, status respons:', response.status);
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data statistik (exception):', error);
+    stats.value = defaultStats;
+  }
+};
+
 // Fungsi untuk menangani event load lazy data dari jabatan
 const loadLazyData = async () => {
     loading.value = true;
@@ -599,6 +374,7 @@ const loadLazyData = async () => {
 
 onMounted(() => {
     loadLazyData();
+    fetchStats();
 });
 
 const onPage = (event) => {
