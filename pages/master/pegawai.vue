@@ -62,6 +62,15 @@
                                     <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                                 </div>
                                 <div class="d-flex align-items-center">
+                                    <div class="btn-group me-2">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="ri-upload-2-line me-1"></i> Export
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                        </ul>
+                                    </div>
                                     <span class="p-input-icon-left">
                                         <InputText v-model="lazyParams.search" placeholder="Cari pegawai..." @keyup.enter="handleSearch" style="width: 20rem;" />
                                     </span>
@@ -69,6 +78,7 @@
                             </div>
                             <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
+                                ref="myDataTableRef"
                                 :data="pegawai" 
                                 :rows="lazyParams.rows" 
                                 :loading="loading"
@@ -84,12 +94,12 @@
                                 <Column field="id_pegawai" header="#" :sortable="true" style="width:5%"></Column> 
                                 <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:20%"></Column>
                                 <Column field="email" header="Email" :sortable="true" style="width:20%"></Column>
+                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:15%"></Column>
                                 <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
                                         {{ slotProps.data.tgl_lahir_pegawai ? new Date(slotProps.data.tgl_lahir_pegawai).toLocaleDateString() : '-' }}
                                     </template>
                                 </Column>
-                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:15%"></Column>
                                 <Column field="alamat_pegawai" header="Alamat" :sortable="true" style="width:20%"></Column>
                                 <Column field="status_pegawai" header="Status" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
@@ -148,6 +158,7 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 
 const { $api } = useNuxtApp()
 
+const myDataTableRef      = ref(null)
 const pegawai             = ref([])
 const selectedPegawai     = ref(null)
 const loading             = ref(false);
@@ -519,6 +530,14 @@ const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
     loadLazyData();
+};
+
+const exportData = (format) => {
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        myDataTableRef.value.exportPDF();
+    }
 };
 
 function openAddPegawaiModal() {

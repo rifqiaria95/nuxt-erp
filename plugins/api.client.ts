@@ -52,6 +52,10 @@ export default defineNuxtPlugin(() => {
     pegawaiUpdate: (id: number | string) => `${apiBase}/pegawai/update/${id}`,
     pegawaiDelete: (id: number | string) => `${apiBase}/pegawai/delete/${id}`,
     pegawaiCountByStatus: () => `${apiBase}/pegawai/countByStatus`,
+
+    // Kategori
+    categories: () => `${apiBase}/categories`,
+    countProductByCategory: () => `${apiBase}/categories/countProductByCategory`,
   };
 
   // Inject ke context Nuxt

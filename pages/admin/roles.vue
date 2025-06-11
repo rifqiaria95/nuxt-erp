@@ -399,41 +399,54 @@
                                     <div class="table-responsive">
                                     <table class="table table-flush-spacing">
                                         <tbody>
-                                        <template v-if="menuDetailsWithPermissions.length > 0">
-                                            <tr v-for="menuDetail in menuDetailsWithPermissions" :key="menuDetail.id">
-                                            <td class="text-nowrap fw-medium">{{ menuDetail.name }}</td>
-                                            <td>
-                                                <div class="d-flex justify-content-end flex-wrap">
-                                                    <div
-                                                        v-for="perm in menuDetail.permissions"
-                                                        :key="perm.id"
-                                                        class="form-check mb-1 me-4"
-                                                    >
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="checkbox"
-                                                            :id="`perm_${menuDetail.id}_${perm.id}`"
-                                                            :value="perm.id"
-                                                            v-model="selectedPermissions"
-                                                            :checked="selectedPermissions.includes(perm.id)"
-                                                        />
-                                                        <label
-                                                            class="form-check-label"
-                                                            :for="`perm_${menuDetail.id}_${perm.id}`"
-                                                        >
-                                                            {{ perm.name }}
-                                                        </label>
+                                            <tr>
+                                                <td>
+                                                    <p class="mb-1 fw-bold">Super Admin Access</p>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex justify-content-end flex-wrap">
+                                                        <div class="form-check mb-1 me-4">
+                                                            <input class="form-check-input" type="checkbox" id="selectAll" v-model="selectAll" />
+                                                            <label class="form-check-label" for="selectAll">Select All</label>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
+                                                </td>
                                             </tr>
-                                        </template>
+                                            <template v-if="menuDetailsWithPermissions.length > 0">
+                                                <tr v-for="menuDetail in menuDetailsWithPermissions" :key="menuDetail.id">
+                                                <td class="text-nowrap fw-medium">{{ menuDetail.name }}</td>
+                                                <td>
+                                                    <div class="d-flex justify-content-end flex-wrap">
+                                                        <div
+                                                            v-for="perm in menuDetail.permissions"
+                                                            :key="perm.id"
+                                                            class="form-check mb-1 me-4"
+                                                        >
+                                                            <input
+                                                                class="form-check-input"
+                                                                type="checkbox"
+                                                                :id="`perm_${menuDetail.id}_${perm.id}`"
+                                                                :value="perm.id"
+                                                                v-model="selectedPermissions"
+                                                                :checked="selectedPermissions.includes(perm.id)"
+                                                            />
+                                                            <label
+                                                                class="form-check-label"
+                                                                :for="`perm_${menuDetail.id}_${perm.id}`"
+                                                            >
+                                                                {{ perm.name }}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                </tr>
+                                            </template>
 
-                                        <tr v-else>
-                                            <td colspan="2" class="text-center py-4">
-                                            <div class="text-muted">No permissions data available</div>
-                                            </td>
-                                        </tr>
+                                            <tr v-else>
+                                                <td colspan="2" class="text-center py-4">
+                                                <div class="text-muted">No permissions data available</div>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                     </div>
@@ -478,7 +491,22 @@ const selectedRole        = ref(null)
 const selectedPermissions = ref([])
 const validationErrors    = ref([])
 
-// Tambahkan computed ini:
+const selectAll = computed({
+  get() {
+    if (!permissions.value || permissions.value.length === 0) {
+      return false;
+    }
+    return selectedPermissions.value.length === permissions.value.length;
+  },
+  set(value) {
+    if (value) {
+      selectedPermissions.value = permissions.value.map(p => p.id);
+    } else {
+      selectedPermissions.value = [];
+    }
+  }
+});
+
 const validSelectedPermissions = computed(() =>
     selectedPermissions.value
         .map(p => typeof p === 'number' ? p : parseInt(p))

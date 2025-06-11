@@ -30,7 +30,7 @@
                             <button
                                 :data-bs-target="modalTarget"
                                 data-bs-toggle="modal"
-                                class="btn btn-sm btn-primary mb-4 text-nowrap"
+                                class="btn btn-sm btn-primary mb-4 text-wrap"
                                 @click="$emit('button-click')"
                                 >
                                 {{ buttonText }}
