@@ -333,13 +333,25 @@
                                 <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
-                                <span class="p-input-route-left">
-                                    <InputText v-model="lazyParams.search" placeholder="Cari menu detail..." @keyup.enter="handleSearch" style="width: 20rem;" />
-                                </span>
+                                <div class="btn-group me-2">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="ri-upload-2-line me-1"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                    </ul>
+                                </div>
+                                <div class="input-group">
+                                    <span class="p-input-icon-left">
+                                        <InputText v-model="globalFilterValue" placeholder="Cari menu detail..." style="width: 20rem;" />
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
+                            ref="myDataTableRef"
                             :data="menuDetail" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
@@ -351,6 +363,8 @@
                             paginatorPosition="bottom"
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
+                            :filters="filters"
+                            :globalFilterFields="['name', 'route', 'order']"
                             >
                             <Column field="id" header="#" :sortable="true"></Column> 
                                 <Column field="name" header="Nama Menu Detail" :sortable="true"></Column>
@@ -363,7 +377,7 @@
                                         </span>
                                     </template>
                                 </Column>
-                                <Column field="menuGroupId" header="Menu Detail" :sortable="true">
+                                <Column field="menuGroupId" header="Menu Group" :sortable="true">
                                     <template #body="slotProps">
                                         <span :class="getMenuGroupBadge(slotProps.data.menuGroupId).class">
                                             {{ getMenuGroupBadge(slotProps.data.menuGroupId).text }}
@@ -482,7 +496,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useMenuGroupsStore } from '~/stores/menu-group'
 import { useMenuDetailsStore } from '~/stores/menu-detail'
 import Modal from '~/components/modal/Modal.vue'
@@ -490,9 +504,13 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
+import Dropdown from 'primevue/dropdown'
+import InputText from 'primevue/inputtext'
+import { FilterMatchMode } from '@primevue/core/api'
 
 const { $api } = useNuxtApp()
 
+const myDataTableRef      = ref(null)
 const menuGroupStore      = useMenuGroupsStore()
 const menuDetailStore     = useMenuDetailsStore()
 const selectedMenuDetail  = ref(null);
@@ -501,6 +519,7 @@ const menuDetail          = ref([])
 const loading             = ref(false);
 const isEditMode          = ref(false);
 const totalRecords        = ref(0);
+const globalFilterValue   = ref('');
 const lazyParams         = ref({
     first: 0,
     rows: 10,
@@ -508,6 +527,31 @@ const lazyParams         = ref({
     sortOrder: null,
     draw: 1,
     search: '',
+});
+
+const filters = ref({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+});
+
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    filters.value.global.value = newValue;
+
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
 });
 
 const formMenuDetail = ref({
@@ -581,6 +625,8 @@ const handleSaveMenuDetail = async () => {
             return;
         }
 
+        let isUpdate = false;
+
         if (isEditMode.value) {
             // Cari ID menu detail dari form atau selectedMenuDetail
             let menuGroupIdToUpdate = formMenuDetail.value?.id || formMenuDetail.value?.idMenuGroup;
@@ -593,7 +639,7 @@ const handleSaveMenuDetail = async () => {
                 return;
             }
             url = `${$api.menuDetails()}/${menuGroupIdToUpdate}`;
-            console.log('Updating menu detail with ID:', menuGroupIdToUpdate, 'URL:', url);
+            isUpdate = true;
             // Update data
             response = await fetch(url, {
                 method: 'PUT',
@@ -635,10 +681,17 @@ const handleSaveMenuDetail = async () => {
         if (response.ok) {
             await loadLazyData();
             handleCloseModal();
-            // Panggil fetchMenuGroups dari menuGroupsStore untuk refresh sidebar
-            if (!isEditMode.value) {
-              await menuGroupStore.fetchMenuGroups(); 
+
+            // Update sidebar secara otomatis setelah menu detail diupdate/dibuat
+            // Pastikan menuGroupStore dan menuDetailStore sudah di-import dan reactive
+            if (typeof menuGroupStore?.fetchMenuGroups === 'function') {
+                await menuGroupStore.fetchMenuGroups();
             }
+            if (typeof menuDetailStore?.fetchMenuDetails === 'function') {
+                // Jika ingin refresh semua menu detail, bisa tanpa parameter
+                await menuDetailStore.fetchMenuDetails();
+            }
+
             await Swal.fire(
                 'Berhasil!',
                 `Menu detail berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
@@ -725,12 +778,6 @@ const onPage = (event) => {
 };
 
 const handleRowsChange = () => {
-    console.log('Changing rows to:', lazyParams.value.rows); // Seharusnya 25
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
-const handleSearch = () => {
     lazyParams.value.first = 0;
     loadLazyData();
 };
@@ -739,6 +786,14 @@ const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
     loadLazyData();
+};
+
+const exportData = (format) => {
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        myDataTableRef.value.exportPDF();
+    }
 };
 
 const openAddMenuDetailModal = () => {

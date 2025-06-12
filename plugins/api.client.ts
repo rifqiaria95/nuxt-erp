@@ -32,7 +32,7 @@ export default defineNuxtPlugin(() => {
     permissionShow: (id: number | string) => `${apiBase}/permissions/${id}`,
     permissionDelete: (id: number | string) => `${apiBase}/permissions/${id}`,
     getMenuDetails: (id: number | string) => `${apiBase}/permissions/getMenuGroupDetails/${id}`,
-
+    getTotalPermission: () => `${apiBase}/permissions/getTotalPermission`,
     // Users
     users: () => `${apiBase}/users`,
     countTotalUsers: () => `${apiBase}/users/countTotalUsers`,

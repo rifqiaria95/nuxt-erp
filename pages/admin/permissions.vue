@@ -10,291 +10,20 @@
              administrator can have access to what user needs.
              </p>
              <!-- permission cards -->
-             <div class="row g-6 mb-6">
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 4 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Vinnie Mostowy"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/5.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Allen Rieske"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Julee Rossignol"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="permission-heading">
-                             <h5 class="mb-1">Super Admin</h5>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
- </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 7 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Jimmy Ressula"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/4.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="John Doe"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/1.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Kristi Lawker"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/2.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="permission-heading">
-                             <h5 class="mb-1">Admin</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PermissionModal"
-                             class="permission-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 5 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Andrew Tye"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Rishi Swaat"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Rossie Kim"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="permission-heading">
-                             <h5 class="mb-1">Users</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PermissionModal"
-                             class="permission-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 3 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Kim Karlos"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/3.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Katy Turner"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Peter Adward"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="permission-heading">
-                             <h5 class="mb-1">Support</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PermissionModal"
-                             class="permission-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 2 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Kim Merchent"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/10.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Sam D'souza"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/13.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Nurvi Karlos"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="permission-heading">
-                             <h5 class="mb-1">Restricted User</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PermissionModal"
-                             class="permission-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
+            <div class="row g-6 mb-6">
+                <!-- Card total permission -->
+                <CardBox
+                    v-if="stats.total !== undefined"
+                    title="Total Permission"
+                    :total="stats.total + ' Permission'"
+                />
+                <!-- Card statistik per role, dinamis sesuai data dari backend -->
+                <CardBox
+                    v-for="role in stats.roles"
+                    :key="role.id"
+                    :title="role.name.charAt(0).toUpperCase() + role.name.slice(1)"
+                    :total="role.total + ' Permission'"
+                />
                 <CardBox
                     :isAddButtonCard="true"
                     image-src="/img/illustrations/add-new-role-illustration.png"
@@ -303,7 +32,7 @@
                     modal-target="#Modal" 
                     @button-click="openAddPermissionModal"
                 />
-             </div>
+            </div>
  
              <div class="row g-6">
                  <div class="col-12">
@@ -497,6 +226,11 @@ const lazyParams = ref({
     draw: 1,
 })
 
+const stats = ref({
+  total : undefined,
+  roles: []
+})
+
 const filters = ref({
   global: { value: null, matchMode: FilterMatchMode.CONTAINS },
 })
@@ -607,6 +341,41 @@ const loadLazyData = async () => {
     } finally {
         loading.value = false;
     }
+};
+
+const fetchStats = async () => {
+  const defaultStats = {
+    total: undefined,
+    roles: []
+  };
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch($api.getTotalPermission(), {
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result && typeof result === 'object' && result !== null) {
+        stats.value = {
+            total: result.total,
+            roles: result.roles
+        };
+      } else {
+        stats.value = defaultStats;
+        console.warn('Data statistik dari API tidak dalam format objek yang diharapkan atau null:', result);
+      }
+    } else {
+        stats.value = defaultStats;
+        console.error('Gagal mengambil data statistik, status respons:', response.status);
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data statistik (exception):', error);
+    stats.value = defaultStats;
+  }
 };
 
 const handleSavePermission = async () => {
@@ -770,6 +539,7 @@ const fetchMenuDetails = async (groupId) => {
 onMounted(async () => {
     await loadLazyData();
     await fetchMenuGroups();
+    await fetchStats();
 });
 
 function openAddPermissionModal() {

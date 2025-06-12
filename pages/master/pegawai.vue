@@ -71,9 +71,15 @@
                                             <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
                                         </ul>
                                     </div>
-                                    <span class="p-input-icon-left">
-                                        <InputText v-model="lazyParams.search" placeholder="Cari pegawai..." @keyup.enter="handleSearch" style="width: 20rem;" />
-                                    </span>
+                                    <div class="input-group">
+                                        <span class="p-input-icon-left">
+                                            <InputText
+                                                v-model="globalFilterValue"
+                                                placeholder="Cari pegawai..."
+                                                class="w-full md:w-20rem"
+                                            />
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-datatable table-responsive py-3 px-3">
@@ -145,7 +151,7 @@
  </template>
  
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { usePegawaiStore } from '~/stores/pegawai'
 import vSelect from 'vue-select'
 import Swal from 'sweetalert2'
@@ -155,6 +161,8 @@ import 'vue-select/dist/vue-select.css'
 import CardBox from '~/components/cards/Cards.vue'
 import PegawaiModal from '~/components/pegawai/PegawaiModal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import Dropdown from 'primevue/dropdown'
+import InputText from 'primevue/inputtext'
 
 const { $api } = useNuxtApp()
 
@@ -163,6 +171,7 @@ const pegawai             = ref([])
 const selectedPegawai     = ref(null)
 const loading             = ref(false);
 const totalRecords        = ref(0);
+const globalFilterValue   = ref('');
 const lazyParams          = ref({
     first: 0,
     rows: 10,
@@ -300,6 +309,25 @@ const handleCloseModal = () => {
     }
     resetParentFormState(); 
 };
+
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+});
 
 const fetchStats = async () => {
   const defaultStats = {
@@ -464,12 +492,12 @@ const loadLazyData = async () => {
     try {
         const token = localStorage.getItem('token');
         const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
+            start    : lazyParams.value.first || 0,
+            length   : lazyParams.value.rows || 10,
             sortField: lazyParams.value.sortField || '',
             sortOrder: lazyParams.value.sortOrder || '',
             draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
+            'search[value]': lazyParams.value.search || '',
         });
 
         const response = await fetch(`${$api.pegawai()}?${params.toString()}`, {
@@ -517,11 +545,6 @@ const onPage = (event) => {
 };
 
 const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
-const handleSearch = () => {
     lazyParams.value.first = 0;
     loadLazyData();
 };

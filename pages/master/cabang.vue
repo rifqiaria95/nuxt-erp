@@ -165,13 +165,29 @@
                                 <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
-                                <span class="p-input-route-left">
-                                    <InputText v-model="lazyParams.search" placeholder="Cari cabang..." @keyup.enter="handleSearch" style="width: 20rem;" />
-                                </span>
+                                <div class="btn-group me-2">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="ri-upload-2-line me-1"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                    </ul>
+                                </div>
+                                <div class="input-group">
+                                    <span class="p-input-icon-left">
+                                        <InputText
+                                            v-model="globalFilterValue"
+                                            placeholder="Cari cabang..."
+                                            class="w-full md:w-20rem"
+                                        />
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
+                            ref="myDataTableRef"
                             :data="cabang" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
@@ -185,6 +201,7 @@
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                         >
                             <Column field="id" header="#" :sortable="true"></Column> 
+                            <Column field="kodeCabang" header="Kode Cabang" :sortable="true"></Column>
                             <Column field="nmCabang" header="Nama Cabang" :sortable="true"></Column>
                             <Column field="alamatCabang" header="Alamat" :sortable="true"></Column>
                             <Column header="Perusahaan" :sortable="true">
@@ -277,7 +294,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { usePerusahaanStore } from '~/stores/perusahaan'
 import { useCabangStore } from '~/stores/cabang'
 import Modal from '~/components/modal/Modal.vue'
@@ -285,9 +302,12 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
+import Dropdown from 'primevue/dropdown'
+import InputText from 'primevue/inputtext'
 
 const { $api } = useNuxtApp()
 
+const myDataTableRef = ref(null);
 const perusahaanStore = usePerusahaanStore()
 const cabangStore     = useCabangStore()
 const selectedCabang  = ref(null);
@@ -296,6 +316,7 @@ const cabang          = ref([])
 const loading         = ref(false);
 const isEditMode      = ref(false);
 const totalRecords    = ref(0);
+const globalFilterValue = ref('');
 const lazyParams      = ref({
     first: 0,
     rows: 10,
@@ -330,6 +351,25 @@ const handleCloseModal = () => {
     }
     resetParentFormState(); 
 };
+
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+});
 
 const fetchPerusahaan = async () => {
     try {
@@ -507,15 +547,18 @@ const handleRowsChange = () => {
     loadLazyData();
 };
 
-const handleSearch = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
     loadLazyData();
+};
+
+const exportData = (format) => {
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        myDataTableRef.value.exportPDF();
+    }
 };
 
 const openAddCabangModal = () => {

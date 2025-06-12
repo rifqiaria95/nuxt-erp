@@ -165,13 +165,29 @@
                                 <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
-                                <span class="p-input-icon-left">
-                                    <InputText v-model="lazyParams.search" placeholder="Cari perusahaan..." @keyup.enter="handleSearch" style="width: 20rem;" />
-                                </span>
+                                <div class="btn-group me-2">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="ri-upload-2-line me-1"></i> Export
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                    </ul>
+                                </div>
+                                <div class="input-group">
+                                    <span class="p-input-icon-left">
+                                        <InputText
+                                            v-model="globalFilterValue"
+                                            placeholder="Cari perusahaan..."
+                                            class="w-full md:w-20rem"
+                                        />
+                                    </span>
+                                </div>
                             </div>
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
+                            ref="myDataTableRef"
                             :data="perusahaan" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
@@ -218,6 +234,19 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
+                                        id="kodePerusahaan" 
+                                        v-model="formPerusahaan.kode_perusahaan" 
+                                        placeholder="Masukkan kode perusahaan"
+                                        required
+                                    >
+                                    <label for="kodePerusahaan">Kode Perusahaan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
                                         id="nmPerusahaan" 
                                         v-model="formPerusahaan.nm_perusahaan" 
                                         placeholder="Masukkan nama perusahaan"
@@ -226,7 +255,7 @@
                                     <label for="nmPerusahaan">Nama Perusahaan</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                     type="text" 
@@ -277,20 +306,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
 import { usePerusahaanStore } from '~/stores/perusahaan'
+import Dropdown from 'primevue/dropdown'
+import InputText from 'primevue/inputtext'
 
 const { $api } = useNuxtApp()
 
+const myDataTableRef = ref(null)
 const perusahaanStore    = usePerusahaanStore()
 const selectedPerusahaan = ref(null);
 const perusahaan         = ref([])
 const loading           = ref(false);
 const isEditMode        = ref(false);
 const totalRecords      = ref(0);
+const globalFilterValue = ref('');
 const lazyParams        = ref({
     first: 0,
     rows: 10,
@@ -301,6 +334,7 @@ const lazyParams        = ref({
 });
 
 const formPerusahaan = ref({
+  kode_perusahaan: '',
   nm_perusahaan: '',
   npwp_perusahaan: '',
   alamat_perusahaan: ''
@@ -322,6 +356,25 @@ const handleCloseModal = () => {
     }
     resetParentFormState(); 
 };
+
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+});
 
 // Tambahkan state untuk error validasi agar bisa digunakan di modal
 const validationErrors = ref([]);
@@ -362,6 +415,7 @@ const handleSavePerusahaan = async () => {
             response = await fetch(url, {
                 method: 'PUT',
                 body: JSON.stringify({
+                    kode_perusahaan    : formPerusahaan.value.kode_perusahaan,
                     nm_perusahaan      : formPerusahaan.value.nm_perusahaan,
                     npwp_perusahaan    : formPerusahaan.value.npwp_perusahaan,
                     alamat_perusahaan  : formPerusahaan.value.alamat_perusahaan,
@@ -379,6 +433,7 @@ const handleSavePerusahaan = async () => {
             response = await fetch(url, {
                 method: 'POST',
                 body: JSON.stringify({
+                    kode_perusahaan    : formPerusahaan.value.kode_perusahaan,
                     nm_perusahaan      : formPerusahaan.value.nm_perusahaan,
                     npwp_perusahaan    : formPerusahaan.value.npwp_perusahaan,
                     alamat_perusahaan  : formPerusahaan.value.alamat_perusahaan,
@@ -482,15 +537,18 @@ const handleRowsChange = () => {
     loadLazyData();
 };
 
-const handleSearch = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
     loadLazyData();
+};
+
+const exportData = (format) => {
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        myDataTableRef.value.exportPDF();
+    }
 };
 
 const openAddPerusahaanModal = () => {
@@ -505,6 +563,7 @@ async function openEditPerusahaanModal(perusahaanData) {
     // Mapping manual dari response API ke field form
     selectedPerusahaan.value = { ...perusahaanData };
     formPerusahaan.value = {
+        kode_perusahaan: perusahaanData.kode_perusahaan ?? perusahaanData.kodePerusahaan ?? '',
         nm_perusahaan: perusahaanData.nm_perusahaan ?? perusahaanData.nmPerusahaan ?? '',
         npwp_perusahaan: perusahaanData.npwp_perusahaan ?? perusahaanData.npwpPerusahaan ?? '',
         alamat_perusahaan: perusahaanData.alamat_perusahaan ?? perusahaanData.alamatPerusahaan ?? ''
@@ -586,6 +645,7 @@ const deletePerusahaan = async (perusahaanId) => {
 
 const resetParentFormState = () => {
     formPerusahaan.value = {
+        kode_perusahaan: '',
         nm_perusahaan: '',
         npwp_perusahaan: '',
         alamat_perusahaan: ''

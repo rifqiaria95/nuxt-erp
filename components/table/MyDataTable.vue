@@ -26,6 +26,9 @@
 
 <script setup>
 import { defineEmits, defineProps, useAttrs, ref, watch } from 'vue'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+
 const emit = defineEmits(['update:filters', 'page', 'sort'])
 
 const props = defineProps({
