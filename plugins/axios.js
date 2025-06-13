@@ -1,9 +1,12 @@
 import axios from 'axios';
 
 export default defineNuxtPlugin((nuxtApp) => {
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBase || 'http://localhost:3333';
+
   // Konfigurasi instance Axios
   const axiosInstance = axios.create({
-    baseURL: 'http://localhost:3333',
+    baseURL,
     withCredentials: true,
     headers: {
       'Accept': 'application/json',
@@ -32,15 +35,30 @@ export default defineNuxtPlugin((nuxtApp) => {
       // Handle CSRF Token Expired (419)
       if (error.response?.status === 419 && !originalRequest._retry) {
         originalRequest._retry = true;
-        await axiosInstance.get('/csrf-token');
-        return axiosInstance(originalRequest);
+        try {
+          // Gunakan apiFetch untuk mendapatkan CSRF token
+          const response = await $fetch('/auth/api/csrf-token', {
+            baseURL,
+            credentials: 'include'
+          });
+          
+          if (response && response.token) {
+            const csrfToken = response.token;
+            useCookie('XSRF-TOKEN').value = csrfToken;
+            originalRequest.headers['X-XSRF-TOKEN'] = csrfToken;
+          }
+          return axiosInstance(originalRequest);
+        } catch (csrfError) {
+          console.error('Gagal mendapatkan CSRF token:', csrfError);
+          return Promise.reject(csrfError);
+        }
       }
 
       // Handle Unauthorized (401)
       if (error.response?.status === 401) {
-        // Contoh: Redirect ke halaman login
+        localStorage.removeItem('token');
         const router = useRouter();
-        await router.push('/login');
+        await router.push('/auth/login');
       }
 
       return Promise.reject(error);

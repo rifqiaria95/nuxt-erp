@@ -1,4 +1,9 @@
 export default defineNuxtRouteMiddleware(async (to, from) => {
+  // Skip middleware untuk halaman login
+  if (to.path === '/auth/login') {
+    return
+  }
+
   if (process.client) {
     if (!localStorage.getItem('token')) {
       setTimeout(() => {

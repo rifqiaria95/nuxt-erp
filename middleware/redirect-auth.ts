@@ -1,7 +1,9 @@
+// middleware/redirect-auth.ts
 export default defineNuxtRouteMiddleware((to) => {
-    if (import.meta.client && localStorage.getItem('token')) {
-        // Jika sudah login, redirect ke halaman sebelumnya atau dashboard
-        const redirect = to.query.redirect as string || '/dashboard'
-        return navigateTo(redirect)
+    if (import.meta.client && ['auth-login', 'auth-register'].includes(to.name as string)) {
+      if (localStorage.getItem('token')) {
+        return navigateTo('/dashboard')
+      }
     }
-})
+  })
+  
