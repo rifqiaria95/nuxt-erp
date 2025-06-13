@@ -33,6 +33,7 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'en',
         dir: 'ltr',
+        'data-assets-path': ''
       },
       meta: [
         { charset: 'utf-8' },

@@ -666,6 +666,25 @@ const handleCloseModal = () => {
   resetParentFormState();
 };
 
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+});
+
 // Tambahkan state untuk error validasi agar bisa digunakan di modal
 const validationErrors = ref([]);
 
@@ -871,6 +890,14 @@ const onSort = (event) => {
   lazyParams.value.sortField = event.sortField;
   lazyParams.value.sortOrder = event.sortOrder;
   loadLazyData();
+};
+
+const exportData = (format) => {
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        myDataTableRef.value.exportPDF();
+    }
 };
 
 const openAddPerusahaanModal = () => {

@@ -32,16 +32,17 @@ export default defineNuxtPlugin(() => {
     permissionShow: (id: number | string) => `${apiBase}/permissions/${id}`,
     permissionDelete: (id: number | string) => `${apiBase}/permissions/${id}`,
     getMenuDetails: (id: number | string) => `${apiBase}/permissions/getMenuGroupDetails/${id}`,
-
+    getTotalPermission: () => `${apiBase}/permissions/getTotalPermission`,
     // Users
     users: () => `${apiBase}/users`,
-
+    countTotalUsers: () => `${apiBase}/users/countTotalUsers`,
     // Menu
     menuGroups: () => `${apiBase}/menu-groups`,
     menuDetails: () => `${apiBase}/menu-details`,
 
     // Jabatan, Perusahaan, Cabang, Divisi, Departemen, Cuti, Pegawai
     jabatan: () => `${apiBase}/jabatan`,
+    countPegawaiByJabatan: () => `${apiBase}/jabatan/countPegawaiByJabatan`,
     perusahaan: () => `${apiBase}/perusahaan`,
     cabang: () => `${apiBase}/cabang`,
     divisi: () => `${apiBase}/divisi`,
@@ -50,6 +51,11 @@ export default defineNuxtPlugin(() => {
     pegawai: () => `${apiBase}/pegawai`,
     pegawaiUpdate: (id: number | string) => `${apiBase}/pegawai/update/${id}`,
     pegawaiDelete: (id: number | string) => `${apiBase}/pegawai/delete/${id}`,
+    pegawaiCountByStatus: () => `${apiBase}/pegawai/countByStatus`,
+
+    // Kategori
+    categories: () => `${apiBase}/categories`,
+    countProductByCategory: () => `${apiBase}/categories/countProductByCategory`,
   };
 
   // Inject ke context Nuxt

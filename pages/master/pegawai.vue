@@ -3,345 +3,88 @@
     <div class="content-wrapper">
          <!-- Content -->
  
-         <div class="container-xxl flex-grow-1 container-p-y">
-             <h4 class="mb-1">List Pegawai</h4>
-             <p class="mb-6">
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <h4 class="mb-1">List Pegawai</h4>
+                <p class="mb-6">
                 List pegawai yang terdaftar di sistem
-             </p>
-             <!-- pegawai cards -->
-             <div class="row g-6">
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                            <p class="mb-0">Total 4 users</p>
-                            <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                                <li
-                                data-bs-toggle="tooltip"
-                                data-popup="tooltip-custom"
-                                data-bs-placement="top"
-                                title="Vinnie Mostowy"
-                                class="avatar pull-up">
-                                <img class="rounded-circle" src="/img/avatars/5.png" alt="Avatar" />
-                                </li>
-                                <li
-                                data-bs-toggle="tooltip"
-                                data-popup="tooltip-custom"
-                                data-bs-placement="top"
-                                title="Allen Rieske"
-                                class="avatar pull-up">
-                                <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                                </li>
-                                <li
-                                data-bs-toggle="tooltip"
-                                data-popup="tooltip-custom"
-                                data-bs-placement="top"
-                                title="Julee Rossignol"
-                                class="avatar pull-up">
-                                <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                                </li>
-                                <li class="avatar">
-                                <span
-                                    class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="bottom"
-                                    title="3 more"
-                                    >+3</span
-                                >
-                                </li>
-                            </ul>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                            <div class="pegawai-heading">
-                                <h5 class="mb-1">Super Admin</h5>
-                            </div>
-                            <a href="javascript:void(0);" class="text-secondary"
-                                ><i class="ri-file-copy-line ri-22px"></i
-                            ></a>
-                            </div>
-                        </div>
+                </p>
+                <!-- pegawai cards -->
+                <div class="row g-6 mb-6">
+                    <!-- Card untuk Tambah Pegawai -->
+                     <!-- Cards untuk Statistik Pegawai -->
+                    <CardBox
+                        v-if="stats.total !== undefined"
+                        title="Total Pegawai"
+                        :total="stats.total + ' Pegawai'"
+                    />
+                    <CardBox
+                        v-if="stats.pkwtt !== undefined"
+                        title="Pegawai PKWTT"
+                        :total="stats.pkwtt + ' Pegawai'"
+                    />
+                    <CardBox
+                        v-if="stats.pkwt !== undefined"
+                        title="Pegawai PKWT"
+                        :total="stats.pkwt + ' Pegawai'"
+                    />
+                    <CardBox
+                        v-if="stats.outsource !== undefined"
+                        title="Pegawai Outsource"
+                        :total="stats.outsource + ' Pegawai'"
+                    />
+                    <CardBox
+                        v-if="stats.resign !== undefined"
+                        title="Pegawai Resign"
+                        :total="stats.resign + ' Pegawai'"
+                    />
+                    <CardBox
+                        :isAddButtonCard="true"
+                        image-src="/img/illustrations/add-new-role-illustration.png"
+                        image-alt="Tambah Pegawai"
+                        button-text="Tambah Pegawai"
+                        modal-target="#PegawaiModal" 
+                        @button-click="openAddPegawaiModal"
+                    />
+                </div>
+                <!--/ pegawai cards -->
+
+                <div class="row g-6">
+                    <div class="col-12">
+                        <h4 class="mt-6 mb-1">Filter & Daftar Pegawai</h4>
+                        <p class="mb-0">Cari dan kelola semua akun pegawai perusahaan Anda beserta detailnya.</p>
                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 7 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Jimmy Ressula"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/4.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="John Doe"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/1.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Kristi Lawker"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/2.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="pegawai-heading">
-                             <h5 class="mb-1">Admin</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PegawaiModal"
-                             class="pegawai-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 5 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Andrew Tye"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Rishi Swaat"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Rossie Kim"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="pegawai-heading">
-                             <h5 class="mb-1">Users</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PegawaiModal"
-                             class="pegawai-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 3 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Kim Karlos"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/3.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Katy Turner"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Peter Adward"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="pegawai-heading">
-                             <h5 class="mb-1">Support</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PegawaiModal"
-                             class="pegawai-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card">
-                     <div class="card-body">
-                         <div class="d-flex justify-content-between align-items-center mb-4">
-                         <p class="mb-0">Total 2 users</p>
-                         <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Kim Merchent"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/10.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Sam D'souza"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/13.png" alt="Avatar" />
-                             </li>
-                             <li
-                             data-bs-toggle="tooltip"
-                             data-popup="tooltip-custom"
-                             data-bs-placement="top"
-                             title="Nurvi Karlos"
-                             class="avatar pull-up">
-                             <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                             </li>
-                             <li class="avatar">
-                             <span
-                                 class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                 data-bs-toggle="tooltip"
-                                 data-bs-placement="bottom"
-                                 title="3 more"
-                                 >+3</span
-                             >
-                             </li>
-                         </ul>
-                         </div>
-                         <div class="d-flex justify-content-between align-items-center">
-                         <div class="pegawai-heading">
-                             <h5 class="mb-1">Restricted User</h5>
-                             <a
-                             href="javascript:;"
-                             data-bs-toggle="modal"
-                             data-bs-target="#PegawaiModal"
-                             class="pegawai-edit-modal">
-                             </a>
-                         </div>
-                         <a href="javascript:void(0);" class="text-secondary"
-                             ><i class="ri-file-copy-line ri-22px"></i
-                         ></a>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                     <div class="card h-100">
-                     <div class="row h-100">
-                         <div class="col-5">
-                         <div class="d-flex align-items-end h-100 justify-content-center">
-                             <img
-                             src="/img/illustrations/add-new-role-illustration.png"
-                             class="img-fluid"
-                             alt="Image"
-                             width="68" />
-                         </div>
-                         </div>
-                         <div class="col-7">
-                         <div class="card-body text-sm-end text-center ps-sm-0">
-                             <button
-                             data-bs-target="#PegawaiModal"
-                             data-bs-toggle="modal"
-                             class="btn btn-sm btn-primary mb-4 text-nowrap add-new-pegawai"
-                             @click="openAddPegawaiModal"
-                             >
-                             Tambah Pegawai
-                             </button>
-                         </div>
-                         </div>
-                     </div>
-                     </div>
-                 </div>
- 
-                 <div class="col-12">
-                     <h4 class="mt-6 mb-1">Total Pegawai</h4>
-                     <p class="mb-0">Find all of your company's administrator accounts and their associate Pegawai.</p>
-                 </div>
-                 <div class="col-12">
-                     <!-- pegawai Table -->
-                     <div class="card">
-                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                 <span class="me-2">Baris:</span>
-                                 <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
-                             </div>
-                             <div class="d-flex align-items-center">
-                                 <span class="p-input-icon-left">
-                                     <InputText v-model="lazyParams.search" placeholder="Cari pegawai..." @keyup.enter="handleSearch" style="width: 20rem;" />
-                                 </span>
-                             </div>
-                         </div>
-                         <div class="card-datatable table-responsive py-3 px-3">
+                    <div class="col-12">
+                        <!-- pegawai Table -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+                                    <span class="me-2">Baris:</span>
+                                    <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="btn-group me-2">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="ri-upload-2-line me-1"></i> Export
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="input-group">
+                                        <span class="p-input-icon-left">
+                                            <InputText
+                                                v-model="globalFilterValue"
+                                                placeholder="Cari pegawai..."
+                                                class="w-full md:w-20rem"
+                                            />
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
+                                ref="myDataTableRef"
                                 :data="pegawai" 
                                 :rows="lazyParams.rows" 
                                 :loading="loading"
@@ -354,77 +97,81 @@
                                 paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                                 currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                                 >
-                                <Column field="id_pegawai" header="#" :sortable="true"></Column> 
-                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true"></Column>
-                                <Column field="email" header="Email" :sortable="true"></Column>
-                                <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true">
+                                <Column field="id_pegawai" header="#" :sortable="true" style="width:5%"></Column> 
+                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:20%"></Column>
+                                <Column field="email" header="Email" :sortable="true" style="width:20%"></Column>
+                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:15%"></Column>
+                                <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
-                                        {{ new Date(slotProps.data.tgl_lahir_pegawai).toLocaleDateString() }}
+                                        {{ slotProps.data.tgl_lahir_pegawai ? new Date(slotProps.data.tgl_lahir_pegawai).toLocaleDateString() : '-' }}
                                     </template>
                                 </Column>
-                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true"></Column>
-                                <Column field="alamat_pegawai" header="Alamat" :sortable="true"></Column>
-                                <Column field="status_pegawai" header="Status" :sortable="true">
+                                <Column field="alamat_pegawai" header="Alamat" :sortable="true" style="width:20%"></Column>
+                                <Column field="status_pegawai" header="Status" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
                                         <span :class="getStatusBadge(slotProps.data.status_pegawai).class">
                                             {{ getStatusBadge(slotProps.data.status_pegawai).text }}
                                         </span>
                                     </template>
                                 </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                <Column header="Actions" :exportable="false" style="min-width:8rem; width:10%">
                                     <template #body="slotProps">
                                         <button @click="openEditPegawaiModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
                                         <button @click="deletePegawai(slotProps.data.id_pegawai)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                             </MyDataTable>
-                         </div>
-                     </div>
-                     <!--/ pegawai Table -->
-                 </div>
-             </div>
-             <!--/ pegawai cards -->
+                            </div>
+                        </div>
+                        <!--/ pegawai Table -->
+                    </div>
+                </div>
+                <!--/ pegawai cards -->
  
-             <!-- Placeholder untuk PegawaiModal component -->
-             <PegawaiModal 
-                 :isEditMode="isEditMode" 
-                 :selectedPegawaiData="selectedPegawai" 
-                 :validationErrorsFromParent="validationErrors"
-                 :jabatanOptions="jabatan"
-                 :perusahaanOptions="perusahaan"
-                 :cabangOptions="cabang" 
-                 :divisiOptions="divisi" 
-                 :departemenOptions="departemen"
-                 @save="handleSavePegawai"
-                 @close="handleCloseModal" 
-                 @company-selected="handleCompanySelectedInModal"
-                 @division-selected="handleDivisionSelectedInModal"
-             />
-         </div>
-         <!-- / Content -->
- 
-         <div class="content-backdrop fade"></div>
-     </div>
+                <!-- Placeholder untuk PegawaiModal component -->
+                <PegawaiModal 
+                    :isEditMode="isEditMode" 
+                    :selectedPegawaiData="selectedPegawai" 
+                    :validationErrorsFromParent="validationErrors"
+                    :jabatanOptions="jabatan"
+                    :perusahaanOptions="perusahaan"
+                    :cabangOptions="cabang" 
+                    :divisiOptions="divisi" 
+                    :departemenOptions="departemen"
+                    @save="handleSavePegawai"
+                    @close="handleCloseModal" 
+                    @company-selected="handleCompanySelectedInModal"
+                    @division-selected="handleDivisionSelectedInModal"
+                />
+            </div>
+            <!-- / Content -->
+        <div class="content-backdrop fade"></div>
+    </div>
      <!-- Content wrapper -->
  </template>
  
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import { usePegawaiStore } from '~/stores/pegawai'
 import vSelect from 'vue-select'
 import Swal from 'sweetalert2'
 import 'vue-select/dist/vue-select.css'
 
 // Import komponen modal
+import CardBox from '~/components/cards/Cards.vue'
 import PegawaiModal from '~/components/pegawai/PegawaiModal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import Dropdown from 'primevue/dropdown'
+import InputText from 'primevue/inputtext'
 
 const { $api } = useNuxtApp()
 
+const myDataTableRef      = ref(null)
 const pegawai             = ref([])
 const selectedPegawai     = ref(null)
 const loading             = ref(false);
 const totalRecords        = ref(0);
+const globalFilterValue   = ref('');
 const lazyParams          = ref({
     first: 0,
     rows: 10,
@@ -442,6 +189,13 @@ const perusahaan = ref([])
 const cabang = ref([])
 const divisi = ref([])
 const departemen = ref([])
+const stats = ref({
+  total: undefined,
+  pkwtt: undefined,
+  pkwt: undefined,
+  resign: undefined,
+  outsource: undefined
+})
 
 // Selected states untuk filter di parent (jika masih ada filter UI di parent)
 // atau untuk trigger watch fetch data dependen.
@@ -457,11 +211,6 @@ const selectedJenisKelaminPegawai = ref(null)
 const validationErrors = ref([]); 
 
 const pegawaiStore    = usePegawaiStore()
-const jabatanStore    = useJabatanStore()
-const divisiStore     = useDivisiStore()
-const departemenStore = useDepartemenStore()
-const perusahaanStore = usePerusahaanStore()
-const cabangStore     = useCabangStore()
 
 const isEditMode = ref(false);
 
@@ -471,9 +220,9 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
     for (const key in pegawaiDataFromModal) {
         if (pegawaiDataFromModal[key] !== null && pegawaiDataFromModal[key] !== undefined) {
             if (key === 'avatar' && pegawaiDataFromModal[key]) {
-                 formData.append(key, pegawaiDataFromModal[key]);
+                formData.append(key, pegawaiDataFromModal[key]);
             } else if (key !== 'avatar') {
-                 formData.append(key, pegawaiDataFromModal[key]);
+                formData.append(key, pegawaiDataFromModal[key]);
             }
         }
     }
@@ -494,7 +243,7 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
             console.log('Form data being sent for update:', Object.fromEntries(formData));
 
             response = await fetch(url, {
-                method: 'POST',
+                method: 'PUT',
                 body: formData,
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -502,7 +251,7 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
                 },
                 credentials: 'include'
             });
-             if (isEditMode.value) {
+            if (isEditMode.value) {
                 formData.append('_method', 'PUT');
             }
 
@@ -523,12 +272,15 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
 
         if (response.ok) {
             loadLazyData();
-            handleCloseModal();
+            fetchStats();
             Swal.fire(
                 'Berhasil!',
-                `Pegawai berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+                isEditMode.value
+                    ? 'Pegawai berhasil diperbarui.'
+                    : 'Pegawai berhasil dibuat.',
                 'success'
             );
+            handleCloseModal();
         } else {
             const errorData = await response.json();
             if (errorData.errors) {
@@ -536,7 +288,7 @@ const handleSavePegawai = async (pegawaiDataFromModal) => {
                     ? errorData.errors
                     : Object.values(errorData.errors).flat();
             } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} pegawai`, 'error');
+                Swal.fire('Gagal', errorData.message || (isEditMode.value ? 'Gagal memperbarui pegawai' : 'Gagal membuat pegawai'), 'error');
             }
         }
     } catch (error) {
@@ -556,6 +308,66 @@ const handleCloseModal = () => {
         }
     }
     resetParentFormState(); 
+};
+
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+});
+
+const fetchStats = async () => {
+  const defaultStats = {
+    total: undefined,
+    pkwtt: undefined,
+    pkwt: undefined,
+    resign: undefined,
+    outsource: undefined
+  };
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch($api.pegawaiCountByStatus(), {
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      if (result && typeof result === 'object' && result !== null) {
+        stats.value = {
+            total: result.total,
+            pkwtt: result.pkwtt,
+            pkwt: result.pkwt,
+            resign: result.resign,
+            outsource: result.outsource,
+        };
+      } else {
+        stats.value = defaultStats;
+        console.warn('Data statistik dari API tidak dalam format objek yang diharapkan atau null:', result);
+      }
+    } else {
+        stats.value = defaultStats;
+        console.error('Gagal mengambil data statistik, status respons:', response.status);
+    }
+  } catch (error) {
+    console.error('Gagal mengambil data statistik (exception):', error);
+    stats.value = defaultStats;
+  }
 };
 
 // Fungsi untuk mengambil data menu groups
@@ -680,12 +492,12 @@ const loadLazyData = async () => {
     try {
         const token = localStorage.getItem('token');
         const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
+            start    : lazyParams.value.first || 0,
+            length   : lazyParams.value.rows || 10,
             sortField: lazyParams.value.sortField || '',
             sortOrder: lazyParams.value.sortOrder || '',
             draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
+            'search[value]': lazyParams.value.search || '',
         });
 
         const response = await fetch(`${$api.pegawai()}?${params.toString()}`, {
@@ -723,6 +535,7 @@ onMounted(() => {
     fetchPerusahaan();
     fetchDivisi();
     loadLazyData();
+    fetchStats();
 });
 
 const onPage = (event) => {
@@ -736,20 +549,28 @@ const handleRowsChange = () => {
     loadLazyData();
 };
 
-const handleSearch = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
     loadLazyData();
 };
 
+const exportData = (format) => {
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        myDataTableRef.value.exportPDF();
+    }
+};
+
 function openAddPegawaiModal() {
     isEditMode.value = false;
-    selectedPegawai.value = {};
+    selectedPegawai.value = {
+        // Set default values for a new employee if needed
+        nm_pegawai: '',
+        email: '',
+        // ... other fields
+    };
     validationErrors.value = [];
 
     selectedPerusahaan.value = null;
@@ -766,9 +587,9 @@ function openAddPegawaiModal() {
     }
 }
 
-async function openEditPegawaiModal(pegawai) {
+async function openEditPegawaiModal(pegawaiData) {
     isEditMode.value = true;
-    selectedPegawai.value = JSON.parse(JSON.stringify(pegawai));
+    selectedPegawai.value = JSON.parse(JSON.stringify(pegawaiData));
     validationErrors.value = [];
 
     const modalEl = document.getElementById('PegawaiModal');
@@ -827,6 +648,7 @@ if (result.isConfirmed) {
         }
 
         loadLazyData();
+        fetchStats();
 
         await Swal.fire({
             title: 'Berhasil!',

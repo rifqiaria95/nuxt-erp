@@ -2,55 +2,55 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Jabatan</h4>
+            <h4 class="mb-1">List Kategori</h4>
             <p class="mb-6">
-            List jabatan yang terdaftar di sistem
+            List category yang terdaftar di sistem
             </p>
-            <!-- jabatan cards -->
+            <!-- category cards -->
             <div class="row g-6 mb-6">
                 <!-- Card untuk Tambah Pegawai -->
                     <!-- Cards untuk Statistik Pegawai -->
                 <CardBox
                     v-if="stats.total !== undefined"
-                    title="Total Jabatan"
-                    :total="stats.total + ' Jabatan'"
+                    title="Total Kategori"
+                    :total="stats.total + ' Kategori'"
                 />
                 <CardBox
-                    v-if="stats.direktur_utama !== undefined"
-                    title="Direktur Utama"
-                    :total="stats.direktur_utama + ' Orang'"
+                    v-if="stats.sparepart !== undefined"
+                    title="Sparepart"
+                    :total="stats.sparepart + ' Produk'"
                 />
                 <CardBox
-                    v-if="stats.direktur_keuangan !== undefined"
-                    title="Direktur Keuangan"
-                    :total="stats.direktur_keuangan + ' Orang'"
+                    v-if="stats.oli !== undefined"
+                    title="Oli"
+                    :total="stats.oli + ' Produk'"
                 />
                 <CardBox
-                    v-if="stats.direktur_operasional !== undefined"
-                    title="Direktur Operasional"
-                    :total="stats.direktur_operasional + ' Orang'"
+                    v-if="stats.alat_berat !== undefined"
+                    title="Alat Berat"
+                    :total="stats.alat_berat + ' Produk'"
                 />
                 <CardBox
-                    v-if="stats.general_manager !== undefined"
-                    title="General Manager"
-                    :total="stats.general_manager + ' Orang'"
+                    v-if="stats.tooling !== undefined"
+                    title="Tooling"
+                    :total="stats.tooling + ' Produk'"
                 />
                 <CardBox
                     :isAddButtonCard="true"
                     image-src="/img/illustrations/add-new-role-illustration.png"
-                    image-alt="Tambah Jabatan"
-                    button-text="Tambah Jabatan"
+                    image-alt="Tambah Kategori"
+                    button-text="Tambah Kategori"
                     modal-target="#Modal" 
-                    @button-click="openAddJabatanModal"
+                    @button-click="openAddCategoryModal"
                 />
             </div>
             <div class="row g-6">
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Jabatan</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate Jabatan.</p>
+                    <h4 class="mt-6 mb-1">Total Kategori</h4>
+                    <p class="mb-0">Find all of your company's administrator accounts and their associate Kategori.</p>
                 </div>
                 <div class="col-12">
-                    <!-- jabatan Table -->
+                    <!-- category Table -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
@@ -67,21 +67,15 @@
                                         <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
                                     </ul>
                                 </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari Jabatan..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
-                                </div>
+                                <span class="p-input-icon-left">
+                                    <InputText v-model="lazyParams.search" placeholder="Cari Category..." @keyup.enter="handleSearch" style="width: 20rem;" />
+                                </span>
                             </div>
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="jabatan" 
+                            :data="category" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
@@ -93,51 +87,65 @@
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
-                            <Column field="idJabatan" header="#" :sortable="true"></Column> 
-                                <Column field="nmJabatan" header="Nama Jabatan" :sortable="true"></Column>
+                            <Column field="id" header="#" :sortable="true"></Column> 
+                                <Column field="name" header="Nama Category" :sortable="true"></Column>
+                                <Column field="description" header="Deskripsi" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="openEditJabatanModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deleteJabatan(slotProps.data.idJabatan)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button @click="openEditCategoryModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="deleteCategory(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
                         </div>
                     </div>
-                    <!--/ jabatan Table -->
+                    <!--/ category Table -->
                 </div>
             </div>
-            <!--/ jabatan cards -->
+            <!--/ category cards -->
 
-            <!-- Placeholder untuk JabatanModal component -->
+            <!-- Placeholder untuk CategoryModal component -->
             <Modal 
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedJabatan="selectedJabatan"
+                :selectedCategory="selectedCategory"
             >
                 <template #default>
                     <form @submit.prevent="handleSubmit">
                         <div class="row g-6">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
                                         class="form-control" 
                                         id="name" 
-                                        v-model="formJabatan.nm_jabatan" 
-                                        placeholder="Masukkan nama jabatan"
+                                        v-model="formCategory.name" 
+                                        placeholder="Masukkan nama category"
                                         required
                                     >
-                                    <label for="name">Nama Jabatan</label>
+                                    <label for="name">Nama Category</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="description" 
+                                        v-model="formCategory.description" 
+                                        placeholder="Masukkan deskripsi category"
+                                        required
+                                    >
+                                    <label for="description">Deskripsi Category</label>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button
                                     type="submit"
                                     class="btn btn-primary me-2"
-                                    @click="handleSaveJabatan"
+                                    @click="handleSaveCategory"
                                 >
                                     {{ isEditMode ? 'Update' : 'Simpan' }}
                                 </button>
@@ -157,25 +165,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
-import { useJabatanStore } from '~/stores/jabatan'
-import Dropdown from 'primevue/dropdown'
-import InputText from 'primevue/inputtext'
+import { useKategoriStore } from '~/stores/kategori'
 
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null)
-const jabatanStore      = useJabatanStore()
-const selectedJabatan  = ref(null);
-const jabatan          = ref([])
+const myDataTableRef    = ref(null)
+const kategoriStore      = useKategoriStore()
+const selectedCategory  = ref(null);
+const category          = ref([])
 const loading          = ref(false);
 const isEditMode       = ref(false);
 const totalRecords     = ref(0);
-const globalFilterValue = ref('');
 const lazyParams        = ref({
     first: 0,
     rows: 10,
@@ -185,22 +190,23 @@ const lazyParams        = ref({
     search: '',
 });
 
-const formJabatan = ref({
-  nm_jabatan: '',
+const formCategory = ref({
+    name: '',
+    description: '',
 });
 
 const stats = ref({
-  direktur_utama: undefined,
-  direktur_keuangan: undefined,
-  direktur_operasional: undefined,
-  general_manager: undefined,
+  sparepart: undefined,
+  oli: undefined,
+  alat_berat: undefined,
+  tooling: undefined,
   total: undefined
 })
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
-const modalTitle = computed(() => isEditMode.value ? 'Edit Jabatan' : 'Tambah Jabatan');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data jabatan di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan jabatan baru.');
+const modalTitle = computed(() => isEditMode.value ? 'Edit Kategori' : 'Tambah Kategori');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data kategori di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan kategori baru.');
 
 // Fungsi untuk menangani event close dari modal
 const handleCloseModal = () => {
@@ -214,30 +220,10 @@ const handleCloseModal = () => {
     resetParentFormState(); 
 };
 
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-
 // Tambahkan state untuk error validasi agar bisa digunakan di modal
 const validationErrors = ref([]);
 
-const handleSaveJabatan = async () => {
+const handleSaveCategory = async () => {
     loading.value = true;
     validationErrors.value = []; // reset error sebelum submit
     try {
@@ -250,27 +236,28 @@ const handleSaveJabatan = async () => {
         let url;
 
         // Validasi form sederhana
-        if (!formJabatan.value.nm_jabatan) {
-            Swal.fire('Validasi', 'Nama jabatan wajib diisi.', 'warning');
+        if (!formCategory.value.name) {
+            Swal.fire('Validasi', 'Nama kategori wajib diisi.', 'warning');
             loading.value = false;
             return;
         }
 
         if (isEditMode.value) {
-            // Cari ID jabatan dari form atau selectedMenuGroup
-            let jabatanIdToUpdate = formJabatan.value?.idJabatan || selectedJabatan.value?.idJabatan;
-            if (!jabatanIdToUpdate) {
-                Swal.fire('Error', 'ID Jabatan tidak ditemukan untuk update.', 'error');
+            // Cari ID category dari form atau selectedMenuGroup
+            let categoryIdToUpdate = formCategory.value?.id || selectedCategory.value?.id;
+            if (!categoryIdToUpdate) {
+                Swal.fire('Error', 'ID Kategori tidak ditemukan untuk update.', 'error');
                 loading.value = false;
                 return;
             }
-            url = `${$api.jabatan()}/${jabatanIdToUpdate}`;
-            console.log('Updating jabatan with ID:', jabatanIdToUpdate, 'URL:', url);
+            url = `${$api.categories()}/${categoryIdToUpdate}`;
+            console.log('Updating category with ID:', categoryIdToUpdate, 'URL:', url);
             // Update data
             response = await fetch(url, {
                 method: 'PUT',
                 body: JSON.stringify({
-                    nm_jabatan : formJabatan.value.nm_jabatan,
+                    name : formCategory.value.name,
+                    description : formCategory.value.description,
                 }),
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -281,11 +268,12 @@ const handleSaveJabatan = async () => {
             });
         } else {
             // Create baru
-            url = $api.jabatan();
+            url = $api.categories();
             response = await fetch(url, {
                 method: 'POST',
                 body: JSON.stringify({
-                    nm_jabatan : formJabatan.value.nm_jabatan,
+                    name : formCategory.value.name,
+                    description : formCategory.value.description,
                 }),
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -301,7 +289,7 @@ const handleSaveJabatan = async () => {
             handleCloseModal();
             await Swal.fire(
                 'Berhasil!',
-                `Jabatan berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+                `Kategori berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
                 'success'
             );
         } else {
@@ -317,11 +305,11 @@ const handleSaveJabatan = async () => {
                     : Object.values(errorData.errors).flat();
                 Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
             } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} jabatan`, 'error');
+                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} kategori`, 'error');
             }
         }
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data jabatan.', 'error');
+        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data kategori.', 'error');
     } finally {
         loading.value = false;
     }
@@ -330,14 +318,14 @@ const handleSaveJabatan = async () => {
 const fetchStats = async () => {
   const defaultStats = {
     total: undefined,
-    direktur_utama: undefined,
-    direktur_keuangan: undefined,
-    direktur_operasional: undefined,
-    general_manager: undefined,
+    sparepart: undefined,
+    oli: undefined,
+    alat_berat: undefined,
+    tooling: undefined,
   };
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch($api.countPegawaiByJabatan(), {
+    const response = await fetch($api.countProductByCategory(), {
         headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -349,10 +337,10 @@ const fetchStats = async () => {
       if (result && typeof result === 'object' && result !== null) {
         stats.value = {
             total: result.total,
-            direktur_utama: result.direktur_utama,
-            direktur_keuangan: result.direktur_keuangan,
-            direktur_operasional: result.direktur_operasional,
-            general_manager: result.general_manager,
+            sparepart: result.sparepart,
+            oli: result.oli,
+            alat_berat: result.alat_berat,
+            tooling: result.tooling,
         };
       } else {
         stats.value = defaultStats;
@@ -368,7 +356,7 @@ const fetchStats = async () => {
   }
 };
 
-// Fungsi untuk menangani event load lazy data dari jabatan
+// Fungsi untuk menangani event load lazy data dari category
 const loadLazyData = async () => {
     loading.value = true;
     try {
@@ -382,7 +370,7 @@ const loadLazyData = async () => {
             search   : lazyParams.value.search || '',
         });
 
-        const response = await fetch(`${$api.jabatan()}?${params.toString()}`, {
+        const response = await fetch(`${$api.categories()}?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -391,22 +379,22 @@ const loadLazyData = async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data jabatan dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data jabatan');
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data category dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data category');
         }
 
         const result = await response.json();
-        jabatan.value = result.data || []; 
+        category.value = result.data || []; 
         totalRecords.value = parseInt(result.meta.total) || 0;
         if (result.draw) {
              lazyParams.value.draw = parseInt(result.draw);
         }
 
     } catch (error) {
-        console.error('Error loading lazy data for jabatan:', error);
-        jabatan.value = [];
+        console.error('Error loading lazy data for category:', error);
+        category.value = [];
         totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data jabatan: ${error.message}`, 'error');
+        Swal.fire('Error', `Tidak dapat memuat data category: ${error.message}`, 'error');
     } finally {
         loading.value = false;
     }
@@ -428,6 +416,11 @@ const handleRowsChange = () => {
     loadLazyData();
 };
 
+const handleSearch = () => {
+    lazyParams.value.first = 0;
+    loadLazyData();
+};
+
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
@@ -442,20 +435,21 @@ const exportData = (format) => {
     }
 };
 
-const openAddJabatanModal = () => {
+const openAddCategoryModal = () => {
     isEditMode.value = false;
-    modalTitle.value = 'Tambah Jabatan';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan jabatan baru.';
+    modalTitle.value = 'Tambah Category';
+    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan category baru.';
     resetParentFormState();
 };
 
-async function openEditJabatanModal(jabatanData) {
+async function openEditCategoryModal(categoryData) {
     isEditMode.value = true;
-    // Ambil data jabatan saat modal terbuka
-    selectedJabatan.value = JSON.parse(JSON.stringify(jabatanData));
-    formJabatan.value = {
-        idJabatan: jabatanData.idJabatan,
-        nm_jabatan: jabatanData.nmJabatan || ''
+    // Ambil data category saat modal terbuka
+    selectedCategory.value = JSON.parse(JSON.stringify(categoryData));
+    formCategory.value = {
+        id: categoryData.id,
+        name: categoryData.name || '',
+        description: categoryData.description || ''
     };
     validationErrors.value = [];
 
@@ -464,12 +458,12 @@ async function openEditJabatanModal(jabatanData) {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     } else {
-        console.error('JabatanModal element tidak ditemukan atau Bootstrap belum dimuat.');
+        console.error('CategoryModal element tidak ditemukan atau Bootstrap belum dimuat.');
     }
 }
 
-const deleteJabatan = async (idJabatan) => {
-    if (!idJabatan) return;
+const deleteCategory = async (idCategory) => {
+    if (!idCategory) return;
 
     const result = await Swal.fire({
         title: 'Are you sure?',
@@ -494,7 +488,7 @@ const deleteJabatan = async (idJabatan) => {
             const csrfData  = await csrfResponse.json();
             const csrfToken = csrfData.token;
 
-            url = `${$api.jabatan()}/${idJabatan}`;
+            url = `${$api.categories()}/${idCategory}`;
 
             const response = await fetch(url, {
                 method: 'DELETE',
@@ -508,14 +502,14 @@ const deleteJabatan = async (idJabatan) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus jabatan');
+                throw new Error(errorData.message || 'Gagal menghapus category');
             }
 
             loadLazyData();
 
             await Swal.fire({
                 title: 'Berhasil!',
-                text: 'Jabatan berhasil dihapus.',
+                text: 'Category berhasil dihapus.',
                 icon: 'success'
             });
 
@@ -530,8 +524,9 @@ const deleteJabatan = async (idJabatan) => {
 };
 
 const resetParentFormState = () => {
-    formJabatan.value = {
-        nm_jabatan: '',
+    formCategory.value = {
+        name: '',
+        description: '',
     };
 };
 </script>

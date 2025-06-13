@@ -125,8 +125,48 @@
         }),
         credentials: 'include'
       });
+
+      // Cek status response sebelum parsing data
+      if (!response.ok) {
+        // Ambil pesan error dari response body jika ada
+        let errorData = {};
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          // Tidak bisa parse json, biarkan kosong
+        }
+        // Set error.value agar bisa ditampilkan di view
+        error.value = errorData?.message || `Terjadi kesalahan (${response.status})`;
+        toast.error({
+          title: 'Login Gagal!',
+          icon: 'ri-close-line',
+          message: `Gagal login: ${error.value}`,
+          timeout: 3000,
+          position: 'topRight',
+          layout: 2,
+        });
+        pending.value = false;
+        return;
+      }
+
       const data = await response.json();
       console.log('Login response:', data);
+
+      // Pastikan data.token dan data.token.token ada sebelum setItem
+      if (!data.token || !data.token.token) {
+        error.value = 'Token tidak ditemukan pada response server.';
+        toast.error({
+          title: 'Login Gagal!',
+          icon: 'ri-close-line',
+          message: `Gagal login: ${error.value}`,
+          timeout: 3000,
+          position: 'topRight',
+          layout: 2,
+        });
+        pending.value = false;
+        return;
+      }
+
       localStorage.setItem('token', data.token.token);
       userStore.setUser(data.user)
       toast.success({
@@ -138,20 +178,19 @@
         layout: 2,
       })
       router.push('/dashboard');
+      console.log('LOGIN RESPONSE', response)
     } catch (err) {
-      if (err?.status === 419) {
-        await handleLogin();
-      } else {
-        error.value = err?.data?.message || err.message;
-        toast.error({
-          title: 'Login Gagal!',
-          icon: 'ri-close-line',
-          message: `Gagal login: ${error.value}`,
-          timeout: 3000,
-          position: 'topRight',
-          layout: 2,
-        });
-      }
+      // Tangani error network atau error lain di luar response API
+      console.log('LOGIN ERROR', err)
+      error.value = err?.data?.message || err.message || 'Terjadi kesalahan saat login.';
+      toast.error({
+        title: 'Login Gagal!',
+        icon: 'ri-close-line',
+        message: `Gagal login: ${error.value}`,
+        timeout: 3000,
+        position: 'topRight',
+        layout: 2,
+      });
     } finally {
       pending.value = false;
     }

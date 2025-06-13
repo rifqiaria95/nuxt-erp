@@ -5,7 +5,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="text-center mb-6">
-                        <h4 class="pegawai-title mb-2 pb-0">Tambah Pegawai baru</h4>
+                        <h4 class="pegawai-title mb-2 pb-0">{{ isEditMode ? 'Edit Pegawai' : 'Tambah Pegawai baru' }}</h4>
                         <p>Atur Informasi Pegawai</p>
                         </div>
                         <div v-if="validationErrors.length" class="alert alert-danger">
@@ -377,7 +377,7 @@ const jabatan = ref(props.jabatanOptions || [])
 const perusahaan = ref(props.perusahaanOptions || [])
 const cabang = ref(props.cabangOptions || [])
 const divisi = ref(props.divisiOptions || [])
-const departemen = ref(props.departemenOptions || []) // Ini akan diisi dari props.departemenOptions
+const departemen = ref(props.departemenOptions || [])
 
 const selectedJabatan = ref(null)
 const selectedPerusahaan = ref(null)

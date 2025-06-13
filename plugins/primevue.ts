@@ -1,5 +1,6 @@
 import PrimeVue from 'primevue/config';
 import DataTable from 'primevue/datatable';
+import { FilterMatchMode } from '@primevue/core/api';
 import Column from 'primevue/column';
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
@@ -22,5 +23,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component('DataTable', DataTable);
   nuxtApp.vueApp.component('Column', Column);
   nuxtApp.vueApp.component('Dropdown', Dropdown);
+  nuxtApp.vueApp.component('FilterMatchMode', FilterMatchMode);
   nuxtApp.vueApp.component('InputText', InputText);
 });
