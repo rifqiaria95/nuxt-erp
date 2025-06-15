@@ -2,57 +2,36 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List User</h4>
+            <h4 class="mb-1">List Gudang</h4>
             <p class="mb-6">
-            List User yang terdaftar di sistem
+            List warehouse yang terdaftar di sistem
             </p>
-            <!-- User cards -->
+            <!-- warehouse cards -->
             <div class="row g-6 mb-6">
-                <!-- Card untuk Tambah Pegawai -->
-                    <!-- Cards untuk Statistik Pegawai -->
+                <!-- Card untuk Tambah Pegawai -->                
                 <CardBox
                     v-if="stats.total !== undefined"
-                    title="Total User"
-                    :total="stats.total + ' User'"
-                />
-                <CardBox
-                    v-if="stats.aktif !== undefined"
-                    title="User Aktif"
-                    :total="stats.aktif + ' User'"
-                />
-                <CardBox
-                    v-if="stats.tidakAktif !== undefined"
-                    title="User Tidak Aktif"
-                    :total="stats.tidakAktif + ' User'"
-                />
-                <CardBox
-                    v-if="stats.totalSuperadmin !== undefined"
-                    title="User Superadmin"
-                    :total="stats.totalSuperadmin + ' User'"
-                />
-                <CardBox
-                    v-if="stats.totalAdmin !== undefined"
-                    title="User Admin"
-                    :total="stats.totalAdmin + ' User'"
+                    title="Total Gudang"
+                    :total="(stats.total !== undefined ? stats.total + ' Gudang' : 'Memuat...')"
+                    :column-class="cardBoxColumnClass"
                 />
                 <CardBox
                     :isAddButtonCard="true"
                     image-src="/img/illustrations/add-new-role-illustration.png"
-                    image-alt="Tambah User"
-                    button-text="Tambah User"
+                    image-alt="Tambah Gudang"
+                    button-text="Tambah Gudang"
                     modal-target="#Modal" 
-                    @button-click="openAddUserModal"
+                    @button-click="openAddWarehouseModal"
+                    :column-class="cardBoxColumnClass"
                 />
             </div>
-            <!--/ user cards -->
-
             <div class="row g-6">
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Filter & Daftar User</h4>
-                    <p class="mb-0">Cari dan kelola semua akun administrator perusahaan Anda beserta detailnya.</p>
+                    <h4 class="mt-6 mb-1">Total Gudang</h4>
+                    <p class="mb-0">Find all of your company's administrator accounts and their associate Gudang.</p>
                 </div>
                 <div class="col-12">
-                    <!-- user Table -->
+                    <!-- warehouse Table -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
@@ -73,7 +52,7 @@
                                     <span class="p-input-icon-left">
                                         <InputText
                                             v-model="globalFilterValue"
-                                            placeholder="Cari user..."
+                                            placeholder="Cari Gudang..."
                                             class="w-full md:w-20rem"
                                         />
                                     </span>
@@ -83,7 +62,7 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="user" 
+                            :data="warehouse" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
@@ -95,116 +74,105 @@
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
-                            <Column field="id" header="#" :sortable="true"></Column> 
-                                <Column field="fullName" header="Nama Lengkap" :sortable="true"></Column>
-                                <Column field="email" header="Email" :sortable="true"></Column>
-                                <Column field="roles" header="Role" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span v-for="role in slotProps.data.roles" :key="role.id">
-                                            {{ role.name }}
-                                        </span>
-                                    </template>
-                                </Column>
-                                <Column field="isActive" header="Status" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span :class="getStatusBadge(slotProps.data.isActive).class">
-                                            {{ getStatusBadge(slotProps.data.isActive).text }}
-                                        </span>
-                                    </template>
-                                </Column>
+                                <Column field="id" header="#" :sortable="true"></Column> 
+                                <Column field="name" header="Nama Gudang" :sortable="true"></Column>
+                                <Column field="address" header="Alamat Gudang" :sortable="true"></Column>
+                                <Column field="code" header="Kode Gudang" :sortable="true"></Column>
+                                <Column field="phone" header="No. Telepon Gudang" :sortable="true"></Column>
+                                <Column field="email" header="Email Gudang" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="openEditUserModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deleteUser(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button @click="openEditWarehouseModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="deleteWarehouse(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
                         </div>
                     </div>
-                    <!--/ user Table -->
+                    <!--/ warehouse Table -->
                 </div>
             </div>
+            <!--/ warehouse cards -->
 
-            <!-- Placeholder untuk UserModal component -->
+            <!-- Placeholder untuk WarehouseModal component -->
             <Modal 
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedUser="selectedUser"
+                :selectedWarehouse="selectedWarehouse"
             >
                 <template #default>
                     <form @submit.prevent="handleSubmit">
                         <div class="row g-6">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
                                         class="form-control" 
-                                        id="full_name" 
-                                        v-model="formUser.full_name" 
-                                        placeholder="Masukkan nama user"
+                                        id="kodeGudang" 
+                                        v-model="formWarehouse.code" 
+                                        placeholder="Masukkan kode gudang"
                                         required
                                     >
-                                    <label for="full_name">Nama Lengkap</label>
+                                    <label for="kodeGudang">Kode Gudang</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
-                                    type="email" 
-                                    class="form-control" 
-                                    id="email" 
-                                    v-model="formUser.email" 
-                                    placeholder="Masukkan email"
+                                        type="text" 
+                                        class="form-control" 
+                                        id="nmGudang" 
+                                        v-model="formWarehouse.name" 
+                                        placeholder="Masukkan nama gudang"
+                                        required
                                     >
-                                    <label for="email">Email</label>
+                                    <label for="nmGudang">Nama Gudang</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
-                                    type="password" 
-                                    class="form-control" 
-                                    id="password" 
-                                    v-model="formUser.password" 
-                                    placeholder="Masukkan password"
-                                    aria-describedby="passwordHelp"
+                                        type="email" 
+                                        class="form-control" 
+                                        id="emailGudang" 
+                                        v-model="formWarehouse.email" 
+                                        placeholder="Masukkan email gudang"
+                                        required
                                     >
-                                    <label for="password">Password</label>
-                                </div>
-                                <div v-if="isEditMode" id="passwordHelp" class="form-text">
-                                    Kosongkan jika tidak ingin mengubah password.
+                                    <label for="emailGudang">Email Gudang</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <v-select
-                                    v-model="formUser.role_ids"
-                                    :options="roles"
-                                    label="name"
-                                    multiple
-                                    :reduce="roles => roles.id"
-                                    placeholder="-- Pilih Role --"
-                                    id="role_ids"
-                                    class="role_ids"
-                                />   
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="phoneGudang" 
+                                        v-model="formWarehouse.phone" 
+                                        placeholder="Masukkan no. telepon gudang"
+                                        required
+                                    >
+                                    <label for="phoneGudang">No. Telepon Gudang</label>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <v-select
-                                    v-model="formUser.isActive"
-                                    :options="status"
-                                    label="label"
-                                    :reduce="status => status.value"
-                                    placeholder="-- Pilih Status --"
-                                    id="isActive"
-                                    class="isActive"
-                                />   
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <textarea
+                                        class="form-control h-px-100"
+                                        id="alamatGudang"
+                                        placeholder="Masukkan alamat gudang"
+                                        v-model="formWarehouse.address">
+                                    </textarea>
+                                    <label for="alamatGudang">Alamat Gudang</label>
+                                </div>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button
                                     type="submit"
                                     class="btn btn-primary me-2"
-                                    @click="handleSaveUser"
+                                    @click="handleSaveWarehouse"
                                 >
                                     {{ isEditMode ? 'Update' : 'Simpan' }}
                                 </button>
@@ -226,33 +194,24 @@
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import Modal from '~/components/modal/Modal.vue'
-import MyDataTable from '~/components/table/MyDataTable.vue'
 import CardBox from '~/components/cards/Cards.vue'
+import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
-import { useUserStore } from '~/stores/user'
-import { useRolesStore } from '~/stores/roles'
-import vSelect from 'vue-select'
-import 'vue-select/dist/vue-select.css'
+import { useWarehouseStore } from '~/stores/warehouse'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null);
+const myDataTableRef = ref(null)
+const warehouseStore      = useWarehouseStore()
+const selectedWarehouse  = ref(null);
+const warehouse          = ref([])
+const loading          = ref(false);
+const isEditMode       = ref(false);
+const totalRecords     = ref(0);
 const globalFilterValue = ref('');
-const userStore    = useUserStore()
-const rolesStore   = useRolesStore()
-const selectedUser = ref(null);
-const status       = ref([
-    { label: 'Aktif', value: true },
-    { label: 'Tidak Aktif', value: false },
-]);
-const user         = ref([])
-const loading      = ref(false);
-const isEditMode   = ref(false);
-const totalRecords = ref(0);
-const roles        = ref([]);
-const lazyParams   = ref({
+const lazyParams        = ref({
     first: 0,
     rows: 10,
     sortField: null,
@@ -261,28 +220,26 @@ const lazyParams   = ref({
     search: '',
 });
 
-const formUser = ref({
-    full_name: '',
-    email: '',
-    password: '',
-    isActive: true,
-    role_ids: []
+const formWarehouse = ref({
+  name: '',
+  address: '',
+  code: '',
+  phone: '',
+  email: '',
 });
 
 const stats = ref({
-  total: undefined,
-  aktif: undefined,
-  tidakAktif: undefined,
-  totalSuperadmin: undefined,
-  totalAdmin: undefined
+  total: undefined
 })
+
+const cardBoxColumnClass = computed(() => {
+  return stats.value.total !== undefined ? 'col-6' : 'col-xl-4 col-lg-6 col-md-6';
+});
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
-const validationErrors = ref([]);
-
-const modalTitle = computed(() => isEditMode.value ? 'Edit User' : 'Tambah User');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data user di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan user baru.');
+const modalTitle = computed(() => isEditMode.value ? 'Edit Gudang' : 'Tambah Gudang');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data gudang di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan gudang baru.');
 
 // Fungsi untuk menangani event close dari modal
 const handleCloseModal = () => {
@@ -296,77 +253,68 @@ const handleCloseModal = () => {
     resetParentFormState(); 
 };
 
-const fetchRoles = async () => {
-    try {
-        const token = localStorage.getItem('token')
-        const response = await fetch($api.roles(), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        
-        if (!response.ok) throw new Error('Gagal mengambil data role')
-        
-        const data = await response.json()
-        roles.value = data.data || data
-    } catch (error) {
-        console.error('Error fetching role:', error)
+let searchDebounceTimer = null;
+watch(globalFilterValue, (newValue) => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
     }
-}
 
-const handleSaveUser = async () => {
+    searchDebounceTimer = setTimeout(() => {
+        lazyParams.value.search = newValue;
+        lazyParams.value.first = 0;
+        loadLazyData();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+    }
+});
+
+
+// Tambahkan state untuk error validasi agar bisa digunakan di modal
+const validationErrors = ref([]);
+
+const handleSaveWarehouse = async () => {
     loading.value = true;
     validationErrors.value = []; // reset error sebelum submit
     try {
         // Ambil CSRF token
         const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
+        const csrfData     = await csrfResponse.json();
+        const csrfToken    = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
         const token = localStorage.getItem('token');
         let response;
         let url;
 
         // Validasi form sederhana
-        if (!formUser.value.email) {
-            Swal.fire('Validasi', 'Email wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        if (!isEditMode.value && !formUser.value.password) {
-            Swal.fire('Validasi', 'Password wajib diisi untuk user baru.', 'warning');
+        if (!formWarehouse.value.name) {
+            Swal.fire('Validasi', 'Nama warehouse wajib diisi.', 'warning');
             loading.value = false;
             return;
         }
 
         if (isEditMode.value) {
-            // Cari ID user dari form atau selectedUser
-            let userIdToUpdate = formUser.value?.id || formUser.value?.idUser;
-            if (!userIdToUpdate && selectedUser.value) {
-                userIdToUpdate = selectedUser.value.id || selectedUser.value.idUser;
-            }
-            if (!userIdToUpdate) {
-                Swal.fire('Error', 'ID User tidak ditemukan untuk update.', 'error');
+            // Cari ID warehouse dari form atau selectedMenuGroup
+            let warehouseIdToUpdate = formWarehouse.value?.id || selectedWarehouse.value?.id;
+            if (!warehouseIdToUpdate) {
+                Swal.fire('Error', 'ID Gudang tidak ditemukan untuk update.', 'error');
                 loading.value = false;
                 return;
             }
-            url = `${$api.users()}/${userIdToUpdate}`;
-            console.log('Updating user with ID:', userIdToUpdate, 'URL:', url);
-            
-            const payload = {
-                full_name: formUser.value.full_name,
-                email    : formUser.value.email,
-                isActive : formUser.value.isActive,
-                role_ids : formUser.value.role_ids
-            };
-            if (formUser.value.password) {
-                payload.password = formUser.value.password;
-            }
+            url = `${$api.warehouse()}/${warehouseIdToUpdate}`;
+            console.log('Updating warehouse with ID:', warehouseIdToUpdate, 'URL:', url);
             // Update data
             response = await fetch(url, {
                 method: 'PUT',
-                body: JSON.stringify(payload),
+                body: JSON.stringify({
+                    name   : formWarehouse.value.name,
+                    address: formWarehouse.value.address,
+                    code   : formWarehouse.value.code,
+                    phone  : formWarehouse.value.phone,
+                    email  : formWarehouse.value.email,
+                }),
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'X-CSRF-TOKEN': csrfToken || '',
@@ -376,15 +324,15 @@ const handleSaveUser = async () => {
             });
         } else {
             // Create baru
-            url = $api.users();
+            url = $api.warehouse();
             response = await fetch(url, {
                 method: 'POST',
                 body: JSON.stringify({
-                    full_name: formUser.value.full_name,
-                    email    : formUser.value.email,
-                    password : formUser.value.password,
-                    isActive : formUser.value.isActive,
-                    role_ids : formUser.value.role_ids
+                    name   : formWarehouse.value.name,
+                    address: formWarehouse.value.address,
+                    code   : formWarehouse.value.code,
+                    phone  : formWarehouse.value.phone,
+                    email  : formWarehouse.value.email,
                 }),
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -400,7 +348,7 @@ const handleSaveUser = async () => {
             handleCloseModal();
             await Swal.fire(
                 'Berhasil!',
-                `User berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+                `Gudang berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
                 'success'
             );
         } else {
@@ -416,27 +364,23 @@ const handleSaveUser = async () => {
                     : Object.values(errorData.errors).flat();
                 Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
             } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} user`, 'error');
+                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} warehouse`, 'error');
             }
         }
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data user.', 'error');
+        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data warehouse.', 'error');
     } finally {
         loading.value = false;
     }
 };
 
-const fetchTotalUsers = async () => {
+const fetchStats = async () => {
   const defaultStats = {
     total: undefined,
-    aktif: undefined,
-    tidakAktif: undefined,
-    totalSuperadmin: undefined,
-    totalAdmin: undefined
   };
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch($api.countTotalUsers(), {
+    const response = await fetch($api.getTotalWarehouse(), {
         headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -448,10 +392,6 @@ const fetchTotalUsers = async () => {
       if (result && typeof result === 'object' && result !== null) {
         stats.value = {
             total: result.total,
-            aktif: result.aktif,
-            tidakAktif: result.tidakAktif,
-            totalSuperadmin: result.totalSuperadmin,
-            totalAdmin: result.totalAdmin,
         };
       } else {
         stats.value = defaultStats;
@@ -467,7 +407,7 @@ const fetchTotalUsers = async () => {
   }
 };
 
-// Fungsi untuk menangani event load lazy data dari user
+// Fungsi untuk menangani event load lazy data dari warehouse
 const loadLazyData = async () => {
     loading.value = true;
     try {
@@ -481,7 +421,7 @@ const loadLazyData = async () => {
             search   : lazyParams.value.search || '',
         });
 
-        const response = await fetch(`${$api.users()}?${params.toString()}`, {
+        const response = await fetch(`${$api.warehouse()}?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -490,22 +430,22 @@ const loadLazyData = async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data user dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data user');
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data warehouse dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data warehouse');
         }
 
         const result = await response.json();
-        user.value = result.data || []; 
+        warehouse.value = result.data || []; 
         totalRecords.value = parseInt(result.meta.total) || 0;
         if (result.draw) {
              lazyParams.value.draw = parseInt(result.draw);
         }
 
     } catch (error) {
-        console.error('Error loading lazy data for user:', error);
-        user.value = [];
+        console.error('Error loading lazy data for warehouse:', error);
+        warehouse.value = [];
         totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data user: ${error.message}`, 'error');
+        Swal.fire('Error', `Tidak dapat memuat data warehouse: ${error.message}`, 'error');
     } finally {
         loading.value = false;
     }
@@ -513,8 +453,7 @@ const loadLazyData = async () => {
 
 onMounted(() => {
     loadLazyData();
-    fetchRoles();
-    fetchTotalUsers();
+    fetchStats();
 });
 
 const onPage = (event) => {
@@ -542,23 +481,24 @@ const exportData = (format) => {
     }
 };
 
-const openAddUserModal = () => {
+const openAddWarehouseModal = () => {
     isEditMode.value = false;
-    modalTitle.value = 'Tambah User';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan user baru.';
+    modalTitle.value = 'Tambah Gudang';
+    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan warehouse baru.';
     resetParentFormState();
 };
 
-async function openEditUserModal(userData) {
+async function openEditWarehouseModal(warehouseData) {
     isEditMode.value = true;
-    // Ambil data user saat modal terbuka
-    selectedUser.value = JSON.parse(JSON.stringify(userData));
-    formUser.value = {
-        full_name: userData.fullName || '',
-        email: userData.email || '',
-        password: userData.password || '',
-        isActive: userData.isActive || '',
-        role_ids: userData.roles.map(role => role.id)
+    // Ambil data warehouse saat modal terbuka
+    selectedWarehouse.value = JSON.parse(JSON.stringify(warehouseData));
+    formWarehouse.value = {
+        id: warehouseData.id,
+        name       : warehouseData.name || '',
+        address    : warehouseData.address || '',
+        code       : warehouseData.code || '',
+        phone      : warehouseData.phone || '',
+        email      : warehouseData.email || '',
     };
     validationErrors.value = [];
 
@@ -567,22 +507,22 @@ async function openEditUserModal(userData) {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     } else {
-        console.error('UserModal element tidak ditemukan atau Bootstrap belum dimuat.');
+        console.error('WarehouseModal element tidak ditemukan atau Bootstrap belum dimuat.');
     }
 }
 
-const deleteUser = async (userId) => {
-    if (!userId) return;
+const deleteWarehouse = async (id) => {
+    if (!id) return;
 
     const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This action cannot be undone!',
-        icon: 'warning',
-        showCancelButton: true,
+        title             : 'Are you sure?',
+        text              : 'This action cannot be undone!',
+        icon              : 'warning',
+        showCancelButton  : true,
         confirmButtonColor: '#666CFF',
-        cancelButtonColor: '#A7A9B3',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
+        cancelButtonColor : '#A7A9B3',
+        confirmButtonText : 'Yes, delete it!',
+        cancelButtonText  : 'Cancel'
     });
 
     if (result.isConfirmed) {
@@ -597,7 +537,7 @@ const deleteUser = async (userId) => {
             const csrfData  = await csrfResponse.json();
             const csrfToken = csrfData.token;
 
-            url = `${$api.users()}/${userId}`;
+             url = `${$api.warehouse()}/${id}`;
 
             const response = await fetch(url, {
                 method: 'DELETE',
@@ -611,14 +551,14 @@ const deleteUser = async (userId) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus user');
+                throw new Error(errorData.message || 'Gagal menghapus warehouse');
             }
 
             loadLazyData();
 
             await Swal.fire({
                 title: 'Berhasil!',
-                text: 'User berhasil dihapus.',
+                text: 'Gudang berhasil dihapus.',
                 icon: 'success'
             });
 
@@ -632,51 +572,13 @@ const deleteUser = async (userId) => {
     }
 };
 
-const getStatusBadge = (isActive) => {
-    switch (isActive) {
-        case true:
-            return { text: 'Aktif', class: 'badge rounded-pill bg-label-primary' };
-        case false:
-            return { text: 'Tidak Aktif', class: 'badge rounded-pill bg-label-danger' };
-        default:
-            return { text: '-', class: 'badge rounded-pill bg-label-light' };
-    }
-};
-
 const resetParentFormState = () => {
-    formUser.value = {
-        full_name: '',
+    formWarehouse.value = {
+        name: '',
+        address: '',
+        code: '',
+        phone: '',
         email: '',
-        password: '',
-        isActive: true,
-        role_ids: []
     };
 };
-
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
 </script>
-
-<style scoped>
-    :deep(.isActive .vs__dropdown-toggle),
-    :deep(.role_ids .vs__dropdown-toggle) {
-        height: 48px !important;
-        border-radius: 7px;
-    }
-</style>

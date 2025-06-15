@@ -1,5 +1,5 @@
 <template>
-    <div class="col-xl-4 col-lg-6 col-md-6">
+    <div :class="columnClass">
         <div class="card h-100">
             <div class="card-body">
                 <div v-if="!isAddButtonCard" class="d-flex justify-content-between align-items-center mb-4">
@@ -54,6 +54,10 @@
         isAddButtonCard: {
             type: Boolean,
             default: false
+        },
+        columnClass: {
+            type: String,
+            default: 'col-xl-4 col-lg-6 col-md-6'
         }
     })
     defineEmits(['button-click']);

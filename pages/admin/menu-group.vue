@@ -445,18 +445,21 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input 
-                                    type="text" 
-                                    class="form-control" 
-                                    id="jenisMenu" 
-                                    v-model="formMenuGroup.jenisMenu" 
-                                    placeholder="Masukkan urutan"
-                                    @input="formMenuGroup.jenisMenu = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
-                                    required
-                                    >
-                                    <label for="jenisMenu">Jenis Menu</label>
+                                    <v-select
+                                        v-model="selectedJenisMenu"
+                                        :options="[
+                                            { label: 'Master', value: 1 },
+                                            { label: 'Inventory', value: 2 },
+                                            { label: 'Laporan', value: 3 },
+                                            { label: 'Admin', value: 4 },
+                                            { label: 'Transaksi', value: 5 },
+                                        ]"
+                                        label="label"
+                                        :reduce="option => option.value"
+                                        placeholder="-- Pilih Jenis Menu --"
+                                        id="select-jenis-menu"
+                                        class="select-jenis-menu"
+                                    />
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
@@ -491,12 +494,15 @@ import { useMenuGroupsStore } from '~/stores/menu-group'
 import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import { FilterMatchMode } from '@primevue/core/api';
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css'
 
 const { $api } = useNuxtApp()
 
 const myDataTableRef    = ref(null);
 const menuGroupStore    = useMenuGroupsStore()
 const selectedMenuGroup = ref(null);
+const selectedJenisMenu = ref(null);
 const menuGroup         = ref([])
 const loading           = ref(false);
 const isEditMode        = ref(false);
@@ -537,9 +543,17 @@ onBeforeUnmount(() => {
 });
 
 const formMenuGroup = ref({
+  id: null,
   name: '',
   icon: '',
-  order: null
+  order: null,
+  jenisMenu: null
+});
+
+watch(selectedJenisMenu, (newValue) => {
+    if (formMenuGroup.value) {
+        formMenuGroup.value.jenisMenu = newValue;
+    }
 });
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
@@ -633,6 +647,14 @@ const handleSaveMenuGroup = async () => {
         if (response.ok) {
             await loadLazyData();
             handleCloseModal();
+
+            // Update sidebar secara otomatis setelah menu detail diupdate/dibuat
+            // Pastikan menuGroupStore dan menuDetailStore sudah di-import dan reactive
+            if (typeof menuGroupStore?.fetchMenuGroups === 'function') {
+                await menuGroupStore.fetchMenuGroups();
+            }
+
+
             await Swal.fire(
                 'Berhasil!',
                 `Menu group berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
@@ -746,11 +768,13 @@ async function openEditMenuGroupModal(menuGroupData) {
     // Ambil data menuGroup saat modal terbuka
     selectedMenuGroup.value = JSON.parse(JSON.stringify(menuGroupData));
     formMenuGroup.value = {
+        id: menuGroupData.id,
         name: menuGroupData.name || '',
         icon: menuGroupData.icon || '',
-        order: menuGroupData.order || '',
-        jenisMenu: menuGroupData.jenisMenu || ''
+        order: menuGroupData.order || null,
+        jenisMenu: menuGroupData.jenisMenu || null
     };
+    selectedJenisMenu.value = menuGroupData.jenisMenu || null;
     validationErrors.value = [];
 
     const modalEl = document.getElementById('Modal');
@@ -840,9 +864,19 @@ const getStatusBadge = (jenisMenu) => {
 
 const resetParentFormState = () => {
     formMenuGroup.value = {
-        name: '',
-        icon: '',
-        order: null
+        id       : null,
+        name     : '',
+        icon     : '',
+        order    : null,
+        jenisMenu: null
     };
+    selectedJenisMenu.value = null;
 };
 </script>
+
+<style scoped>
+    :deep(.select-jenis-menu .vs__dropdown-toggle) {
+        height: 48px !important;
+        border-radius: 7px;
+    }
+</style>

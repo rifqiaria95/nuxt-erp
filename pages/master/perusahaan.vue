@@ -200,7 +200,17 @@
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
-                            <Column field="id" header="#" :sortable="true"></Column> 
+                                <Column field="id" header="#" :sortable="true"></Column> 
+                                <Column field="logoPerusahaan" header="Logo" :sortable="true">
+                                    <template #body="slotProps">
+                                        <div v-if="slotProps.data.logoPerusahaan">
+                                            <img :src="getLogoUrl(slotProps.data.logoPerusahaan)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                        </div>
+                                        <div v-else>
+                                            <span class="text-muted">Tidak ada logo</span>
+                                        </div>
+                                    </template>
+                                </Column>
                                 <Column field="nmPerusahaan" header="Nama Perusahaan" :sortable="true"></Column>
                                 <Column field="alamatPerusahaan" header="Alamat Perusahaan" :sortable="true"></Column>
                                 <Column field="npwpPerusahaan" header="NPWP Perusahaan" :sortable="true"></Column>
@@ -232,6 +242,19 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
+                                        type="file" 
+                                        class="form-control" 
+                                        id="logoPerusahaan" 
+                                        @change="onLogoChange"
+                                        placeholder="Masukkan logo perusahaan"
+                                        :required="!isEditMode"
+                                    >
+                                    <label for="logoPerusahaan">Logo Perusahaan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
                                         type="text" 
                                         class="form-control" 
                                         id="kodePerusahaan" 
@@ -255,7 +278,7 @@
                                     <label for="nmPerusahaan">Nama Perusahaan</label>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                     type="text" 
@@ -314,17 +337,35 @@ import { usePerusahaanStore } from '~/stores/perusahaan'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 
+const config = useRuntimeConfig();
+const getLogoUrl = (logoPath) => {
+    if (!logoPath || typeof logoPath !== 'string') {
+        return null;
+    }
+    if (logoPath.startsWith('http')) {
+        return logoPath;
+    }
+    if (!config.public.apiBase) {
+        return logoPath;
+    }
+    const origin = new URL(config.public.apiBase).origin;
+    const imageUrl = `${origin}/${logoPath}`;
+    return imageUrl;
+};
+
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null)
+const myDataTableRef     = ref(null)
 const perusahaanStore    = usePerusahaanStore()
 const selectedPerusahaan = ref(null);
 const perusahaan         = ref([])
-const loading           = ref(false);
-const isEditMode        = ref(false);
-const totalRecords      = ref(0);
-const globalFilterValue = ref('');
-const lazyParams        = ref({
+const loading            = ref(false);
+const isEditMode         = ref(false);
+const logoFile           = ref(null);
+const logoPreview        = ref('');
+const totalRecords       = ref(0);
+const globalFilterValue  = ref('');
+const lazyParams         = ref({
     first: 0,
     rows: 10,
     sortField: null,
@@ -388,8 +429,6 @@ const handleSavePerusahaan = async () => {
         const csrfData = await csrfResponse.json();
         const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
         const token = localStorage.getItem('token');
-        let response;
-        let url;
 
         // Validasi form sederhana
         if (!formPerusahaan.value.nm_perusahaan || !formPerusahaan.value.npwp_perusahaan) {
@@ -397,6 +436,25 @@ const handleSavePerusahaan = async () => {
             loading.value = false;
             return;
         }
+
+        const formData = new FormData();
+        formData.append('kode_perusahaan', formPerusahaan.value.kode_perusahaan);
+        formData.append('nm_perusahaan', formPerusahaan.value.nm_perusahaan);
+        formData.append('npwp_perusahaan', formPerusahaan.value.npwp_perusahaan);
+        formData.append('alamat_perusahaan', formPerusahaan.value.alamat_perusahaan);
+
+        if (formPerusahaan.value.logo && formPerusahaan.value.logo instanceof File) {
+            formData.append('logo_perusahaan', formPerusahaan.value.logo);
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'X-CSRF-TOKEN': csrfToken || '',
+            'Accept': 'application/json',
+        };
+
+        let url;
+        let response;
 
         if (isEditMode.value) {
             // Cari ID perusahaan dari form atau selectedPerusahaan
@@ -411,20 +469,11 @@ const handleSavePerusahaan = async () => {
             }
             url = `${$api.perusahaan()}/${perusahaanIdToUpdate}`;
             console.log('Updating perusahaan with ID:', perusahaanIdToUpdate, 'URL:', url);
-            // Update data
+
             response = await fetch(url, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    kode_perusahaan    : formPerusahaan.value.kode_perusahaan,
-                    nm_perusahaan      : formPerusahaan.value.nm_perusahaan,
-                    npwp_perusahaan    : formPerusahaan.value.npwp_perusahaan,
-                    alamat_perusahaan  : formPerusahaan.value.alamat_perusahaan,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
+                method: 'POST', // Menggunakan POST untuk mengirim FormData untuk pembaruan
+                body: formData,
+                headers: headers,
                 credentials: 'include'
             });
         } else {
@@ -432,17 +481,8 @@ const handleSavePerusahaan = async () => {
             url = $api.perusahaan();
             response = await fetch(url, {
                 method: 'POST',
-                body: JSON.stringify({
-                    kode_perusahaan    : formPerusahaan.value.kode_perusahaan,
-                    nm_perusahaan      : formPerusahaan.value.nm_perusahaan,
-                    npwp_perusahaan    : formPerusahaan.value.npwp_perusahaan,
-                    alamat_perusahaan  : formPerusahaan.value.alamat_perusahaan,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
+                body: formData,
+                headers: headers,
                 credentials: 'include'
             });
         }
@@ -537,6 +577,17 @@ const handleRowsChange = () => {
     loadLazyData();
 };
 
+function onLogoChange(e) {
+  const file = e.target.files[0];
+  formPerusahaan.value.logo = file;
+  if (file) {
+    const objectURL = URL.createObjectURL(file);
+    logoPreview.value = objectURL;
+  } else {
+    formPerusahaan.value.logo = '';
+  }
+}
+
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder;
@@ -564,6 +615,7 @@ async function openEditPerusahaanModal(perusahaanData) {
     selectedPerusahaan.value = { ...perusahaanData };
     formPerusahaan.value = {
         kode_perusahaan: perusahaanData.kode_perusahaan ?? perusahaanData.kodePerusahaan ?? '',
+        logo: perusahaanData.logo ?? perusahaanData.logoPerusahaan ?? '',
         nm_perusahaan: perusahaanData.nm_perusahaan ?? perusahaanData.nmPerusahaan ?? '',
         npwp_perusahaan: perusahaanData.npwp_perusahaan ?? perusahaanData.npwpPerusahaan ?? '',
         alamat_perusahaan: perusahaanData.alamat_perusahaan ?? perusahaanData.alamatPerusahaan ?? ''
@@ -646,6 +698,7 @@ const deletePerusahaan = async (perusahaanId) => {
 const resetParentFormState = () => {
     formPerusahaan.value = {
         kode_perusahaan: '',
+        logo: '',
         nm_perusahaan: '',
         npwp_perusahaan: '',
         alamat_perusahaan: ''

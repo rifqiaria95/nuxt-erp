@@ -33,9 +33,11 @@ export default defineNuxtPlugin(() => {
     permissionDelete: (id: number | string) => `${apiBase}/permissions/${id}`,
     getMenuDetails: (id: number | string) => `${apiBase}/permissions/getMenuGroupDetails/${id}`,
     getTotalPermission: () => `${apiBase}/permissions/getTotalPermission`,
+
     // Users
     users: () => `${apiBase}/users`,
     countTotalUsers: () => `${apiBase}/users/countTotalUsers`,
+
     // Menu
     menuGroups: () => `${apiBase}/menu-groups`,
     menuDetails: () => `${apiBase}/menu-details`,
@@ -53,9 +55,30 @@ export default defineNuxtPlugin(() => {
     pegawaiDelete: (id: number | string) => `${apiBase}/pegawai/delete/${id}`,
     pegawaiCountByStatus: () => `${apiBase}/pegawai/countByStatus`,
 
+    // Purchase Order
+    purchaseOrder: () => `${apiBase}/purchase-order`,
+    purchaseOrderUpdate: (id: number | string) => `${apiBase}/purchase-order/update/${id}`,
+    getPurchaseOrderDetails: (id: number | string) => `${apiBase}/purchase-order/getPurchaseOrderDetails/${id}`,
+
+    // Product
+    product: () => `${apiBase}/product`,
+
     // Kategori
     categories: () => `${apiBase}/categories`,
     countProductByCategory: () => `${apiBase}/categories/countProductByCategory`,
+
+    // Unit
+    unit: () => `${apiBase}/unit`,
+
+    // Customer
+    customer: () => `${apiBase}/customer`,
+
+    // Warehouse
+    warehouse: () => `${apiBase}/warehouse`,
+    getTotalWarehouse: () => `${apiBase}/warehouse/getTotalWarehouse`,
+
+    // Vendor
+    vendor: () => `${apiBase}/vendor`,
   };
 
   // Inject ke context Nuxt

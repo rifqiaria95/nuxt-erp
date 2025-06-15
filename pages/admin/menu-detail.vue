@@ -891,11 +891,13 @@ const getMenuGroupBadge = (menuGroupId) => {
         case 1:
             return { text: 'Master', class: 'badge rounded-pill bg-label-primary' };
         case 2:
-            return { text: 'Transaksi', class: 'badge rounded-pill bg-label-secondary' };
+            return { text: 'Inventory', class: 'badge rounded-pill bg-label-secondary' };
         case 3:
             return { text: 'Laporan', class: 'badge rounded-pill bg-label-warning text-dark' };
         case 4:
             return { text: 'Admin', class: 'badge rounded-pill bg-label-info' };
+        case 5:
+            return { text: 'Transaksi', class: 'badge rounded-pill bg-label-success' };
         default:
             return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }

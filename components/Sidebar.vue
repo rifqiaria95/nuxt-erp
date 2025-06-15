@@ -35,17 +35,26 @@
           <span class="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
         </li>
         <template v-if="menuGroupsStore.menuGroups && menuGroupsStore.menuGroups.length">
-          <li class="menu-item" :class="{
+          <li
+            class="menu-item"
+            v-for="group in [...menuGroupsStore.menuGroups].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
+            :key="group.id"
+            :class="{
               open: group.menuDetails && group.menuDetails.some(detail => detail.route === $route.path),
               active: group.menuDetails && group.menuDetails.some(detail => detail.route === $route.path)
-            }" v-for="group in menuGroupsStore.menuGroups" :key="group.id">
+            }"
+          >
             <a href="javascript:void(0);" class="menu-link menu-toggle">
               <i :class="['menu-icon', 'tf-icons', group.icon]"></i>
               <div>{{ group.name }}</div>
             </a>
             <ul class="menu-sub" v-if="group.menuDetails && group.menuDetails.length">
-              <li class="menu-item" v-for="detail in group.menuDetails" :key="detail.id"
-                :class="{ active: detail.route === $route.path }">
+              <li
+                class="menu-item"
+                v-for="detail in [...group.menuDetails].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
+                :key="detail.id"
+                :class="{ active: detail.route === $route.path }"
+              >
                 <a :href="detail.route" class="menu-link">
                   <div>{{ detail.name }}</div>
                 </a>

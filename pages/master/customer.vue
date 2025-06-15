@@ -2,11 +2,11 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Cabang</h4>
+            <h4 class="mb-1">List Customer</h4>
             <p class="mb-6">
-            List cabang yang terdaftar di sistem
+            List customer yang terdaftar di sistem
             </p>
-            <!-- cabang cards -->
+            <!-- customer cards -->
             <div class="row g-6">
                 <div class="col-xl-4 col-lg-6 col-md-6">
                     <div class="card">
@@ -141,10 +141,10 @@
                             <button
                             data-bs-target="#Modal"
                             data-bs-toggle="modal"
-                            class="btn btn-sm btn-primary mb-4 text-nowrap add-new-pegawai"
-                            @click="openAddCabangModal"
+                            class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"
+                            @click="openAddCustomerModal"
                             >
-                            Tambah Cabang
+                            Tambah Customer
                             </button>
                         </div>
                         </div>
@@ -153,11 +153,11 @@
                 </div>
 
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Cabang</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate Cabang.</p>
+                    <h4 class="mt-6 mb-1">Total Customer</h4>
+                    <p class="mb-0">Find all of your company's administrator accounts and their associate Customer.</p>
                 </div>
                 <div class="col-12">
-                    <!-- cabang Table -->
+                    <!-- customer Table -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
@@ -178,7 +178,7 @@
                                     <span class="p-input-icon-left">
                                         <InputText
                                             v-model="globalFilterValue"
-                                            placeholder="Cari cabang..."
+                                            placeholder="Cari customer..."
                                             class="w-full md:w-20rem"
                                         />
                                     </span>
@@ -188,7 +188,7 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="cabang" 
+                            :data="customer" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
@@ -199,37 +199,44 @@
                             paginatorPosition="bottom"
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
-                        >
+                            >
                             <Column field="id" header="#" :sortable="true"></Column> 
-                            <Column field="kodeCabang" header="Kode Cabang" :sortable="true"></Column>
-                            <Column field="nmCabang" header="Nama Cabang" :sortable="true"></Column>
-                            <Column field="alamatCabang" header="Alamat" :sortable="true"></Column>
-                            <Column header="Perusahaan" :sortable="true">
-                                <template #body="slotProps">
-                                    {{ slotProps.data.perusahaan && slotProps.data.perusahaan.nmPerusahaan ? slotProps.data.perusahaan.nmPerusahaan : '-' }}
-                                </template>
-                            </Column>
-                            <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                <template #body="slotProps">
-                                    <button @click="openEditCabangModal(slotProps.data)" class="btn btn-sm btn-route btn-text-secondary rounded-pill btn-route me-2"><i class="ri-edit-box-line"></i></button>
-                                    <button @click="deleteCabang(slotProps.data.id)" class="btn btn-sm btn-route btn-text-secondary rounded-pill btn-route"><i class="ri-delete-bin-7-line"></i></button>
-                                </template>
-                            </Column>
+                                <Column field="logo" header="Logo" :sortable="true">
+                                    <template #body="slotProps">
+                                        <div v-if="slotProps.data.logo">
+                                            <img :src="getLogoUrl(slotProps.data.logo)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                        </div>
+                                        <div v-else>
+                                            <span class="text-muted">Tidak ada logo</span>
+                                        </div>
+                                    </template>
+                                </Column>
+                                <Column field="name" header="Nama Customer" :sortable="true"></Column>
+                                <Column field="address" header="Alamat Customer" :sortable="true"></Column>
+                                <Column field="npwp" header="NPWP Customer" :sortable="true"></Column>
+                                <Column field="email" header="Email Customer" :sortable="true"></Column>
+                                <Column field="phone" header="Phone Customer" :sortable="true"></Column>
+                                <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                    <template #body="slotProps">
+                                        <button @click="openEditCustomerModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="deleteCustomer(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                    </template>
+                                </Column>
                         </MyDataTable>
                         </div>
                     </div>
-                    <!--/ cabang Table -->
+                    <!--/ customer Table -->
                 </div>
             </div>
-            <!--/ cabang cards -->
+            <!--/ customer cards -->
 
-            <!-- Placeholder untuk CabangModal component -->
+            <!-- Placeholder untuk MenuModal component -->
             <Modal 
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedCabang="selectedCabang"
+                :selectedCustomer="selectedCustomer"
             >
                 <template #default>
                     <form @submit.prevent="handleSubmit">
@@ -237,14 +244,14 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
-                                        type="text" 
+                                        type="file" 
                                         class="form-control" 
-                                        id="kode_cabang" 
-                                        v-model="formCabang.kode_cabang" 
-                                        placeholder="Masukkan kode cabang"
-                                        required
+                                        id="logoCustomer" 
+                                        @change="onLogoChange"
+                                        placeholder="Masukkan logo customer"
+                                        :required="!isEditMode"
                                     >
-                                    <label for="name">Kode Cabang</label>
+                                    <label for="logoCustomer">Logo Customer</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -252,12 +259,25 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
-                                        id="nm_cabang" 
-                                        v-model="formCabang.nm_cabang" 
-                                        placeholder="Masukkan nama cabang"
+                                        id="nmCustomer" 
+                                        v-model="formCustomer.name" 
+                                        placeholder="Masukkan nama customer"
                                         required
                                     >
-                                    <label for="name">Nama Cabang</label>
+                                    <label for="nmCustomer">Nama Customer</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="email" 
+                                        class="form-control" 
+                                        id="emailCustomer" 
+                                        v-model="formCustomer.email" 
+                                        placeholder="Masukkan email customer"
+                                        required
+                                    >
+                                    <label for="emailCustomer">Email Customer</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -265,29 +285,49 @@
                                     <input 
                                     type="text" 
                                     class="form-control" 
-                                    id="alamat_cabang" 
-                                    v-model="formCabang.alamat_cabang" 
-                                    placeholder="Masukkan alamat cabang"
+                                    id="phoneCustomer" 
+                                    v-model="formCustomer.phone" 
+                                    placeholder="Masukkan no. telp customer"
+                                    @input="formCustomer.phone = $event.target.value.replace(/[^0-9]/g, '')"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    required
                                     >
-                                    <label for="alamat_cabang">Alamat Cabang</label>
+                                    <label for="phoneCustomer">No. Telp Customer</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <v-select
-                                    v-model="formCabang.perusahaan_id"
-                                    :options="perusahaan"
-                                    label="nmPerusahaan"
-                                    :reduce="perusahaan => perusahaan.id"
-                                    placeholder="-- Pilih Perusahaan --"
-                                    id="perusahaanId"
-                                    class="perusahaanId"
-                                />   
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="npwpCustomer" 
+                                    v-model="formCustomer.npwp" 
+                                    placeholder="Masukkan npwp customer"
+                                    @input="formCustomer.npwp = $event.target.value.replace(/[^0-9]/g, '')"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    required
+                                    >
+                                    <label for="npwpCustomer">NPWP Customer</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <textarea
+                                        class="form-control h-px-100"
+                                        id="alamat_vendor"
+                                        placeholder="Alamat Customer"
+                                        v-model="formCustomer.address">
+                                    </textarea>
+                                    <label for="alamat_vendor">Alamat Customer</label>
+                                </div>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button
                                     type="submit"
                                     class="btn btn-primary me-2"
-                                    @click="handleSaveCabang"
+                                    @click="handleSaveCustomer"
                                 >
                                     {{ isEditMode ? 'Update' : 'Simpan' }}
                                 </button>
@@ -307,30 +347,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { usePerusahaanStore } from '~/stores/perusahaan'
-import { useCabangStore } from '~/stores/cabang'
+import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
-import vSelect from 'vue-select'
-import 'vue-select/dist/vue-select.css'
+import { useCustomerStore } from '~/stores/customer'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 
+const config   = useRuntimeConfig();
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null);
-const perusahaanStore = usePerusahaanStore()
-const cabangStore     = useCabangStore()
-const selectedCabang  = ref(null);
-const perusahaan      = ref([]);
-const cabang          = ref([])
-const loading         = ref(false);
-const isEditMode      = ref(false);
-const totalRecords    = ref(0);
+const myDataTableRef = ref(null)
+const perusahaanStore    = useCustomerStore()
+const selectedCustomer = ref(null);
+const customer         = ref([])
+const loading           = ref(false);
+const isEditMode        = ref(false);
+const totalRecords      = ref(0);
 const globalFilterValue = ref('');
-const lazyParams      = ref({
+const lazyParams        = ref({
     first: 0,
     rows: 10,
     sortField: null,
@@ -339,20 +375,34 @@ const lazyParams      = ref({
     search: '',
 });
 
-const formCabang = ref({
-  kode_cabang: '',
-  nm_cabang: '',
-  alamat_cabang: '',
-  perusahaan_id: null,
+const formCustomer = ref({
+  name: '',
+  address: '',
+  email: '',
+  phone: '',
+  npwp: '',
+  logo: ''
 });
+
+const getLogoUrl = (logoPath) => {
+    if (!logoPath || typeof logoPath !== 'string') {
+        return null;
+    }
+    if (logoPath.startsWith('http')) {
+        return logoPath;
+    }
+    if (!config.public.apiBase) {
+        return logoPath;
+    }
+    const origin = new URL(config.public.apiBase).origin;
+    const imageUrl = `${origin}/${logoPath}`;
+    return imageUrl;
+};
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
-
-const modalTitle = computed(() => isEditMode.value ? 'Edit Cabang' : 'Tambah Cabang');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data cabang di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan cabang baru.');
+const modalTitle = computed(() => isEditMode.value ? 'Edit Customer' : 'Tambah Customer');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data customer di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan customer baru.');
 
 // Fungsi untuk menangani event close dari modal
 const handleCloseModal = () => {
@@ -385,26 +435,10 @@ onBeforeUnmount(() => {
     }
 });
 
-const fetchPerusahaan = async () => {
-    try {
-        const token = localStorage.getItem('token')
-        const response = await fetch($api.perusahaan(), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        
-        if (!response.ok) throw new Error('Gagal mengambil data perusahaan')
-        
-        const data = await response.json()
-        perusahaan.value = data.data || data
-    } catch (error) {
-        console.error('Error fetching perusahaan:', error)
-    }
-}
+// Tambahkan state untuk error validasi agar bisa digunakan di modal
+const validationErrors = ref([]);
 
-const handleSaveCabang = async () => {
+const handleSaveCustomer = async () => {
     loading.value = true;
     validationErrors.value = []; // reset error sebelum submit
     try {
@@ -413,61 +447,61 @@ const handleSaveCabang = async () => {
         const csrfData = await csrfResponse.json();
         const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
         const token = localStorage.getItem('token');
-        let response;
-        let url;
 
         // Validasi form sederhana
-        if (!formCabang.value.nm_cabang || !formCabang.value.alamat_cabang) {
-            Swal.fire('Validasi', 'Nama dan alamat cabang wajib diisi.', 'warning');
+        if (!formCustomer.value.name || !formCustomer.value.npwp) {
+            Swal.fire('Validasi', 'Nama dan NPWP customer wajib diisi.', 'warning');
             loading.value = false;
             return;
         }
 
+        const formData = new FormData();
+        formData.append('name', formCustomer.value.name);
+        formData.append('npwp', formCustomer.value.npwp);
+        formData.append('address', formCustomer.value.address);
+        formData.append('email', formCustomer.value.email);
+        formData.append('phone', formCustomer.value.phone);
+
+        if (formCustomer.value.logo && formCustomer.value.logo instanceof File) {
+            formData.append('logo', formCustomer.value.logo);
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'X-CSRF-TOKEN': csrfToken || '',
+            'Accept': 'application/json',
+        };
+
+        let url;
+        let response;
+
         if (isEditMode.value) {
-            // Cari ID cabang dari form atau selectedCabang
-            let cabangIdToUpdate = formCabang.value?.id || formCabang.value?.idCabang;
-            if (!cabangIdToUpdate && selectedCabang.value) {
-                cabangIdToUpdate = selectedCabang.value.id || selectedCabang.value.idCabang;
+            // Cari ID perusahaan dari form atau selectedPerusahaan
+            let vendorIdToUpdate = formCustomer.value?.id || formCustomer.value?.idCustomer;
+            if (!vendorIdToUpdate && selectedCustomer.value) {
+                vendorIdToUpdate = selectedCustomer.value.id || selectedCustomer.value.idCustomer;
             }
-            if (!cabangIdToUpdate) {
-                Swal.fire('Error', 'ID Cabang tidak ditemukan untuk update.', 'error');
+            if (!vendorIdToUpdate) {
+                Swal.fire('Error', 'ID Customer tidak ditemukan untuk update.', 'error');
                 loading.value = false;
                 return;
             }
-            url = `${$api.cabang()}/${cabangIdToUpdate}`;
-            console.log('Updating cabang with ID:', cabangIdToUpdate, 'URL:', url);
-            // Update data
+            url = `${$api.customer()}/${vendorIdToUpdate}`;
+            console.log('Updating customer with ID:', vendorIdToUpdate, 'URL:', url);
+
             response = await fetch(url, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    kode_cabang : formCabang.value.kode_cabang,
-                    nm_cabang   : formCabang.value.nm_cabang,
-                    alamat_cabang: formCabang.value.alamat_cabang,
-                    perusahaan_id: formCabang.value.perusahaan_id,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
+                method: 'POST', // Menggunakan POST untuk mengirim FormData untuk pembaruan
+                body: formData,
+                headers: headers,
                 credentials: 'include'
             });
         } else {
             // Create baru
-            url = $api.cabang();
+            url = $api.customer();
             response = await fetch(url, {
                 method: 'POST',
-                body: JSON.stringify({
-                    kode_cabang : formCabang.value.kode_cabang,
-                    nm_cabang   : formCabang.value.nm_cabang,
-                    alamat_cabang: formCabang.value.alamat_cabang,
-                    perusahaan_id: formCabang.value.perusahaan_id,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
+                body: formData,
+                headers: headers,
                 credentials: 'include'
             });
         }
@@ -477,7 +511,7 @@ const handleSaveCabang = async () => {
             handleCloseModal();
             await Swal.fire(
                 'Berhasil!',
-                `Cabang berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+                `Customer berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
                 'success'
             );
         } else {
@@ -493,17 +527,17 @@ const handleSaveCabang = async () => {
                     : Object.values(errorData.errors).flat();
                 Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
             } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} cabang`, 'error');
+                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} customer`, 'error');
             }
         }
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data cabang.', 'error');
+        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data customer.', 'error');
     } finally {
         loading.value = false;
     }
 };
 
-// Fungsi untuk menangani event load lazy data dari cabang
+// Fungsi untuk menangani event load lazy data dari customer
 const loadLazyData = async () => {
     loading.value = true;
     try {
@@ -517,7 +551,7 @@ const loadLazyData = async () => {
             search   : lazyParams.value.search || '',
         });
 
-        const response = await fetch(`${$api.cabang()}?${params.toString()}`, {
+        const response = await fetch(`${$api.customer()}?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -526,22 +560,22 @@ const loadLazyData = async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data cabang dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data cabang');
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data customer dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data customer');
         }
 
         const result = await response.json();
-        cabang.value = result.data || []; 
+        customer.value = result.data || []; 
         totalRecords.value = parseInt(result.meta.total) || 0;
         if (result.draw) {
              lazyParams.value.draw = parseInt(result.draw);
         }
 
     } catch (error) {
-        console.error('Error loading lazy data for cabang:', error);
-        cabang.value = [];
+        console.error('Error loading lazy data for customer:', error);
+        customer.value = [];
         totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data cabang: ${error.message}`, 'error');
+        Swal.fire('Error', `Tidak dapat memuat data customer: ${error.message}`, 'error');
     } finally {
         loading.value = false;
     }
@@ -549,7 +583,6 @@ const loadLazyData = async () => {
 
 onMounted(() => {
     loadLazyData();
-    fetchPerusahaan();
 });
 
 const onPage = (event) => {
@@ -577,41 +610,57 @@ const exportData = (format) => {
     }
 };
 
-const openAddCabangModal = () => {
+function onLogoChange(e) {
+  const file = e.target.files[0];
+  formCustomer.value.logo = file;
+  if (file) {
+    const objectURL = URL.createObjectURL(file);
+    logoPreview.value = objectURL;
+  } else {
+    formCustomer.value.logo = '';
+  }
+}
+
+const openAddCustomerModal = () => {
     isEditMode.value = false;
-    modalTitle.value = 'Tambah Cabang';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan cabang baru.';
+    modalTitle.value = 'Tambah Customer';
+    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan customer baru.';
     resetParentFormState();
 };
 
-async function openEditCabangModal(cabangData) {
+async function openEditCustomerModal(vendorData) {
     isEditMode.value = true;
-    // Ambil data cabang saat modal terbuka
-    selectedCabang.value = JSON.parse(JSON.stringify(cabangData));
-    formCabang.value = {
-        nm_cabang: cabangData.nmCabang || '',
-        alamat_cabang: cabangData.alamatCabang || '',
-        perusahaan_id: cabangData.perusahaanId || null
+    // Mapping manual dari response API ke field form
+    selectedCustomer.value = { ...vendorData };
+    formCustomer.value = {
+        name   : vendorData.name ?? vendorData.nmCustomer ?? '',
+        address: vendorData.address ?? vendorData.alamatCustomer ?? '',
+        email  : vendorData.email ?? vendorData.emailCustomer ?? '',
+        phone  : vendorData.phone ?? vendorData.phoneCustomer ?? '',
+        npwp   : vendorData.npwp ?? vendorData.npwpCustomer ?? '',
+        logo   : vendorData.logo ?? vendorData.logoCustomer ?? ''
     };
     validationErrors.value = [];
 
-    // Tampilkan modal
+    // Tunggu DOM update agar binding form sudah siap sebelum show modal
+    await nextTick();
+
     const modalEl = document.getElementById('Modal');
     if (modalEl && window.bootstrap) {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     } else {
-        console.error('CabangModal element tidak ditemukan atau Bootstrap belum dimuat.');
+        console.error('CustomerModal element tidak ditemukan atau Bootstrap belum dimuat.');
     }
 }
 
-const deleteCabang = async (cabangId) => {
-    if (!cabangId) return;
+const deleteCustomer = async (vendorId) => {
+    if (!vendorId) return;
 
     const result = await Swal.fire({
         title: 'Are you sure?',
         text: 'This action cannot be undone!',
-        route: 'warning',
+        icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#666CFF',
         cancelButtonColor: '#A7A9B3',
@@ -631,7 +680,7 @@ const deleteCabang = async (cabangId) => {
             const csrfData  = await csrfResponse.json();
             const csrfToken = csrfData.token;
 
-            url = `${$api.cabang()}/${cabangId}`;
+            url = `${$api.customer()}/${vendorId}`;
 
             const response = await fetch(url, {
                 method: 'DELETE',
@@ -645,41 +694,35 @@ const deleteCabang = async (cabangId) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus cabang');
+                throw new Error(errorData.message || 'Gagal menghapus customer');
             }
 
             loadLazyData();
 
             await Swal.fire({
                 title: 'Berhasil!',
-                text: 'Cabang berhasil dihapus.',
-                route: 'success'
+                text: 'Customer berhasil dihapus.',
+                icon: 'success'
             });
 
         } catch (error) {
             await Swal.fire({
                 title: 'Error',
                 text: error.message,
-                route: 'error'
+                icon: 'error'
             });
         }
     }
 };
 
 const resetParentFormState = () => {
-    formCabang.value = {
-        kode_cabang: '',
-        nm_cabang: '',
-        alamat_cabang: '',
-        perusahaan_id: null,
+    formCustomer.value = {
+        name: '',
+        address: '',
+        email: '',
+        phone: '',
+        npwp: '',
+        logo: ''
     };
 };
 </script>
-
-<style scoped>
-    :deep(.perusahaanId .vs__dropdown-toggle) {
-        height: 48px !important;
-        border-radius: 7px;
-    }
-</style>
-

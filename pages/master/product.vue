@@ -2,11 +2,11 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Cabang</h4>
+            <h4 class="mb-1">List Product</h4>
             <p class="mb-6">
-            List cabang yang terdaftar di sistem
+            List product yang terdaftar di sistem
             </p>
-            <!-- cabang cards -->
+            <!-- product cards -->
             <div class="row g-6">
                 <div class="col-xl-4 col-lg-6 col-md-6">
                     <div class="card">
@@ -141,10 +141,10 @@
                             <button
                             data-bs-target="#Modal"
                             data-bs-toggle="modal"
-                            class="btn btn-sm btn-primary mb-4 text-nowrap add-new-pegawai"
-                            @click="openAddCabangModal"
+                            class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"
+                            @click="openAddProductModal"
                             >
-                            Tambah Cabang
+                            Tambah Product
                             </button>
                         </div>
                         </div>
@@ -153,11 +153,11 @@
                 </div>
 
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Cabang</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate Cabang.</p>
+                    <h4 class="mt-6 mb-1">Total Product</h4>
+                    <p class="mb-0">Find all of your company's administrator accounts and their associate Product.</p>
                 </div>
                 <div class="col-12">
-                    <!-- cabang Table -->
+                    <!-- product Table -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
@@ -178,7 +178,7 @@
                                     <span class="p-input-icon-left">
                                         <InputText
                                             v-model="globalFilterValue"
-                                            placeholder="Cari cabang..."
+                                            placeholder="Cari product..."
                                             class="w-full md:w-20rem"
                                         />
                                     </span>
@@ -188,7 +188,7 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="cabang" 
+                            :data="product" 
                             :rows="lazyParams.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
@@ -199,37 +199,65 @@
                             paginatorPosition="bottom"
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
-                        >
+                            >
                             <Column field="id" header="#" :sortable="true"></Column> 
-                            <Column field="kodeCabang" header="Kode Cabang" :sortable="true"></Column>
-                            <Column field="nmCabang" header="Nama Cabang" :sortable="true"></Column>
-                            <Column field="alamatCabang" header="Alamat" :sortable="true"></Column>
-                            <Column header="Perusahaan" :sortable="true">
-                                <template #body="slotProps">
-                                    {{ slotProps.data.perusahaan && slotProps.data.perusahaan.nmPerusahaan ? slotProps.data.perusahaan.nmPerusahaan : '-' }}
-                                </template>
-                            </Column>
-                            <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                <template #body="slotProps">
-                                    <button @click="openEditCabangModal(slotProps.data)" class="btn btn-sm btn-route btn-text-secondary rounded-pill btn-route me-2"><i class="ri-edit-box-line"></i></button>
-                                    <button @click="deleteCabang(slotProps.data.id)" class="btn btn-sm btn-route btn-text-secondary rounded-pill btn-route"><i class="ri-delete-bin-7-line"></i></button>
-                                </template>
-                            </Column>
+                                <Column field="image" header="Gambar" :sortable="true">
+                                    <template #body="slotProps">
+                                        <div v-if="slotProps.data.image">
+                                            <img :src="getLogoUrl(slotProps.data.image)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                        </div>
+                                        <div v-else>
+                                            <span class="text-muted">Tidak ada image</span>
+                                        </div>
+                                    </template>
+                                </Column>
+                                <Column field="sku" header="No. Product" :sortable="true"></Column>
+                                <Column field="name" header="Nama Product" :sortable="true"></Column>
+                                <Column field="unit.name" header="Satuan" :sortable="true"></Column>
+                                <Column field="stockMin" header="Stok Minimum" :sortable="true"></Column>
+                                <Column field="priceBuy" header="Harga Beli" :sortable="true">
+                                    <template #body="slotProps">
+                                        {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
+                                    </template>
+                                </Column>
+                                <Column field="priceSell" header="Harga Jual" :sortable="true">
+                                    <template #body="slotProps">
+                                        {{ slotProps.data.priceSell ? formatRupiah(slotProps.data.priceSell) : '-' }}
+                                    </template>
+                                </Column>
+                                <Column field="isService" header="Service" :sortable="true">
+                                    <template #body="slotProps">
+                                        <span :class="getStatusBadge(slotProps.data.isService).class">
+                                            {{ getStatusBadge(slotProps.data.isService).text }}
+                                        </span>
+                                    </template>
+                                </Column>
+                                <Column header="Kategori" :sortable="true">
+                                    <template #body="slotProps">
+                                        {{ slotProps.data.category && slotProps.data.category.name ? slotProps.data.category.name : '-' }}
+                                    </template>
+                                </Column>
+                                <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                    <template #body="slotProps">
+                                        <button @click="openEditProductModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                    </template>
+                                </Column>
                         </MyDataTable>
                         </div>
                     </div>
-                    <!--/ cabang Table -->
+                    <!--/ product Table -->
                 </div>
             </div>
-            <!--/ cabang cards -->
+            <!--/ product cards -->
 
-            <!-- Placeholder untuk CabangModal component -->
+            <!-- Placeholder untuk MenuModal component -->
             <Modal 
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedCabang="selectedCabang"
+                :selectedProduct="selectedProduct"
             >
                 <template #default>
                     <form @submit.prevent="handleSubmit">
@@ -239,12 +267,12 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
-                                        id="kode_cabang" 
-                                        v-model="formCabang.kode_cabang" 
-                                        placeholder="Masukkan kode cabang"
+                                        id="skuProduct" 
+                                        v-model="formProduct.sku" 
+                                        placeholder="Masukkan sku product"
                                         required
                                     >
-                                    <label for="name">Kode Cabang</label>
+                                    <label for="skuProduct">Kode Product</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -252,12 +280,12 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
-                                        id="nm_cabang" 
-                                        v-model="formCabang.nm_cabang" 
-                                        placeholder="Masukkan nama cabang"
+                                        id="nmProduct" 
+                                        v-model="formProduct.name" 
+                                        placeholder="Masukkan nama product"
                                         required
                                     >
-                                    <label for="name">Nama Cabang</label>
+                                    <label for="nmProduct">Nama Product</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -265,29 +293,99 @@
                                     <input 
                                     type="text" 
                                     class="form-control" 
-                                    id="alamat_cabang" 
-                                    v-model="formCabang.alamat_cabang" 
-                                    placeholder="Masukkan alamat cabang"
+                                    id="stockMinProduct" 
+                                    v-model="formProduct.stockMin" 
+                                    placeholder="Masukkan stok minimum product"
+                                    @input="formProduct.stockMin = $event.target.value.replace(/[^0-9]/g, '')"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    required
                                     >
-                                    <label for="alamat_cabang">Alamat Cabang</label>
+                                    <label for="stockMinProduct">Stok Minimum Product</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <v-select
-                                    v-model="formCabang.perusahaan_id"
-                                    :options="perusahaan"
-                                    label="nmPerusahaan"
-                                    :reduce="perusahaan => perusahaan.id"
-                                    placeholder="-- Pilih Perusahaan --"
-                                    id="perusahaanId"
-                                    class="perusahaanId"
-                                />   
+                                <div class="form-floating form-floating-outline">
+                                    <v-select
+                                        v-model="formProduct.unitId"
+                                        :options="unit"
+                                        label="name"
+                                        :reduce="unit => unit.id"
+                                        placeholder="-- Pilih Satuan --"
+                                        id="unit"
+                                        class="unit"
+                                    />
+                                    <!-- Debug: tampilkan data unit di bawah select -->
+                                    <div v-if="!unit || unit.length === 0" class="text-danger mt-1">
+                                        Data satuan belum tersedia.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="priceBuyProduct" 
+                                    v-model="formattedPriceBuy" 
+                                    placeholder="Masukkan harga beli product"
+                                    required
+                                    >
+                                    <label for="priceBuyProduct">Harga Beli Product</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="priceSellProduct" 
+                                    v-model="formattedPriceSell" 
+                                    placeholder="Masukkan harga jual product"
+                                    required
+                                    >
+                                    <label for="priceSellProduct">Harga Jual Product</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <v-select
+                                        v-model="formProduct.categoryId"
+                                        :options="kategori"
+                                        label="name"
+                                        :reduce="kategori => kategori.id"
+                                        placeholder="-- Pilih Kategori --"
+                                        id="kategori"
+                                        class="kategori"
+                                    />  
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mt-3 d-flex align-items-center">
+                                    <input class="form-check-input me-2" type="checkbox" id="isServiceProduct" v-model="formProduct.isService" />
+                                    <label class="form-check-label mb-0" for="isServiceProduct">
+                                        Service Product
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="file" 
+                                        class="form-control" 
+                                        id="imageProduct" 
+                                        @change="onImageChange"
+                                        placeholder="Masukkan image product"
+                                        :required="!isEditMode"
+                                    >
+                                    <label for="imageProduct">Gambar Product</label>
+                                </div>
                             </div>
                             <div class="d-flex justify-content-end">
                                 <button
                                     type="submit"
                                     class="btn btn-primary me-2"
-                                    @click="handleSaveCabang"
+                                    @click="handleSaveProduct"
                                 >
                                     {{ isEditMode ? 'Update' : 'Simpan' }}
                                 </button>
@@ -307,9 +405,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { usePerusahaanStore } from '~/stores/perusahaan'
-import { useCabangStore } from '~/stores/cabang'
+import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import { useProductStore } from '~/stores/product'
+import { useKategoriStore } from '~/stores/kategori'
+import { useUnitStore } from '~/stores/unit'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
@@ -318,19 +417,24 @@ import 'vue-select/dist/vue-select.css'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 
+const config   = useRuntimeConfig();
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null);
-const perusahaanStore = usePerusahaanStore()
-const cabangStore     = useCabangStore()
-const selectedCabang  = ref(null);
-const perusahaan      = ref([]);
-const cabang          = ref([])
-const loading         = ref(false);
-const isEditMode      = ref(false);
-const totalRecords    = ref(0);
+const myDataTableRef    = ref(null)
+const productStore      = useProductStore()
+const kategoriStore     = useKategoriStore()
+const unitStore         = useUnitStore()
+const formatRupiah      = useFormatRupiah()
+const selectedProduct   = ref(null);
+const product           = ref([])
+const unit              = ref([])
+const kategori          = ref([])
+const selectedKategori  = ref(null)
+const loading           = ref(false);
+const isEditMode        = ref(false);
+const totalRecords      = ref(0);
 const globalFilterValue = ref('');
-const lazyParams      = ref({
+const lazyParams        = ref({
     first: 0,
     rows: 10,
     sortField: null,
@@ -339,20 +443,55 @@ const lazyParams      = ref({
     search: '',
 });
 
-const formCabang = ref({
-  kode_cabang: '',
-  nm_cabang: '',
-  alamat_cabang: '',
-  perusahaan_id: null,
+const formProduct = ref({
+  name      : '',
+  sku       : '',
+  unitId    : '',
+  stockMin  : '',
+  priceBuy  : '',
+  priceSell : '',
+  isService : false,
+  image     : '',
+  categoryId: ''
 });
+
+const formattedPriceBuy = computed({
+    get() {
+        return formatRupiah(formProduct.value.priceBuy);
+    },
+    set(value) {
+        formProduct.value.priceBuy = value.replace(/[^0-9]/g, '');
+    }
+});
+
+const formattedPriceSell = computed({
+    get() {
+        return formatRupiah(formProduct.value.priceSell);
+    },
+    set(value) {
+        formProduct.value.priceSell = value.replace(/[^0-9]/g, '');
+    }
+});
+
+const getLogoUrl = (imagePath) => {
+    if (!imagePath || typeof imagePath !== 'string') {
+        return null;
+    }
+    if (imagePath.startsWith('http')) {
+        return imagePath;
+    }
+    if (!config.public.apiBase) {
+        return imagePath;
+    }
+    const origin = new URL(config.public.apiBase).origin;
+    const imageUrl = `${origin}/${imagePath}`;
+    return imageUrl;
+};
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
-
-const modalTitle = computed(() => isEditMode.value ? 'Edit Cabang' : 'Tambah Cabang');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data cabang di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan cabang baru.');
+const modalTitle = computed(() => isEditMode.value ? 'Edit Product' : 'Tambah Product');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data product di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan product baru.');
 
 // Fungsi untuk menangani event close dari modal
 const handleCloseModal = () => {
@@ -385,26 +524,48 @@ onBeforeUnmount(() => {
     }
 });
 
-const fetchPerusahaan = async () => {
+const fetchUnit = async () => {
     try {
         const token = localStorage.getItem('token')
-        const response = await fetch($api.perusahaan(), {
+        const response = await fetch($api.unit(), {
             headers: { 
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         })
         
-        if (!response.ok) throw new Error('Gagal mengambil data perusahaan')
+        if (!response.ok) throw new Error('Gagal mengambil data unit')
         
         const data = await response.json()
-        perusahaan.value = data.data || data
+        unit.value = data.data;
     } catch (error) {
-        console.error('Error fetching perusahaan:', error)
+        console.error('Error fetching unit:', error)
     }
 }
 
-const handleSaveCabang = async () => {
+const fetchKategori = async () => {
+    try {
+        const token = localStorage.getItem('token')
+        const response = await fetch($api.categories(), {
+            headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        
+        if (!response.ok) throw new Error('Gagal mengambil data kategori')
+        
+        const data = await response.json()
+        kategori.value = data.data;
+    } catch (error) {
+        console.error('Error fetching kategori:', error)
+    }
+}
+
+// Tambahkan state untuk error validasi agar bisa digunakan di modal
+const validationErrors = ref([]);
+
+const handleSaveProduct = async () => {
     loading.value = true;
     validationErrors.value = []; // reset error sebelum submit
     try {
@@ -413,61 +574,70 @@ const handleSaveCabang = async () => {
         const csrfData = await csrfResponse.json();
         const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
         const token = localStorage.getItem('token');
-        let response;
-        let url;
 
         // Validasi form sederhana
-        if (!formCabang.value.nm_cabang || !formCabang.value.alamat_cabang) {
-            Swal.fire('Validasi', 'Nama dan alamat cabang wajib diisi.', 'warning');
+        if (!formProduct.value.name || !formProduct.value.sku) {
+            Swal.fire('Validasi', 'Nama dan SKU product wajib diisi.', 'warning');
             loading.value = false;
             return;
         }
 
+        const formData = new FormData();
+        formData.append('name', formProduct.value.name);
+        formData.append('sku', formProduct.value.sku);
+        formData.append('unitId', formProduct.value.unitId);
+        formData.append('stockMin', formProduct.value.stockMin);
+        formData.append('priceBuy', formProduct.value.priceBuy);
+        formData.append('priceSell', formProduct.value.priceSell);
+        formData.append('isService', formProduct.value.isService);
+        formData.append('categoryId', formProduct.value.categoryId);
+
+        if (formProduct.value.image && formProduct.value.image instanceof File) {
+            formData.append('image', formProduct.value.image);
+        }
+
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'X-CSRF-TOKEN': csrfToken || '',
+            'Accept': 'application/json',
+        };
+
+        let url;
+        let response;
+
         if (isEditMode.value) {
-            // Cari ID cabang dari form atau selectedCabang
-            let cabangIdToUpdate = formCabang.value?.id || formCabang.value?.idCabang;
-            if (!cabangIdToUpdate && selectedCabang.value) {
-                cabangIdToUpdate = selectedCabang.value.id || selectedCabang.value.idCabang;
+            // Cari ID perusahaan dari form atau selectedPerusahaan
+            let productIdToUpdate = formProduct.value?.id || formProduct.value?.idProduct;
+            if (!productIdToUpdate && selectedProduct.value) {
+                productIdToUpdate = selectedProduct.value.id || selectedProduct.value.idProduct;
             }
-            if (!cabangIdToUpdate) {
-                Swal.fire('Error', 'ID Cabang tidak ditemukan untuk update.', 'error');
+            if (!productIdToUpdate) {
+                Swal.fire('Error', 'ID Product tidak ditemukan untuk update.', 'error');
                 loading.value = false;
                 return;
             }
-            url = `${$api.cabang()}/${cabangIdToUpdate}`;
-            console.log('Updating cabang with ID:', cabangIdToUpdate, 'URL:', url);
-            // Update data
+            url = $api.productUpdate(productIdToUpdate);
+            console.log('Updating product with ID:', productIdToUpdate, 'URL:', url);
+
             response = await fetch(url, {
                 method: 'PUT',
-                body: JSON.stringify({
-                    kode_cabang : formCabang.value.kode_cabang,
-                    nm_cabang   : formCabang.value.nm_cabang,
-                    alamat_cabang: formCabang.value.alamat_cabang,
-                    perusahaan_id: formCabang.value.perusahaan_id,
-                }),
+                body: formData,
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
                 },
                 credentials: 'include'
             });
+            if (isEditMode.value) {
+                formData.append('_method', 'PUT');
+            }
         } else {
             // Create baru
-            url = $api.cabang();
+            url = $api.product();
             response = await fetch(url, {
                 method: 'POST',
-                body: JSON.stringify({
-                    kode_cabang : formCabang.value.kode_cabang,
-                    nm_cabang   : formCabang.value.nm_cabang,
-                    alamat_cabang: formCabang.value.alamat_cabang,
-                    perusahaan_id: formCabang.value.perusahaan_id,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
+                body: formData,
+                headers: headers,
                 credentials: 'include'
             });
         }
@@ -477,7 +647,7 @@ const handleSaveCabang = async () => {
             handleCloseModal();
             await Swal.fire(
                 'Berhasil!',
-                `Cabang berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+                `Product berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
                 'success'
             );
         } else {
@@ -493,17 +663,17 @@ const handleSaveCabang = async () => {
                     : Object.values(errorData.errors).flat();
                 Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
             } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} cabang`, 'error');
+                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} product`, 'error');
             }
         }
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data cabang.', 'error');
+        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data product.', 'error');
     } finally {
         loading.value = false;
     }
 };
 
-// Fungsi untuk menangani event load lazy data dari cabang
+// Fungsi untuk menangani event load lazy data dari product
 const loadLazyData = async () => {
     loading.value = true;
     try {
@@ -517,7 +687,7 @@ const loadLazyData = async () => {
             search   : lazyParams.value.search || '',
         });
 
-        const response = await fetch(`${$api.cabang()}?${params.toString()}`, {
+        const response = await fetch(`${$api.product()}?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -526,22 +696,22 @@ const loadLazyData = async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data cabang dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data cabang');
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data product dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data product');
         }
 
         const result = await response.json();
-        cabang.value = result.data || []; 
+        product.value = result.data || []; 
         totalRecords.value = parseInt(result.meta.total) || 0;
         if (result.draw) {
              lazyParams.value.draw = parseInt(result.draw);
         }
 
     } catch (error) {
-        console.error('Error loading lazy data for cabang:', error);
-        cabang.value = [];
+        console.error('Error loading lazy data for product:', error);
+        product.value = [];
         totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data cabang: ${error.message}`, 'error');
+        Swal.fire('Error', `Tidak dapat memuat data product: ${error.message}`, 'error');
     } finally {
         loading.value = false;
     }
@@ -549,7 +719,8 @@ const loadLazyData = async () => {
 
 onMounted(() => {
     loadLazyData();
-    fetchPerusahaan();
+    fetchUnit();
+    fetchKategori();
 });
 
 const onPage = (event) => {
@@ -577,41 +748,64 @@ const exportData = (format) => {
     }
 };
 
-const openAddCabangModal = () => {
+// Definisikan imagePreview terlebih dahulu
+const imagePreview = ref(null);
+
+function onImageChange(e) {
+  const file = e.target.files[0];
+  formProduct.value.image = file;
+  if (file) {
+    const objectURL = URL.createObjectURL(file);
+    imagePreview.value = objectURL;
+  } else {
+    formProduct.value.image = '';
+    imagePreview.value = null;
+  }
+}
+
+const openAddProductModal = () => {
     isEditMode.value = false;
-    modalTitle.value = 'Tambah Cabang';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan cabang baru.';
+    modalTitle.value = 'Tambah Product';
+    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan product baru.';
     resetParentFormState();
 };
 
-async function openEditCabangModal(cabangData) {
+async function openEditProductModal(productData) {
     isEditMode.value = true;
-    // Ambil data cabang saat modal terbuka
-    selectedCabang.value = JSON.parse(JSON.stringify(cabangData));
-    formCabang.value = {
-        nm_cabang: cabangData.nmCabang || '',
-        alamat_cabang: cabangData.alamatCabang || '',
-        perusahaan_id: cabangData.perusahaanId || null
+    // Mapping manual dari response API ke field form
+    selectedProduct.value = { ...productData };
+    formProduct.value = {
+        name      : productData.name ?? productData.nmProduct ?? '',
+        sku       : productData.sku ?? productData.skuProduct ?? '',
+        unitId    : productData.unitId ?? productData.unitIdProduct ?? '',
+        stockMin  : productData.stockMin ?? productData.stockMinProduct ?? '',
+        priceBuy  : productData.priceBuy ?? productData.priceBuyProduct ?? '',
+        priceSell : productData.priceSell ?? productData.priceSellProduct ?? '',
+        isService : !!(productData.isService ?? productData.isServiceProduct),
+        categoryId: productData.categoryId ?? productData.categoryIdProduct ?? '',
+        image     : productData.image ?? productData.imageProduct ?? ''
     };
     validationErrors.value = [];
 
-    // Tampilkan modal
+    // Tunggu DOM update agar binding form sudah siap sebelum show modal
+    await nextTick();
+
     const modalEl = document.getElementById('Modal');
     if (modalEl && window.bootstrap) {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     } else {
-        console.error('CabangModal element tidak ditemukan atau Bootstrap belum dimuat.');
+        console.error('ProductModal element tidak ditemukan atau Bootstrap belum dimuat.');
     }
 }
 
-const deleteCabang = async (cabangId) => {
-    if (!cabangId) return;
+const deleteProduct = async (productId) => {
+    if (!productId) return;
 
     const result = await Swal.fire({
         title: 'Are you sure?',
         text: 'This action cannot be undone!',
-        route: 'warning',
+        icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#666CFF',
         cancelButtonColor: '#A7A9B3',
@@ -631,7 +825,7 @@ const deleteCabang = async (cabangId) => {
             const csrfData  = await csrfResponse.json();
             const csrfToken = csrfData.token;
 
-            url = `${$api.cabang()}/${cabangId}`;
+            url = `${$api.product()}/${productId}`;
 
             const response = await fetch(url, {
                 method: 'DELETE',
@@ -645,41 +839,57 @@ const deleteCabang = async (cabangId) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus cabang');
+                throw new Error(errorData.message || 'Gagal menghapus product');
             }
 
             loadLazyData();
 
             await Swal.fire({
                 title: 'Berhasil!',
-                text: 'Cabang berhasil dihapus.',
-                route: 'success'
+                text: 'Product berhasil dihapus.',
+                icon: 'success'
             });
 
         } catch (error) {
             await Swal.fire({
                 title: 'Error',
                 text: error.message,
-                route: 'error'
+                icon: 'error'
             });
         }
     }
 };
 
+const getStatusBadge = (status) => {
+    switch (status) {
+        case true:
+            return { text: 'Ya', class: 'badge rounded-pill bg-label-primary' };
+        case false:
+            return { text: 'Tidak', class: 'badge rounded-pill bg-label-danger' };
+        default:
+            return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    }
+};
+
 const resetParentFormState = () => {
-    formCabang.value = {
-        kode_cabang: '',
-        nm_cabang: '',
-        alamat_cabang: '',
-        perusahaan_id: null,
+    formProduct.value = {
+        name: '',
+        sku: '',
+        unitId: '',
+        stockMin: '',
+        priceBuy: '',
+        priceSell: '',
+        isService: false,
+        categoryId: '',
+        image: ''
     };
 };
 </script>
 
 <style scoped>
-    :deep(.perusahaanId .vs__dropdown-toggle) {
+    :deep(.unit .vs__dropdown-toggle),
+    :deep(.kategori .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
     }
 </style>
-
