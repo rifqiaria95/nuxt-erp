@@ -1108,8 +1108,13 @@ const calculateSubtotal = (index) => {
 };
 
 // View Purchase Order Details
-const viewPurchaseOrderDetails = (id) => {
-    window.open(`/transaksi/purchase-detail?id=${id}`, '_blank');
+const viewPurchaseOrderDetails = (purchaseOrderId) => {
+    // Cek apakah router.push berhasil membuka halaman, jika tidak gunakan window.location
+    try {
+        router.push({ path: `/transaksi/purchase-detail?id=${purchaseOrderId}` });
+    } catch (e) {
+        window.location.href = `/transaksi/purchase-detail?id=${purchaseOrderId}`;
+    }
 };
 
 // Open Add Purchase Order Modal

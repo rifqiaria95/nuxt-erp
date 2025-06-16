@@ -66,6 +66,7 @@
                                 <th>Cost</th>
                                 <th>Qty</th>
                                 <th>Price</th>
+                                <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -74,7 +75,21 @@
                                     <td class="text-nowrap">{{ item.description }}</td>
                                     <td>{{ formatRupiah(item.price) }}</td>
                                     <td>{{ item.quantity }}</td>
-                                    <td>{{ formatRupiah(item.price * item.quantity) }}</td>
+                                    <td>{{ formatRupiah(Number(item.price) * Number(item.quantity)) }}</td>
+                                    <td>
+                                        <label class="switch switch-success">
+                                            <input type="checkbox" class="switch-input" :checked="item.status_partial" @change="updateStatusPartial(item.id, !item.status_partial)" />
+                                            <span class="switch-toggle-slider">
+                                            <span class="switch-on">
+                                                <i class="ri-check-line"></i>
+                                            </span>
+                                            <span class="switch-off">
+                                                <i class="ri-close-line"></i>
+                                            </span>
+                                            </span>
+                                            <span class="switch-label">{{ item.status_partial ? 'Done' : 'Pending' }}</span>
+                                        </label>
+                                    </td>
                                 </tr>
                             </tbody>
                             </table>
@@ -98,7 +113,7 @@
                                 </td>
                                 <td class="text-end px-0 py-6 w-px-100">
                                     <p class="fw-medium mb-1">{{ purchaseOrder.discountPercent }}%</p>
-                                    <p class="fw-medium mb-1">{{ formatRupiah(purchaseOrder.totalBeforeTax) }}</p>
+                                    <p class="fw-medium mb-1">{{ formatRupiah(totalBeforeTax) }}</p>
                                     <p class="fw-medium mb-1 border-bottom pb-2">{{ purchaseOrder.taxPercent }}%</p>
                                     <p class="fw-medium mb-0 pt-2">{{ formatRupiah(purchaseOrder.total) }}</p>
                                 </td>
@@ -296,23 +311,26 @@
 import { computed, onMounted } from 'vue'
 import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
 import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 const purchaseOrderStore = usePurchaseOrderStore()
 const route              = useRoute()
 const formatRupiah       = useFormatRupiah()
 
-const purchaseOrder = computed(() => {
-    if (purchaseOrderStore.purchaseOrder) {
-        const subtotal = purchaseOrderStore.purchaseOrder.purchaseOrderItems.reduce((sum, item) => sum + item.quantity * item.price, 0)
-        const discount = subtotal * (purchaseOrderStore.purchaseOrder.discountPercent / 100)
-        return {
-            ...purchaseOrderStore.purchaseOrder,
-            totalBeforeTax: subtotal - discount
-        }
+const { purchaseOrder, loading } = storeToRefs(purchaseOrderStore)
+
+const updateStatusPartial = async (itemId, status) => {
+  await purchaseOrderStore.updatePurchaseOrderItemStatus(itemId, status)
+}
+
+const totalBeforeTax = computed(() => {
+    if (purchaseOrder.value && purchaseOrder.value.purchaseOrderItems) {
+        const subtotal = purchaseOrder.value.purchaseOrderItems.reduce((sum, item) => sum + (Number(item.quantity) * Number(item.price)), 0)
+        const discount = subtotal * (Number(purchaseOrder.value.discountPercent) / 100)
+        return subtotal - discount
     }
-    return null
+    return 0
 })
-const loading = computed(() => purchaseOrderStore.loading)
 
 onMounted(async () => {
     const poId = Array.isArray(route.query.id) ? route.query.id[0] : route.query.id;

@@ -54,6 +54,7 @@ export interface PurchaseOrderItem {
   price          : string
   description    : string
   subtotal       : string
+  status_partial : boolean
   createdAt      : string
   updatedAt      : string
   product?       : Product
@@ -90,13 +91,15 @@ interface PurchaseOrderState {
   purchaseOrders: PurchaseOrder[]
   purchaseOrder: PurchaseOrder | null
   loading: boolean
+  error: any
 }
 
 export const usePurchaseOrderStore = defineStore('purchaseOrder', {
   state: (): PurchaseOrderState => ({
     purchaseOrders: [],
     purchaseOrder: null,
-    loading: false
+    loading: false,
+    error: null
   }),
   actions: {
     async fetchPurchaseOrders() {
@@ -146,41 +149,111 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     getPurchaseOrderById(id: string): PurchaseOrder | undefined {
       return this.purchaseOrders.find(purchaseOrder => purchaseOrder.id === id)
     },
-    async getPurchaseOrderDetails(id: string) {
-      this.loading = true
-      try {
-        const { $api } = useNuxtApp()
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('Token not found in localStorage')
-        }
 
-        // The show method for a resource is typically /resource/{id}
-        const response = await fetch(`${$api.purchaseOrder()}/${id}`, {
+    async getPurchaseOrderDetails(poId: string) {
+      try {
+        this.loading = true;
+        const { $api } = useNuxtApp();
+        const url = `${$api.getPurchaseOrderDetails(poId)}`;
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(url, {
           headers: {
+            'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        })
+          },
+          credentials: 'include'
+        });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+          const errorBody = await response.text();
+          throw new Error(`Failed to fetch PO details! status: ${response.status}. Response: ${errorBody}`);
         }
-        
-        const responseData = await response.json()
-        
-        if(responseData.data) {
-          this.purchaseOrder = responseData.data
+
+        const resData = await response.json();
+
+        if (resData && resData.data) {
+          const poData = resData.data;
+
+          if (poData.purchaseOrderItems) {
+            poData.purchaseOrderItems = poData.purchaseOrderItems.map((item: any) => ({
+              ...item,
+              status_partial: item.statusPartial ?? item.status_partial
+            }));
+          }
+
+          this.purchaseOrder = poData;
         } else {
-          console.error('Data purchase order tidak ditemukan dalam respons:', responseData)
-          this.purchaseOrder = null
+          throw new Error('Invalid data structure received from getPurchaseOrderDetails API.');
         }
-      } catch (error) {
-        console.error('Gagal mengambil detail purchase order:', error)
-        this.purchaseOrder = null
+
+        console.log('Pinia store purchaseOrder state after refresh load:', this.purchaseOrder);
+      } catch (e) {
+        console.error('Error fetching purchase order details:', e);
+        this.error = e;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
+    async updatePurchaseOrderItemStatus(itemId: string, status: boolean) {
+      try {
+        this.loading = true;
+
+        const { $api } = useNuxtApp();
+        const url = `${$api.purchaseOrderItemUpdateStatusPartial(itemId)}`;
+
+        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+        const csrfData = await csrfResponse.json();
+        const csrfToken = csrfData.token;
+        const token = localStorage.getItem('token');
+
+
+        if (!csrfToken) {
+          throw new Error('CSRF token not found. Cannot proceed with request.');
+        }
+
+        const response = await fetch(url, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status_partial: status }),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          const errorBody = await response.text();
+          throw new Error(`HTTP error! status: ${response.status}. Response: ${errorBody}`);
+        }
+
+        const resData = await response.json();
+        const updatedPurchaseOrderItem = resData.data.purchaseOrderItem;
+        const updatedPurchaseOrder = resData.data.purchaseOrder;
+
+        if (this.purchaseOrder && this.purchaseOrder.purchaseOrderItems) {
+          const index = this.purchaseOrder.purchaseOrderItems.findIndex(item => item.id === itemId);
+          if (index !== -1) {
+            this.purchaseOrder.purchaseOrderItems[index].status_partial = updatedPurchaseOrderItem.statusPartial;
+          }
+
+          if (this.purchaseOrder.status !== updatedPurchaseOrder.status) {
+              this.purchaseOrder.status = updatedPurchaseOrder.status;
+          }
+        }
+
+        console.log('Status item PO dan Purchase Order berhasil diperbarui:', resData);
+
+      } catch (error) {
+        console.error('Gagal memperbarui status item PO atau PO:', error);
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
   }
 })
