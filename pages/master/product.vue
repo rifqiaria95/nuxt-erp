@@ -220,11 +220,6 @@
                                         {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
                                     </template>
                                 </Column>
-                                <Column field="priceSell" header="Harga Jual" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ slotProps.data.priceSell ? formatRupiah(slotProps.data.priceSell) : '-' }}
-                                    </template>
-                                </Column>
                                 <Column field="isService" header="Service" :sortable="true">
                                     <template #body="slotProps">
                                         <span :class="getStatusBadge(slotProps.data.isService).class">
@@ -336,19 +331,6 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input 
-                                    type="text" 
-                                    class="form-control" 
-                                    id="priceSellProduct" 
-                                    v-model="formattedPriceSell" 
-                                    placeholder="Masukkan harga jual product"
-                                    required
-                                    >
-                                    <label for="priceSellProduct">Harga Jual Product</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
                                     <v-select
                                         v-model="formProduct.categoryId"
                                         :options="kategori"
@@ -361,14 +343,6 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="form-check form-switch mt-3 d-flex align-items-center">
-                                    <input class="form-check-input me-2" type="checkbox" id="isServiceProduct" v-model="formProduct.isService" />
-                                    <label class="form-check-label mb-0" for="isServiceProduct">
-                                        Service Product
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-md-12">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="file" 
@@ -379,6 +353,14 @@
                                         :required="!isEditMode"
                                     >
                                     <label for="imageProduct">Gambar Product</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mt-3 d-flex align-items-center">
+                                    <input class="form-check-input me-2" type="checkbox" id="isServiceProduct" v-model="formProduct.isService" />
+                                    <label class="form-check-label mb-0" for="isServiceProduct">
+                                        Service Product
+                                    </label>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-end">
@@ -449,7 +431,6 @@ const formProduct = ref({
   unitId    : '',
   stockMin  : '',
   priceBuy  : '',
-  priceSell : '',
   isService : false,
   image     : '',
   categoryId: ''
@@ -461,15 +442,6 @@ const formattedPriceBuy = computed({
     },
     set(value) {
         formProduct.value.priceBuy = value.replace(/[^0-9]/g, '');
-    }
-});
-
-const formattedPriceSell = computed({
-    get() {
-        return formatRupiah(formProduct.value.priceSell);
-    },
-    set(value) {
-        formProduct.value.priceSell = value.replace(/[^0-9]/g, '');
     }
 });
 
@@ -588,7 +560,6 @@ const handleSaveProduct = async () => {
         formData.append('unitId', formProduct.value.unitId);
         formData.append('stockMin', formProduct.value.stockMin);
         formData.append('priceBuy', formProduct.value.priceBuy);
-        formData.append('priceSell', formProduct.value.priceSell);
         formData.append('isService', formProduct.value.isService);
         formData.append('categoryId', formProduct.value.categoryId);
 
@@ -606,21 +577,20 @@ const handleSaveProduct = async () => {
         let response;
 
         if (isEditMode.value) {
-            // Cari ID perusahaan dari form atau selectedPerusahaan
-            let productIdToUpdate = formProduct.value?.id || formProduct.value?.idProduct;
-            if (!productIdToUpdate && selectedProduct.value) {
-                productIdToUpdate = selectedProduct.value.id || selectedProduct.value.idProduct;
-            }
+            // Cari ID product dari form atau selectedProduct
+            let productIdToUpdate = formProduct.value?.id || selectedProduct.value?.id;
             if (!productIdToUpdate) {
                 Swal.fire('Error', 'ID Product tidak ditemukan untuk update.', 'error');
                 loading.value = false;
                 return;
             }
-            url = $api.productUpdate(productIdToUpdate);
-            console.log('Updating product with ID:', productIdToUpdate, 'URL:', url);
+            url = `${$api.product()}/${productIdToUpdate}`;
+            
+            // Untuk update, tambahkan _method=PUT ke formData
+            formData.append('_method', 'PUT');
 
             response = await fetch(url, {
-                method: 'PUT',
+                method: 'POST',
                 body: formData,
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -628,9 +598,6 @@ const handleSaveProduct = async () => {
                 },
                 credentials: 'include'
             });
-            if (isEditMode.value) {
-                formData.append('_method', 'PUT');
-            }
         } else {
             // Create baru
             url = $api.product();
@@ -780,7 +747,6 @@ async function openEditProductModal(productData) {
         unitId    : productData.unitId ?? productData.unitIdProduct ?? '',
         stockMin  : productData.stockMin ?? productData.stockMinProduct ?? '',
         priceBuy  : productData.priceBuy ?? productData.priceBuyProduct ?? '',
-        priceSell : productData.priceSell ?? productData.priceSellProduct ?? '',
         isService : !!(productData.isService ?? productData.isServiceProduct),
         categoryId: productData.categoryId ?? productData.categoryIdProduct ?? '',
         image     : productData.image ?? productData.imageProduct ?? ''
@@ -878,7 +844,6 @@ const resetParentFormState = () => {
         unitId: '',
         stockMin: '',
         priceBuy: '',
-        priceSell: '',
         isService: false,
         categoryId: '',
         image: ''

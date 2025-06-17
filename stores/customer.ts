@@ -1,13 +1,19 @@
 import { defineStore } from 'pinia'
 
+export interface CustomerProduct {
+  productId: number | null
+  priceSell: number
+}
+
 export interface Customer {
-  id: number
+  id?: number
   name: string
   address: string
   email: string
   phone: string
   npwp: string
-  logo: string
+  logo: string | File
+  customerProducts?: CustomerProduct[]
 }
 
 interface CustomerState {
@@ -24,7 +30,9 @@ export const useCustomerStore = defineStore('customer', {
     async fetchCustomer() {
       this.loading = true
       try {
-        const response = await fetch('http://localhost:3333/api/customer')
+        const { $api } = useNuxtApp()
+        const url = `${$api.customer()}`
+        const response = await fetch(url)
         const data = await response.json()
         this.customer = data.data // ambil dari data.data
       } catch (error) {
@@ -33,8 +41,70 @@ export const useCustomerStore = defineStore('customer', {
         this.loading = false
       }
     },
-    addCustomer(customer: Customer) {
-        this.customer.push(customer) 
+    async saveUpdateCustomer(customer: Customer) {
+      try {
+        this.loading = true
+
+        const { $api } = useNuxtApp()
+        const url      = customer.id ? `${$api.customer()}/${customer.id}` : $api.customer()
+        const method   = 'POST'
+
+        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
+        const csrfData     = await csrfResponse.json()
+        const csrfToken    = csrfData.token
+        const token        = localStorage.getItem('token')
+
+        if (!token) {
+          throw new Error('Authentication token not found.')
+        }
+
+        if (!csrfToken) {
+          throw new Error('CSRF token not found. Cannot proceed with request.')
+        }
+
+        const formData = new FormData()
+        formData.append('name', customer.name)
+        formData.append('email', customer.email)
+        formData.append('phone', customer.phone)
+        formData.append('address', customer.address)
+        formData.append('npwp', customer.npwp)
+
+        if (customer.logo && customer.logo instanceof File) {
+          formData.append('logo', customer.logo)
+        }
+
+        if (customer.customerProducts && customer.customerProducts.length > 0) {
+          customer.customerProducts.forEach((item, index) => {
+            if (item.productId) {
+              formData.append(`customerProducts[${index}][productId]`, String(item.productId))
+            }
+            formData.append(`customerProducts[${index}][priceSell]`, String(item.priceSell))
+          })
+        }
+
+        const response = await fetch(url, {
+          method: method,
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-CSRF-TOKEN': csrfToken || '',
+            Accept: 'application/json',
+          },
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw { response, errorData }
+        }
+
+        return await response.json()
+      } catch (error) {
+        console.error('Failed to save customer:', error)
+        throw error // Re-throw to be caught in the component
+      } finally {
+        this.loading = false
+      }
     },
     removeCustomer(customerId: number) {
         this.customer = this.customer.filter(customer => customer.id !== customerId)

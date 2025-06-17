@@ -323,6 +323,56 @@
                                     <label for="alamat_vendor">Alamat Customer</label>
                                 </div>
                             </div>
+                            <hr class="mt-7 w-70 justify-content-center" />
+                            <div v-for="(item, index) in formCustomer.customerProducts" :key="index" class="repeater-item">
+                                <div class="row">
+                                    <div class="mb-6 col-lg-6 col-xl-6 col-12 mb-0">
+                                        <div class="form-floating form-floating-outline">
+                                            <v-select
+                                                v-model="item.productId"
+                                                :options="products"
+                                                :get-option-label="product => `${product.name}`"
+                                                :reduce="product => product.id"
+                                                placeholder="-- Pilih Produk --"
+                                                :id="`product-${index}`"
+                                                class="product-select"
+                                            />
+                                            <div v-if="!products || products.length === 0" class="text-danger mt-1">
+                                                Data produk belum tersedia.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 col-lg-4 col-xl-3 col-12 mb-0">
+                                        <div class="form-floating form-floating-outline">
+                                            <input
+                                                type="text"
+                                                :id="`price-${index}`"
+                                                class="form-control"
+                                                placeholder="Harga"
+                                                :value="formatRupiah(item.priceSell)"
+                                                @input="e => {
+                                                    // Ambil hanya angka dari input
+                                                    const angka = e.target.value.replace(/[^0-9]/g, '');
+                                                    // Update model dengan angka mentah
+                                                    item.priceSell = angka;
+                                                }"
+                                            />
+                                            <label :for="`price-${index}`">Harga Jual</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 col-lg-2 col-xl-3 col-12 mb-0">
+                                        <button type="button" class="btn btn-sm btn-secondary" @click.prevent="removeItem(index)" style="width: 100%;">
+                                            <span class="tf-icons ri-delete-bin-7-line ri-16px me-2"></span> Hapus
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-0">
+                                <button class="btn btn-sm btn-primary" @click.prevent="addItem">
+                                    <i class="ri-add-line me-1"></i>
+                                    <span class="align-middle">Tambah Item</span>
+                                </button>
+                            </div>  
                             <div class="d-flex justify-content-end">
                                 <button
                                     type="submit"
@@ -352,20 +402,26 @@ import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
 import { useCustomerStore } from '~/stores/customer'
+import { useProductStore } from '~/stores/product'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css'
 
 const config   = useRuntimeConfig();
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null)
-const perusahaanStore    = useCustomerStore()
-const selectedCustomer = ref(null);
-const customer         = ref([])
+const myDataTableRef    = ref(null)
+const customerStore     = useCustomerStore()
+const productStore      = useProductStore()
+const selectedCustomer  = ref(null);
+const customer          = ref([])
+const products          = ref([])
 const loading           = ref(false);
 const isEditMode        = ref(false);
 const totalRecords      = ref(0);
 const globalFilterValue = ref('');
+const formatRupiah      = useFormatRupiah()
 const lazyParams        = ref({
     first: 0,
     rows: 10,
@@ -381,7 +437,13 @@ const formCustomer = ref({
   email: '',
   phone: '',
   npwp: '',
-  logo: ''
+  logo: '',
+  customerProducts: [
+    {
+      productId: null,
+      priceSell: 0
+    }
+  ]
 });
 
 const getLogoUrl = (logoPath) => {
@@ -440,98 +502,34 @@ const validationErrors = ref([]);
 
 const handleSaveCustomer = async () => {
     loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
-    try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
+    validationErrors.value = [];
 
-        // Validasi form sederhana
+    try {
         if (!formCustomer.value.name || !formCustomer.value.npwp) {
             Swal.fire('Validasi', 'Nama dan NPWP customer wajib diisi.', 'warning');
-            loading.value = false;
             return;
         }
 
-        const formData = new FormData();
-        formData.append('name', formCustomer.value.name);
-        formData.append('npwp', formCustomer.value.npwp);
-        formData.append('address', formCustomer.value.address);
-        formData.append('email', formCustomer.value.email);
-        formData.append('phone', formCustomer.value.phone);
+        const result = await customerStore.saveUpdateCustomer(formCustomer.value);
 
-        if (formCustomer.value.logo && formCustomer.value.logo instanceof File) {
-            formData.append('logo', formCustomer.value.logo);
-        }
+        await loadLazyData();
+        handleCloseModal();
+        await Swal.fire(
+            'Berhasil!',
+            result.message || `Customer berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+            'success'
+        );
 
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken || '',
-            'Accept': 'application/json',
-        };
-
-        let url;
-        let response;
-
-        if (isEditMode.value) {
-            // Cari ID perusahaan dari form atau selectedPerusahaan
-            let vendorIdToUpdate = formCustomer.value?.id || formCustomer.value?.idCustomer;
-            if (!vendorIdToUpdate && selectedCustomer.value) {
-                vendorIdToUpdate = selectedCustomer.value.id || selectedCustomer.value.idCustomer;
-            }
-            if (!vendorIdToUpdate) {
-                Swal.fire('Error', 'ID Customer tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.customer()}/${vendorIdToUpdate}`;
-            console.log('Updating customer with ID:', vendorIdToUpdate, 'URL:', url);
-
-            response = await fetch(url, {
-                method: 'POST', // Menggunakan POST untuk mengirim FormData untuk pembaruan
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.customer();
-            response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Customer berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} customer`, 'error');
-            }
-        }
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data customer.', 'error');
+        const errorData = error.errorData || {};
+        if (errorData.errors) {
+            validationErrors.value = Array.isArray(errorData.errors)
+                ? errorData.errors
+                : Object.values(errorData.errors).flat();
+            Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+        } else {
+            Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} customer`, 'error');
+        }
     } finally {
         loading.value = false;
     }
@@ -581,8 +579,20 @@ const loadLazyData = async () => {
     }
 };
 
-onMounted(() => {
+onMounted(async () => {
     loadLazyData();
+    if (typeof productStore.fetchProduct === 'function') {
+        await productStore.fetchProduct();
+    }
+    // Pastikan productStore.product ada dan merupakan array sebelum melakukan map
+    if (Array.isArray(productStore.product)) {
+        products.value = productStore.product.map(product => ({
+            id: product.id,
+            name: `${product.name || product.sku || 'Produk'}`
+        }));
+    } else {
+        products.value = [];
+    }
 });
 
 const onPage = (event) => {
@@ -630,27 +640,47 @@ const openAddCustomerModal = () => {
 
 async function openEditCustomerModal(vendorData) {
     isEditMode.value = true;
-    // Mapping manual dari response API ke field form
     selectedCustomer.value = { ...vendorData };
-    formCustomer.value = {
-        name   : vendorData.name ?? vendorData.nmCustomer ?? '',
-        address: vendorData.address ?? vendorData.alamatCustomer ?? '',
-        email  : vendorData.email ?? vendorData.emailCustomer ?? '',
-        phone  : vendorData.phone ?? vendorData.phoneCustomer ?? '',
-        npwp   : vendorData.npwp ?? vendorData.npwpCustomer ?? '',
-        logo   : vendorData.logo ?? vendorData.logoCustomer ?? ''
-    };
     validationErrors.value = [];
 
-    // Tunggu DOM update agar binding form sudah siap sebelum show modal
-    await nextTick();
+    resetParentFormState();
 
     const modalEl = document.getElementById('Modal');
     if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     } else {
         console.error('CustomerModal element tidak ditemukan atau Bootstrap belum dimuat.');
+        return;
+    }
+
+    try {
+        loading.value = true;
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${$api.customer()}/${vendorData.id}`, {
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Gagal mengambil detail data customer.');
+        
+        const data = await response.json();
+
+        formCustomer.value = {
+            id: data.id,
+            name: data.name ?? '',
+            address: data.address ?? '',
+            email: data.email ?? '',
+            phone: data.phone ?? '',
+            npwp: data.npwp ?? '',
+            logo: data.logo ?? '',
+            customerProducts: data.customerProducts && data.customerProducts.length > 0 ? data.customerProducts : []
+        };
+
+    } catch (error) {
+        console.error("Error fetching customer details:", error);
+        Swal.fire('Error', error.message || 'Tidak dapat memuat detail customer.', 'error');
+        handleCloseModal();
+    } finally {
+        loading.value = false;
     }
 }
 
@@ -722,7 +752,28 @@ const resetParentFormState = () => {
         email: '',
         phone: '',
         npwp: '',
-        logo: ''
+        logo: '',
+        customerProducts: []
     };
 };
+
+// Add Item
+const addItem = () => {
+  formCustomer.value.customerProducts.push({
+    productId: null,
+    priceSell: 0
+  });
+};
+
+// Remove Item
+const removeItem = (index) => {
+  formCustomer.value.customerProducts.splice(index, 1);
+};
 </script>
+
+<style scoped>
+    :deep(.product-select .vs__dropdown-toggle) {
+        height: 48px !important;
+        border-radius: 7px;
+    }
+</style>
