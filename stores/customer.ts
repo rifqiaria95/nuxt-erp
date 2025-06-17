@@ -18,12 +18,14 @@ export interface Customer {
 
 interface CustomerState {
   customer: Customer[]
+  selectedCustomer: Customer | null
   loading: boolean
 }
 
 export const useCustomerStore = defineStore('customer', {
     state: (): CustomerState => ({
     customer: [],
+    selectedCustomer: null,
     loading: false
   }),
   actions: {
@@ -109,11 +111,40 @@ export const useCustomerStore = defineStore('customer', {
     removeCustomer(customerId: number) {
         this.customer = this.customer.filter(customer => customer.id !== customerId)
     },
-    updateCustomer(updatedCustomer: Customer) {
-        const index = this.customer.findIndex(customer => customer.id === updatedCustomer.id)
-        if (index !== -1) {
-            this.customer[index] = updatedCustomer
+    async getCustomerDetails(customerId: string) {
+      try {
+        this.loading = true
+        const { $api } = useNuxtApp()
+        const url = `${$api.getCustomerDetails(customerId)}`
+        const token = localStorage.getItem('token')
+
+        const response = await fetch(url, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          const errorBody = await response.text()
+          throw new Error(
+            `Failed to fetch customer details! status: ${response.status}. Response: ${errorBody}`
+          )
         }
+
+        const resData = await response.json()
+
+        if (resData) {
+          this.selectedCustomer = resData
+        } else {
+          throw new Error('Invalid data structure received from getCustomerDetails API.')
+        }
+      } catch (e) {
+        console.error('Error fetching customer details:', e)
+      } finally {
+        this.loading = false
+      }
     },
     getCustomerByName(name: string): Customer | undefined {
       return this.customer.find(customer => customer.name.toLowerCase() === name.toLowerCase())

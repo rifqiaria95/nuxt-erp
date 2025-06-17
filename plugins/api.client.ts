@@ -75,6 +75,7 @@ export default defineNuxtPlugin(() => {
 
     // Customer
     customer: () => `${apiBase}/customer`,
+    getCustomerDetails: (id: number | string) => `${apiBase}/customer/getCustomerDetails/${id}`,
 
     // Warehouse
     warehouse: () => `${apiBase}/warehouse`,

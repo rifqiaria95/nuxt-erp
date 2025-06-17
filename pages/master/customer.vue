@@ -218,8 +218,27 @@
                                 <Column field="phone" header="Phone Customer" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="openEditCustomerModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deleteCustomer(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <div class="d-inline-block">
+                                            <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="openCustomerDetails(slotProps.data.id)">
+                                                        <i class="ri-eye-line me-2"></i> Lihat Detail
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="openEditCustomerModal(slotProps.data)">
+                                                        <i class="ri-edit-box-line me-2"></i> Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteCustomer(slotProps.data.id)">
+                                                        <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -414,14 +433,15 @@ const { $api } = useNuxtApp()
 const myDataTableRef    = ref(null)
 const customerStore     = useCustomerStore()
 const productStore      = useProductStore()
+const formatRupiah      = useFormatRupiah()
 const selectedCustomer  = ref(null);
 const customer          = ref([])
 const products          = ref([])
+const logoPreview       = ref('');
 const loading           = ref(false);
 const isEditMode        = ref(false);
 const totalRecords      = ref(0);
 const globalFilterValue = ref('');
-const formatRupiah      = useFormatRupiah()
 const lazyParams        = ref({
     first: 0,
     rows: 10,
@@ -631,6 +651,16 @@ function onLogoChange(e) {
   }
 }
 
+// View Customer Details
+const openCustomerDetails = (customerId) => {
+    try {
+        router.push({ path: `/master/customer-detail?id=${customerId}` });
+    } catch (e) {
+        window.location.href = `/master/customer-detail?id=${customerId}`;
+        console.error('Error fetching customer details:', e);
+    }
+};
+
 const openAddCustomerModal = () => {
     isEditMode.value = false;
     modalTitle.value = 'Tambah Customer';
@@ -665,14 +695,14 @@ async function openEditCustomerModal(vendorData) {
         const data = await response.json();
 
         formCustomer.value = {
-            id: data.id,
-            name: data.name ?? '',
-            address: data.address ?? '',
-            email: data.email ?? '',
-            phone: data.phone ?? '',
-            npwp: data.npwp ?? '',
-            logo: data.logo ?? '',
-            customerProducts: data.customerProducts && data.customerProducts.length > 0 ? data.customerProducts : []
+            id              : data.id,
+            name            : data.name ?? '',
+            address         : data.address ?? '',
+            email           : data.email ?? '',
+            phone           : data.phone ?? '',
+            npwp            : data.npwp ?? '',
+            logo            : data.logo ?? '',
+            customerProducts: data.customerProducts && data.customerProducts.length > 0 ? data.customerProducts: []
         };
 
     } catch (error) {

@@ -209,7 +209,7 @@
                                         }}
                                     </template>
                                 </Column>
-                                <Column field="noPo" header="No. Purchase Order" :sortable="true"></Column>
+                                <Column field="noPo" header="No. PO" :sortable="true"></Column>
                                 <Column field="vendor.name" header="Nama Vendor" :sortable="true"></Column>
                                 <Column field="status" header="Status PO" :sortable="true">
                                     <template #body="slotProps">
@@ -219,12 +219,12 @@
                                     </template>
                                 </Column>
                                 <Column field="up" header="Untuk Perhatian" :sortable="true"></Column>
-                                <Column field="date" header="Tanggal Purchase Order" :sortable="true">
+                                <Column field="date" header="Tanggal PO" :sortable="true">
                                     <template #body="slotProps">
                                         {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                     </template>
                                 </Column>
-                                <Column field="dueDate" header="Due Date" :sortable="true">
+                                <Column field="dueDate" header="Jatuh Tempo" :sortable="true">
                                     <template #body="slotProps">
                                         {{ slotProps.data.dueDate ? new Date(slotProps.data.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                     </template>
@@ -256,9 +256,27 @@
                                 </Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="viewPurchaseOrderDetails(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-eye-line" target="_blank"></i></button>
-                                        <button @click="openEditPurchaseOrderModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deletePurchaseOrder(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <div class="d-inline-block">
+                                            <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                            </a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
+                                                        <i class="ri-eye-line me-2"></i> Lihat Detail
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="openEditPurchaseOrderModal(slotProps.data)">
+                                                        <i class="ri-edit-box-line me-2"></i> Edit
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deletePurchaseOrder(slotProps.data.id)">
+                                                        <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </template>
                                 </Column>
                         </MyDataTable>
