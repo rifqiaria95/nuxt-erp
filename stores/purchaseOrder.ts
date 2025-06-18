@@ -54,7 +54,8 @@ export interface PurchaseOrderItem {
   price          : string
   description    : string
   subtotal       : string
-  status_partial : boolean
+  statusPartial : boolean
+  receivedQty   : string
   createdAt      : string
   updatedAt      : string
   product?       : Product
@@ -81,6 +82,8 @@ export interface PurchaseOrder {
   createdBy      : number
   approvedBy     : number | null
   receivedBy     : number | null
+  approvedAt     : string | null
+  receivedAt     : string | null
   vendor?        : Vendor
   perusahaan?    : Perusahaan
   cabang?        : Cabang
@@ -126,6 +129,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           vendor         : item.vendor,
           perusahaan     : item.perusahaan,
           cabang         : item.cabang,
+          approvedAt     : item.approvedAt,
+          receivedAt     : item.receivedAt,
         }))
       } catch (error) {
         console.error('Gagal mengambil data purchaseOrder:', error)
@@ -178,7 +183,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           if (poData.purchaseOrderItems) {
             poData.purchaseOrderItems = poData.purchaseOrderItems.map((item: any) => ({
               ...item,
-              status_partial: item.statusPartial ?? item.status_partial
+              statusPartial: item.statusPartial ?? item.statusPartial,
+              receivedQty: item.receivedQty ?? item.receivedQty
             }));
           }
 
@@ -195,7 +201,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         this.loading = false;
       }
     },
-    async updatePurchaseOrderItemStatus(itemId: string, status: boolean) {
+    async updatePurchaseOrderItemStatus(itemId: string, status: boolean, receivedQty: number) {
       try {
         this.loading = true;
 
@@ -220,7 +226,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             'Accept': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
-          body: JSON.stringify({ status_partial: status }),
+          body: JSON.stringify({ statusPartial: status, receivedQty: receivedQty }),
           credentials: 'include'
         });
 
@@ -236,7 +242,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         if (this.purchaseOrder && this.purchaseOrder.purchaseOrderItems) {
           const index = this.purchaseOrder.purchaseOrderItems.findIndex(item => item.id === itemId);
           if (index !== -1) {
-            this.purchaseOrder.purchaseOrderItems[index].status_partial = updatedPurchaseOrderItem.statusPartial;
+            this.purchaseOrder.purchaseOrderItems[index].statusPartial = updatedPurchaseOrderItem.statusPartial;
+            this.purchaseOrder.purchaseOrderItems[index].receivedQty = updatedPurchaseOrderItem.receivedQty;
           }
 
           if (this.purchaseOrder.status !== updatedPurchaseOrder.status) {

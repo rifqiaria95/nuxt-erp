@@ -65,6 +65,7 @@
                                 <th>Description</th>
                                 <th>Cost</th>
                                 <th>Qty</th>
+                                <th>Received Qty</th>
                                 <th>Price</th>
                                 <th>Status</th>
                                 </tr>
@@ -75,10 +76,19 @@
                                     <td class="text-nowrap">{{ item.description }}</td>
                                     <td>{{ formatRupiah(item.price) }}</td>
                                     <td>{{ item.quantity }}</td>
+                                    <td>
+                                        <input
+                                          type="number"
+                                          class="form-control"
+                                          v-model="item.receivedQty"
+                                          style="width: 80px;"
+                                          :disabled="item.statusPartial"
+                                        />
+                                    </td>
                                     <td>{{ formatRupiah(Number(item.price) * Number(item.quantity)) }}</td>
                                     <td>
                                         <label class="switch switch-success">
-                                            <input type="checkbox" class="switch-input" :checked="item.status_partial" @change="updateStatusPartial(item.id, !item.status_partial)" />
+                                            <input type="checkbox" class="switch-input" :checked="item.statusPartial" @change="updateStatusPartial(item.id, !item.statusPartial, item.receivedQty)" />
                                             <span class="switch-toggle-slider">
                                             <span class="switch-on">
                                                 <i class="ri-check-line"></i>
@@ -87,7 +97,7 @@
                                                 <i class="ri-close-line"></i>
                                             </span>
                                             </span>
-                                            <span class="switch-label">{{ item.status_partial ? 'Done' : 'Pending' }}</span>
+                                            <span class="switch-label">{{ item.statusPartial ? 'Done' : 'Pending' }}</span>
                                         </label>
                                     </td>
                                 </tr>
@@ -312,15 +322,59 @@ import { computed, onMounted } from 'vue'
 import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const purchaseOrderStore = usePurchaseOrderStore()
 const route              = useRoute()
 const formatRupiah       = useFormatRupiah()
 
 const { purchaseOrder, loading } = storeToRefs(purchaseOrderStore)
+const poId = route.query.id
 
-const updateStatusPartial = async (itemId, status) => {
-  await purchaseOrderStore.updatePurchaseOrderItemStatus(itemId, status)
+async function refreshPurchaseOrderDetails() {
+    const poIdToFetch = Array.isArray(poId) ? poId[0] : poId;
+    if (typeof poIdToFetch === 'string') {
+        loading.value = true
+        try {
+            await purchaseOrderStore.getPurchaseOrderDetails(poIdToFetch)
+        } catch (error) {
+            console.error("Failed to refresh PO details:", error)
+        } finally {
+            loading.value = false
+        }
+    }
+}
+
+async function updateStatusPartial(itemId, status, receivedQty) {
+    const item = purchaseOrder.value.purchaseOrderItems.find(i => i.id === itemId)
+
+    if (!item) {
+        console.error('Item not found!')
+        return
+    }
+
+    if (receivedQty > item.quantity) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal',
+            text: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
+        })
+        await refreshPurchaseOrderDetails()
+        return
+    }
+
+    try {
+        await purchaseOrderStore.updatePurchaseOrderItemStatus(itemId, status, receivedQty)
+        await refreshPurchaseOrderDetails()
+    } catch (error) {
+        console.error('Failed to update status:', error)
+        Swal.fire({
+            icon: 'error',
+            title: 'Update Gagal',
+            text: 'Terjadi kesalahan saat memperbarui status item.',
+        })
+    }
 }
 
 const totalBeforeTax = computed(() => {
@@ -332,12 +386,7 @@ const totalBeforeTax = computed(() => {
     return 0
 })
 
-onMounted(async () => {
-    const poId = Array.isArray(route.query.id) ? route.query.id[0] : route.query.id;
-    if (poId) {
-        await purchaseOrderStore.getPurchaseOrderDetails(poId)
-    }
-})
+onMounted(refreshPurchaseOrderDetails)
 </script>
 
 <style scoped>

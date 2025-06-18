@@ -265,12 +265,12 @@
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li>
+                                                <li v-if="userIsAdmin || (!userIsAdmin && slotProps.data.status == 'Received')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="openEditPurchaseOrderModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li>
+                                                <li v-if="userIsAdmin || (!userIsAdmin && slotProps.data.status == 'Received')">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deletePurchaseOrder(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -477,7 +477,6 @@
                                                 id="attachmentPurchaseOrder" 
                                                 @change="onFileChange"
                                                 placeholder="Masukkan attachment purchaseOrder"
-                                                :required="!isEditMode"
                                             >
                                             <label for="attachmentPurchaseOrder">Attachment</label>
                                         </div>
@@ -500,7 +499,23 @@
                                 <div class="row g-6">
                                     <div v-for="(item, index) in formPurchaseOrder.purchaseOrderItems" :key="index" class="repeater-item">
                                         <div class="row">
-                                            <div class="mb-6 col-lg-6 col-xl-6 col-12 mb-0">
+                                            <div class="mb-6 col-lg-6 col-xl-12 col-12 mb-0">
+                                                <div class="form-floating form-floating-outline">
+                                                    <v-select
+                                                        v-model="item.warehouseId"
+                                                        :options="warehouse"
+                                                        :get-option-label="warehouse => `${warehouse.name} (${warehouse.code || 'N/A'})`"
+                                                        :reduce="warehouse => warehouse.id"
+                                                        placeholder="-- Pilih Gudang --"
+                                                        :id="`warehouse-${index}`"
+                                                        class="warehouse-select"
+                                                    />
+                                                    <div v-if="!warehouse || warehouse.length === 0" class="text-danger mt-1">
+                                                        Data gudang belum tersedia.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-6 col-lg-6 col-xl-4 col-12 mb-0">
                                                 <div class="form-floating form-floating-outline">
                                                     <v-select
                                                         v-model="item.productId"
@@ -517,7 +532,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
+                                            <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
                                                 <div class="form-floating form-floating-outline">
                                                     <input
                                                         type="number"
@@ -542,19 +557,6 @@
                                                     <label :for="`price-${index}`">Harga</label>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="mb-6 col-lg-6 col-xl-6 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <input
-                                                        type="text"
-                                                        :id="`description-${index}`"
-                                                        class="form-control"
-                                                        placeholder="Deskripsi"
-                                                        v-model="item.description" />
-                                                    <label :for="`description-${index}`">Deskripsi</label>
-                                                </div>
-                                            </div>
                                             <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
                                                 <div class="form-floating form-floating-outline">
                                                     <input
@@ -567,6 +569,20 @@
                                                     <label :for="`subtotal-${index}`">Subtotal</label>
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="mb-6 col-lg-6 col-xl-9 col-12 mb-0">
+                                                <div class="form-floating form-floating-outline">
+                                                    <input
+                                                        type="text"
+                                                        :id="`description-${index}`"
+                                                        class="form-control"
+                                                        placeholder="Deskripsi"
+                                                        v-model="item.description" />
+                                                    <label :for="`description-${index}`">Deskripsi</label>
+                                                </div>
+                                            </div>
+                                            
                                             <div class="mb-6 col-lg-2 col-xl-3 col-2 d-flex align-items-center mb-0">
                                                 <button type="button" class="btn btn-secondary" @click.prevent="removeItem(index)" style="width: 100%;">
                                                     <span class="tf-icons ri-delete-bin-7-line ri-16px me-2"></span> Hapus
@@ -616,6 +632,7 @@ import { useVendorStore } from '~/stores/vendor'
 import { usePerusahaanStore } from '~/stores/perusahaan'
 import { useCabangStore } from '~/stores/cabang'
 import { useProductStore } from '~/stores/product'
+import { useWarehouseStore } from '~/stores/warehouse'
 import { useUserStore } from '~/stores/user'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
@@ -627,16 +644,20 @@ import 'vue-select/dist/vue-select.css'
 
 const config   = useRuntimeConfig();
 const { $api } = useNuxtApp()
-
 // Store
 const myDataTableRef        = ref(null)
 const purchaseOrderStore    = usePurchaseOrderStore()
 const vendorStore           = useVendorStore()
 const perusahaanStore       = usePerusahaanStore()
+const warehouseStore = useWarehouseStore()
 const cabangStore           = useCabangStore()
 const productStore          = useProductStore()
 const userStore             = useUserStore()
 const formatRupiah          = useFormatRupiah()
+
+const userIsAdmin = computed(() => {
+    return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
+});
 
 // State
 const selectedPurchaseOrder = ref(null);
@@ -645,6 +666,7 @@ const vendor                = ref([])
 const cabang                = ref([])
 const perusahaan            = ref([])
 const products              = ref([])
+const warehouse             = ref([])
 const loading               = ref(false);
 const isEditMode            = ref(false);
 const totalRecords          = ref(0);
@@ -683,6 +705,7 @@ const formPurchaseOrder = ref({
   purchaseOrderItems: [
     {
       productId: null,
+      warehouseId: null,
       quantity: 0,
       unitPrice: 0,
       price: '',
@@ -868,6 +891,31 @@ const fetchProducts = async () => {
     }
 };
 
+// Fetch Warehouse
+const fetchWarehouse = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch($api.warehouse(), {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Gagal mengambil data gudang');
+        }
+
+        const result = await response.json();
+        warehouse.value = result.data || result;
+    } catch (error) {
+        console.error('Error fetching warehouse:', error);
+        warehouse.value = [];
+        Swal.fire('Error', `Tidak dapat memuat data gudang: ${error.message}`, 'error');
+    }
+};
+
 // Validation Errors
 const validationErrors = ref([]);
 
@@ -904,6 +952,9 @@ const handleSavePurchaseOrder = async () => {
         if (userStore.user && userStore.user.id) {
             formData.append('created_by', userStore.user.id.toString())
         }
+        if (userStore.user && userStore.user.id) {
+            formData.append('approved_by', userStore.user.id.toString())
+        }
         if (formPurchaseOrder.value.attachment) {
             formData.append('attachment', formPurchaseOrder.value.attachment)
         }
@@ -913,6 +964,7 @@ const handleSavePurchaseOrder = async () => {
             if (item.productId && item.quantity > 0) { // Basic validation
                 const subtotal = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
                 formData.append(`purchase_order_items[${i}][product_id]`, item.productId)
+                formData.append(`purchase_order_items[${i}][warehouse_id]`, item.warehouseId)
                 formData.append(`purchase_order_items[${i}][quantity]`, item.quantity)
                 formData.append(`purchase_order_items[${i}][price]`, item.unitPrice)
                 formData.append(`purchase_order_items[${i}][subtotal]`, subtotal.toString())
@@ -922,8 +974,8 @@ const handleSavePurchaseOrder = async () => {
         
         const headers = {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken || '',
-            'Accept': 'application/json',
+            'X-CSRF-TOKEN' : csrfToken || '',
+            'Accept'       : 'application/json',
         };
 
         let url;
@@ -1041,6 +1093,7 @@ onMounted(() => {
     fetchVendor();
     fetchPerusahaan();
     fetchProducts();
+    fetchWarehouse();
     userStore.loadUser();
 });
 
@@ -1186,6 +1239,7 @@ async function openEditPurchaseOrderModal(purchaseOrderData) {
             const unitPrice = parseFloat(item.price) || 0; // Asumsi item.price dari API adalah harga satuan
             const subtotal = (parseFloat(item.quantity) || 0) * unitPrice;
             return {
+                warehouseId: item.warehouse_id || item.warehouseId,
                 productId  : item.product_id || item.productId,
                 quantity   : item.quantity,
                 price      : formatRupiah(unitPrice),
@@ -1331,6 +1385,7 @@ const resetParentFormState = () => {
 const addItem = () => {
   formPurchaseOrder.value.purchaseOrderItems.push({
     productId: null,
+    warehouseId: null,
     quantity: 1,
     price: formatRupiah(0),
     description: '',
@@ -1348,6 +1403,7 @@ const removeItem = (index) => {
 
 <style scoped>
     :deep(.perusahaan .vs__dropdown-toggle),
+    :deep(.warehouse-select .vs__dropdown-toggle),
     :deep(.status .vs__dropdown-toggle),
     :deep(.vendor .vs__dropdown-toggle),
     :deep(.product-select .vs__dropdown-toggle),
