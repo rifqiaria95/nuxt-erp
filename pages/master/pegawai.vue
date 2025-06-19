@@ -10,8 +10,7 @@
                 </p>
                 <!-- pegawai cards -->
                 <div class="row g-6 mb-6">
-                    <!-- Card untuk Tambah Pegawai -->
-                     <!-- Cards untuk Statistik Pegawai -->
+                    <!-- Cards untuk Statistik Pegawai -->
                     <CardBox
                         v-if="stats.total !== undefined"
                         title="Total Pegawai"
@@ -42,8 +41,7 @@
                         image-src="/img/illustrations/add-new-role-illustration.png"
                         image-alt="Tambah Pegawai"
                         button-text="Tambah Pegawai"
-                        modal-target="#PegawaiModal" 
-                        @button-click="openAddPegawaiModal"
+                        @button-click="pegawaiStore.openModal()"
                     />
                 </div>
                 <!--/ pegawai cards -->
@@ -59,7 +57,7 @@
                             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                                 <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                     <span class="me-2">Baris:</span>
-                                    <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                    <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                                 </div>
                                 <div class="d-flex align-items-center">
                                     <div class="btn-group me-2">
@@ -85,8 +83,8 @@
                             <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
                                 ref="myDataTableRef"
-                                :data="pegawai" 
-                                :rows="lazyParams.rows" 
+                                :data="pegawais" 
+                                :rows="params.rows" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
                                 :lazy="true"
@@ -116,8 +114,8 @@
                                 </Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem; width:10%">
                                     <template #body="slotProps">
-                                        <button @click="openEditPegawaiModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deletePegawai(slotProps.data.id_pegawai)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button @click="pegawaiStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="pegawaiStore.deletePegawai(slotProps.data.id_pegawai)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                             </MyDataTable>
@@ -128,21 +126,319 @@
                 </div>
                 <!--/ pegawai cards -->
  
-                <!-- Placeholder untuk PegawaiModal component -->
-                <PegawaiModal 
-                    :isEditMode="isEditMode" 
-                    :selectedPegawaiData="selectedPegawai" 
-                    :validationErrorsFromParent="validationErrors"
-                    :jabatanOptions="jabatans"
-                    :perusahaanOptions="perusahaans"
-                    :cabangOptions="cabangs" 
-                    :divisiOptions="divisis" 
-                    :departemenOptions="departemens"
-                    @save="handleSavePegawai"
-                    @close="handleCloseModal" 
-                    @company-selected="handleCompanySelectedInModal"
-                    @division-selected="handleDivisionSelectedInModal"
-                />
+                <Modal 
+                    id="PegawaiModal"
+                    :title="modalTitle"
+                    :description="modalDescription"
+                    :validation-errors-from-parent="validationErrors"
+                >
+                    <form @submit.prevent="pegawaiStore.savePegawai()">
+                        <div class="row">
+                            <div class="col">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <button
+                                            class="nav-link active"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#form-tabs-personal"
+                                            role="tab"
+                                            aria-selected="true"
+                                            type="button">
+                                            <span class="ri-user-line ri-20px d-sm-none"></span>
+                                            <span class="d-none d-sm-block">Informasi Pribadi</span>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button
+                                            class="nav-link"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#form-tabs-perusahaan"
+                                            role="tab"
+                                            aria-selected="false"
+                                            type="button">
+                                            <span class="ri-folder-user-line ri-20px d-sm-none"></span>
+                                            <span class="d-none d-sm-block">Informasi Perusahaan</span>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button
+                                            class="nav-link"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#form-tabs-social"
+                                            role="tab"
+                                            aria-selected="false"
+                                            type="button">
+                                            <span class="ri-facebook-fill ri-20px d-sm-none"></span>
+                                            <span class="d-none d-sm-block">Detail Keluarga</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-content pt-6">
+                            <!-- Tab Personal Info -->
+                            <div class="tab-pane fade active show" id="form-tabs-personal" role="tabpanel">
+                                <div class="row g-6">
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="nm_pegawai" class="form-control" placeholder="Nama Lengkap" name="nm_pegawai" v-model="form.nm_pegawai" />
+                                            <label for="nm_pegawai">Nama Lengkap</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="no_tlp_pegawai" class="form-control" placeholder="No. Tlp/HP Pegawai" name="no_tlp_pegawai" v-model="form.no_tlp_pegawai" />
+                                            <label for="no_tlp_pegawai">No. Tlp/HP Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="tmp_lahir_pegawai" class="form-control" placeholder="Tempat Lahir" name="tmp_lahir_pegawai" v-model="form.tmp_lahir_pegawai" />
+                                            <label for="tmp_lahir_pegawai">Tempat Lahir</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="date" id="tgl_lahir_pegawai" class="form-control" placeholder="YYYY-MM-DD" name="tgl_lahir_pegawai" v-model="form.tgl_lahir_pegawai" />
+                                            <label for="tgl_lahir_pegawai">Tanggal Lahir</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-floating form-floating-outline">
+                                            <v-select
+                                                v-model="form.pendidikan_pegawai"
+                                                :options="pendidikanOptions"
+                                                label="label"
+                                                :reduce="option => Number(option.value)"
+                                                placeholder="-- Pilih Pendidikan --"
+                                                id="select-pendidikan"
+                                                class="select-pendidikan"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="no_ktp_pegawai" class="form-control" placeholder="No. KTP Pegawai" name="no_ktp_pegawai" v-model="form.no_ktp_pegawai" />
+                                            <label for="no_ktp_pegawai">No. KTP Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="no_npwp_pegawai" class="form-control" placeholder="No. NPWP Pegawai" name="no_npwp_pegawai" v-model="form.npwp_pegawai" />
+                                            <label for="no_npwp_pegawai">No. NPWP Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <v-select
+                                                v-model="form.jenis_kelamin_pegawai"
+                                                :options="jenisKelaminOptions"
+                                                label="label"
+                                                :reduce="option => option.value"
+                                                placeholder="-- Pilih Jenis Kelamin --"
+                                                id="select-jk"
+                                                class="select-jenis-kelamin"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="file" @change="onAvatarChange" class="form-control" id="avatarFile" />
+                                            <label for="avatarFile">Avatar</label>
+                                            
+                                            <div v-if="form.avatarPreview" class="mt-2">
+                                                <a :href="form.avatarPreview" target="_blank" rel="noopener noreferrer" class="d-block mt-1">Lihat Avatar</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-floating form-floating-outline">
+                                            <textarea
+                                            class="form-control h-px-100"
+                                            id="alamat_pegawai"
+                                            placeholder="Alamat Pegawai"
+                                            v-model="form.alamat_pegawai"></textarea>
+                                            <label for="alamat_pegawai">Alamat</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Tab Account Details -->
+                            <div class="tab-pane fade" id="form-tabs-perusahaan" role="tabpanel">
+                                <div class="row g-6">
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="full_name" class="form-control" placeholder="Full Name" v-model="form.full_name" />
+                                            <label for="full_name">Full Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group input-group-merge">
+                                            <div class="form-floating form-floating-outline">
+                                                <input
+                                                    type="email"
+                                                    id="formtabs-email"
+                                                    class="form-control"
+                                                    v-model="form.email"
+                                                    placeholder="email"
+                                                    aria-label="email"
+                                                    :readonly="isEditMode" />
+                                                <label for="formtabs-email">Email</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="nik_pegawai" class="form-control" placeholder="NIK Pegawai" name="nik_pegawai" v-model="form.nik_pegawai" />
+                                            <label for="nik_pegawai">NIK Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <v-select
+                                            v-model="form.jabatan_id"
+                                            :options="jabatans"
+                                            label="nmJabatan"
+                                            :reduce="jabatan => jabatan.idJabatan"
+                                            placeholder="-- Pilih Jabatan --"
+                                            id="jabatan"
+                                            class="jabatan"
+                                        />    
+                                    </div>
+                                    <div class="col-md-6">
+                                        <v-select
+                                            v-model="form.perusahaan_id"
+                                            :options="perusahaans"
+                                            label="nmPerusahaan"
+                                            :reduce="perusahaan => perusahaan.id"
+                                            placeholder="-- Pilih Perusahaan --"
+                                            id="perusahaan"
+                                            class="perusahaan"
+                                            @update:modelValue="handleCompanySelectedInModal"
+                                        />    
+                                    </div>
+                                    <div class="col-md-6">
+                                        <v-select
+                                            v-model="form.cabang_id"
+                                            :options="filteredCabang"
+                                            label="nmCabang"
+                                            :reduce="cabang => cabang.id"
+                                            placeholder="-- Pilih Cabang --"
+                                            id="cabang"
+                                            class="cabang"
+                                        />    
+                                    </div>
+                                    <div class="col-md-6">
+                                        <v-select
+                                            v-model="form.divisi_id"
+                                            :options="divisis"
+                                            label="nmDivisi"
+                                            :reduce="divisi => divisi.id"
+                                            placeholder="-- Pilih Divisi --"
+                                            id="divisi"
+                                            class="divisi"
+                                            @update:modelValue="handleDivisionSelectedInModal"
+                                        />    
+                                    </div>
+                                    <div class="col-md-6">
+                                        <v-select
+                                            v-model="form.departemen_id"
+                                            :options="filteredDepartemen"
+                                            label="nmDepartemen"
+                                            :reduce="departemen => departemen.id"
+                                            placeholder="-- Pilih Departemen --"
+                                            id="departemen"
+                                            class="departemen"
+                                        />    
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="date" id="tgl_masuk_pegawai" class="form-control" placeholder="YYYY-MM-DD" name="tgl_masuk_pegawai" v-model="form.tgl_masuk_pegawai" />
+                                            <label for="tgl_masuk_pegawai">Tanggal Masuk Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="date" id="tgl_keluar_pegawai" class="form-control" placeholder="YYYY-MM-DD" name="tgl_keluar_pegawai" v-model="form.tgl_keluar_pegawai" />
+                                            <label for="tgl_keluar_pegawai">Tanggal Keluar Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input 
+                                                type="text" 
+                                                id="gaji_pegawai" 
+                                                class="form-control" 
+                                                name="gaji_pegawai"
+                                                placeholder="Rp 0,-"
+                                                :value="gajiPegawaiFormatted"
+                                                @input="handleGajiInput"
+                                            />
+                                            <label for="gaji_pegawai">Gaji Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input 
+                                                type="text" 
+                                                id="tunjangan_pegawai" 
+                                                class="form-control" 
+                                                placeholder="Rp 0,-"
+                                                :value="tunjanganPegawaiFormatted"
+                                                @input="handleTunjanganInput"
+                                            />
+                                            <label for="tunjangan_pegawai">Tunjangan Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-floating form-floating-outline">
+                                            <v-select
+                                                v-model="form.status_pegawai"
+                                                :options="statusPegawaiOptions"
+                                                label="label"
+                                                :reduce="option => option.value"
+                                                placeholder="-- Pilih Status Pegawai --"
+                                                id="select-status-pegawai"
+                                                class="select-status-pegawai"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Tab Social Links -->
+                            <div class="tab-pane fade" id="form-tabs-social" role="tabpanel">
+                                <div class="row g-6">
+                                    <div class="col-md-12">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="istri_suami_pegawai" class="form-control" placeholder="Istri/Suami Pegawai" v-model="form.istri_suami_pegawai" />
+                                            <label for="istri_suami_pegawai">Istri/Suami Pegawai</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="anak_1" class="form-control" placeholder="Anak 1" v-model="form.anak_1" />
+                                            <label for="anak_1">Anak 1</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="anak_2" class="form-control" placeholder="Anak 2" v-model="form.anak_2" />
+                                            <label for="anak_2">Anak 2</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tombol Submit dan Cancel -->
+                        <div class="modal-footer mt-6">
+                            <button type="button" class="btn btn-outline-secondary" @click="pegawaiStore.closeModal()">Tutup</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">
+                                <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Simpan
+                            </button>
+                        </div>
+                    </form>
+                </Modal>
             </div>
             <!-- / Content -->
         <div class="content-backdrop fade"></div>
@@ -160,410 +456,160 @@ import { useDepartemenStore } from '~/stores/departemen'
 import { useCabangStore } from '~/stores/cabang'
 import { useJabatanStore } from '~/stores/jabatan'
 import vSelect from 'vue-select'
-import Swal from 'sweetalert2'
 import 'vue-select/dist/vue-select.css'
+import { useDebounceFn } from '@vueuse/core'
 
-// Import komponen modal
+
+// Import komponen
 import CardBox from '~/components/cards/Cards.vue'
-import PegawaiModal from '~/components/pegawai/PegawaiModal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import Modal from '~/components/modal/Modal.vue'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
+import Column from 'primevue/column'
 
-const { $api } = useNuxtApp()
-
+const pegawaiStore = usePegawaiStore()
 const perusahaanStore = usePerusahaanStore()
 const cabangStore = useCabangStore()
 const divisiStore = useDivisiStore()
 const departemenStore = useDepartemenStore()
 const jabatanStore = useJabatanStore()
 
+const { pegawais, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, stats } = storeToRefs(pegawaiStore)
 const { perusahaans }   = storeToRefs(perusahaanStore)
 const { cabangs }       = storeToRefs(cabangStore)  
 const { divisis }        = storeToRefs(divisiStore)
 const { departemens }   = storeToRefs(departemenStore)
 const { jabatans }      = storeToRefs(jabatanStore)
 const myDataTableRef    = ref(null)
-const pegawai           = ref([])
-const selectedPegawai   = ref(null)
-const loading           = ref(false);
-const totalRecords      = ref(0);
-const globalFilterValue = ref('');
-const lazyParams        = ref({
-    first: 0,
-    rows: 10,
-    sortField: null,
-    sortOrder: null,
-    draw: 1,
-    search: '',
-});
 
+const globalFilterValue = ref('');
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
-// State untuk menu groups dan details (data utama tetap di parent)
-const stats = ref({
-  total: undefined,
-  pkwtt: undefined,
-  pkwt: undefined,
-  resign: undefined,
-  outsource: undefined
-})
+const modalTitle = computed(() => isEditMode.value ? 'Edit Pegawai' : 'Tambah Pegawai')
+const modalDescription = computed(() => isEditMode.value ? 'Ubah detail pegawai di bawah ini.' : 'Isi detail pegawai baru di bawah ini.')
 
-// Selected states untuk filter di parent (jika masih ada filter UI di parent)
-// atau untuk trigger watch fetch data dependen.
-const selectedPerusahaan          = ref(null)
-const selectedDivisi              = ref(null)
-
-const validationErrors = ref([]); 
-
-const pegawaiStore    = usePegawaiStore()
-
-const isEditMode = ref(false);
-
-// Fungsi untuk menangani event save dari modal
-const handleSavePegawai = async (pegawaiDataFromModal) => {
-    const formData = new FormData();
-    for (const key in pegawaiDataFromModal) {
-        if (pegawaiDataFromModal[key] !== null && pegawaiDataFromModal[key] !== undefined) {
-            if (key === 'avatar' && pegawaiDataFromModal[key]) {
-                formData.append(key, pegawaiDataFromModal[key]);
-            } else if (key !== 'avatar') {
-                formData.append(key, pegawaiDataFromModal[key]);
-            }
-        }
-    }
-
-    try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
-        let response;
-        let url;
-
-        if (isEditMode.value) {
-            const pegawaiIdToUpdate = selectedPegawai.value?.id_pegawai || selectedPegawai.value?.idPegawai || selectedPegawai.value?.id;
-            if (!pegawaiIdToUpdate) throw new Error('ID Pegawai tidak ditemukan untuk update');
-            url = $api.pegawaiUpdate(pegawaiIdToUpdate);
-            console.log('Updating pegawai with ID:', pegawaiIdToUpdate, 'URL:', url);
-            console.log('Form data being sent for update:', Object.fromEntries(formData));
-
-            response = await fetch(url, {
-                method: 'PUT',
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                },
-                credentials: 'include'
-            });
-            if (isEditMode.value) {
-                formData.append('_method', 'PUT');
-            }
-
-        } else {
-            url = $api.pegawai();
-            console.log('Creating new pegawai. URL:', url);
-            console.log('Form data being sent for create:', Object.fromEntries(formData));
-            response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || ''
-                },
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            loadLazyData();
-            fetchStats();
-            Swal.fire(
-                'Berhasil!',
-                isEditMode.value
-                    ? 'Pegawai berhasil diperbarui.'
-                    : 'Pegawai berhasil dibuat.',
-                'success'
-            );
-            handleCloseModal();
-        } else {
-            const errorData = await response.json();
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-            } else {
-                Swal.fire('Gagal', errorData.message || (isEditMode.value ? 'Gagal memperbarui pegawai' : 'Gagal membuat pegawai'), 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Save error:', error);
-        Swal.fire('Error', error.message, 'error');
-        validationErrors.value = [error.message];
-    }
-};
-
-// Fungsi untuk menangani event close dari modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('PegawaiModal'); 
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
-    resetParentFormState(); 
-};
-
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-const fetchStats = async () => {
-  const defaultStats = {
-    total: undefined,
-    pkwtt: undefined,
-    pkwt: undefined,
-    resign: undefined,
-    outsource: undefined
-  };
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch($api.pegawaiCountByStatus(), {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      if (result && typeof result === 'object' && result !== null) {
-        stats.value = {
-            total: result.total,
-            pkwtt: result.pkwtt,
-            pkwt: result.pkwt,
-            resign: result.resign,
-            outsource: result.outsource,
-        };
-      } else {
-        stats.value = defaultStats;
-        console.warn('Data statistik dari API tidak dalam format objek yang diharapkan atau null:', result);
-      }
-    } else {
-        stats.value = defaultStats;
-        console.error('Gagal mengambil data statistik, status respons:', response.status);
-    }
-  } catch (error) {
-    console.error('Gagal mengambil data statistik (exception):', error);
-    stats.value = defaultStats;
-  }
-};
-
-const loadLazyData = async () => {
-    loading.value = true;
-    try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            start    : lazyParams.value.first || 0,
-            length   : lazyParams.value.rows || 10,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            'search[value]': lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.pegawai()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data pegawai dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data pegawai');
-        }
-
-        const result = await response.json();
-        pegawai.value = result.data || []; 
-        totalRecords.value = parseInt(result.recordsTotal) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
-    } catch (error) {
-        console.error('Error loading lazy data for pegawai:', error);
-        pegawai.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data pegawai: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
+let modalInstance = null;
 onMounted(() => {
+    pegawaiStore.fetchPegawais()
+    pegawaiStore.fetchStats()
     perusahaanStore.fetchPerusahaans()
     cabangStore.fetchCabangs()
     divisiStore.fetchDivisis()
-    departemenStore.fetchDepartemensByDivisi(selectedDivisi.value)
     jabatanStore.fetchJabatans()
-    loadLazyData();
-    fetchStats();
-});
+    // Departemen & Cabang (dependent) fetched via watchers
+    
+    const modalElement = document.getElementById('PegawaiModal')
+    if (modalElement) {
+        modalInstance = new bootstrap.Modal(modalElement)
+    }
+})
+
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance?.show()
+    } else {
+        modalInstance?.hide()
+    }
+})
+
+const debouncedSearch = useDebounceFn(() => {
+    pegawaiStore.setSearch(globalFilterValue.value)
+}, 500)
+
+watch(globalFilterValue, debouncedSearch);
+
 
 const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
+    pegawaiStore.setPagination(event);
 };
 
 const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
+    params.value.first = 0;
+    pegawaiStore.fetchPegawais();
 };
 
 const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
+    pegawaiStore.setSort(event);
 };
 
 const exportData = (format) => {
     if (format === 'csv') {
         myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
     }
-};
-
-function openAddPegawaiModal() {
-    isEditMode.value = false;
-    selectedPegawai.value = {
-        // Set default values for a new employee if needed
-        nm_pegawai: '',
-        email: '',
-        // ... other fields
-    };
-    validationErrors.value = [];
-
-    selectedPerusahaan.value = null;
-    selectedDivisi.value = null;
-    cabangStore.fetchCabangByPerusahaan(null);
-    departemenStore.fetchDepartemensByDivisi(null);
-
-    const modalEl = document.getElementById('PegawaiModal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('PegawaiModal element not found or Bootstrap not loaded.');
-    }
-}
-
-async function openEditPegawaiModal(pegawaiData) {
-    isEditMode.value = true;
-    selectedPegawai.value = JSON.parse(JSON.stringify(pegawaiData));
-    validationErrors.value = [];
-
-    const modalEl = document.getElementById('PegawaiModal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('PegawaiModal element not found or Bootstrap not loaded.');
-    }
-}
-
-const resetParentFormState = () => {
-    selectedPegawai.value = null;
-    isEditMode.value = false;
-    validationErrors.value = [];
-};
-
-const deletePegawai = async (pegawaiId) => {
-if (!pegawaiId) return;
-
-const result = await Swal.fire({
-    title: 'Are you sure?',
-    text: 'This action cannot be undone!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#666CFF',
-    cancelButtonColor: '#A7A9B3',
-    confirmButtonText: 'Yes, delete it!',
-    cancelButtonText: 'Cancel'
-});
-
-if (result.isConfirmed) {
-    try {
-        const token = localStorage.getItem('token');
-
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), {
-            credentials: 'include'
-        });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-
-        const response = await fetch($api.pegawaiDelete(pegawaiId), {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Gagal menghapus pegawai');
-        }
-
-        loadLazyData();
-        fetchStats();
-
-        await Swal.fire({
-            title: 'Berhasil!',
-            text: 'Pegawai berhasil dihapus.',
-            icon: 'success'
-        });
-
-    } catch (error) {
-        await Swal.fire({
-            title: 'Error',
-            text: error.message,
-            icon: 'error'
-        });
-    }
-}
+    // PDF export logic can be added here
 };
 
 const handleCompanySelectedInModal = (perusahaanId) => {
+    form.value.cabang_id = null; // Reset cabang when company changes
     cabangStore.fetchCabangByPerusahaan(perusahaanId);
 };
 
 const handleDivisionSelectedInModal = (divisiId) => {
+    form.value.departemen_id = null; // Reset departemen when divisi changes
     departemenStore.fetchDepartemensByDivisi(divisiId);
 };
+
+// Form related computed properties and functions
+const filteredCabang = computed(() => {
+    if (!form.value.perusahaan_id) return [];
+    return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaan_id);
+});
+
+const filteredDepartemen = computed(() => {
+    if (!form.value.divisi_id) return [];
+    return departemens.value.filter(dep => dep.divisiId === form.value.divisi_id);
+});
+
+const onAvatarChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    form.value.avatar = file;
+    form.value.avatarPreview = URL.createObjectURL(file);
+  }
+}
+
+const formatRupiah = (angka) => {
+    if (angka === null || angka === undefined) return '';
+    let number_string = String(angka).replace(/[^,\d]/g, '').toString(),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+    if (ribuan) {
+        let separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return 'Rp ' + rupiah;
+}
+
+const gajiPegawaiFormatted = computed(() => formatRupiah(form.value.gaji_pegawai));
+const tunjanganPegawaiFormatted = computed(() => formatRupiah(form.value.tunjangan_pegawai));
+
+const handleGajiInput = (e) => {
+    form.value.gaji_pegawai = e.target.value.replace(/[^0-9]/g, '');
+};
+
+const handleTunjanganInput = (e) => {
+    form.value.tunjangan_pegawai = e.target.value.replace(/[^0-9]/g, '');
+};
+
+const pendidikanOptions = [
+    { label: 'SD', value: 0 }, { label: 'SMP', value: 1 }, { label: 'SMA', value: 2 },
+    { label: 'S1', value: 3 }, { label: 'S2', value: 4 }, { label: 'S3', value: 5 }
+];
+
+const jenisKelaminOptions = [
+    { label: 'Perempuan', value: 0 }, { label: 'Laki-Laki', value: 1 }
+];
+
+const statusPegawaiOptions = [
+    { label: 'PKWTT', value: 1 }, { label: 'PKWT', value: 2 },
+    { label: 'Outsource', value: 3 }, { label: 'Resign', value: 4 },
+    { label: 'Tidak diketahui', value: 5 }
+];
+
 
 const getStatusBadge = (status) => {
     switch (status) {
