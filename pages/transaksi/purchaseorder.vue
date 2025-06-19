@@ -178,7 +178,7 @@
                                     <span class="p-input-icon-left">
                                         <InputText
                                             v-model="globalFilterValue"
-                                            placeholder="Cari purchaseOrder..."
+                                            placeholder="Cari Purchase Order..."
                                             class="w-full md:w-20rem"
                                         />
                                     </span>
@@ -215,6 +215,20 @@
                                     <template #body="slotProps">
                                         <span :class="getStatusBadge(slotProps.data.status).class">
                                             {{ getStatusBadge(slotProps.data.status).text }}
+                                        </span>
+                                    </template>
+                                </Column>
+                                <Column field="createdByUser.fullName" header="Dibuat Oleh" :sortable="true">
+                                    <template #body="slotProps">
+                                        <span>
+                                            {{ slotProps.data.createdByUser.fullName }}
+                                        </span>
+                                    </template>
+                                </Column>
+                                <Column field="approvedBy" header="Approved By" :sortable="true">
+                                    <template #body="slotProps">
+                                        <span>
+                                            {{ slotProps.data.approvedByUser.fullName }}
                                         </span>
                                     </template>
                                 </Column>
@@ -260,17 +274,22 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li>
+                                                <li v-if="userisAdmin || userisSuperAdmin && slotProps.data.status == 'draft'">
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="approvePurchaseOrder(slotProps.data.id)">
+                                                        <i class="ri-check-line me-2"></i> Approve
+                                                    </a>
+                                                </li>
+                                                <li v-if="slotProps.data.status == 'approved'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li v-if="userIsAdmin || (!userIsAdmin && slotProps.data.status == 'Received')">
+                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'Received')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="openEditPurchaseOrderModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li v-if="userIsAdmin || (!userIsAdmin && slotProps.data.status == 'Received')">
+                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'Received')">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deletePurchaseOrder(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -455,21 +474,7 @@
                                             <label for="taxPurchaseOrder">Tax</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <v-select
-                                                v-model="formPurchaseOrder.status"
-                                                :options="status"
-                                                label="label"
-                                                :reduce="status => status.value"
-                                                placeholder="-- Pilih Status --"
-                                                id="status"
-                                                class="status"
-                                                :disabled="!isEditMode"
-                                            />   
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
                                             <input 
                                                 type="file" 
@@ -655,8 +660,12 @@ const productStore          = useProductStore()
 const userStore             = useUserStore()
 const formatRupiah          = useFormatRupiah()
 
-const userIsAdmin = computed(() => {
+const userisSuperAdmin = computed(() => {
     return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
+});
+
+const userisAdmin = computed(() => {
+    return userStore.user?.roles?.some(role => role.name === 'admin') ?? false;
 });
 
 // State
@@ -915,6 +924,42 @@ const fetchWarehouse = async () => {
         Swal.fire('Error', `Tidak dapat memuat data gudang: ${error.message}`, 'error');
     }
 };
+
+// Approve Purchase Order
+const approvePurchaseOrder = async (purchaseOrderId) => {
+    try {
+        const token = localStorage.getItem('token');
+        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+        if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
+        const csrfData = await csrfResponse.json();
+        const csrfToken = csrfData.token;
+
+        const response = await fetch($api.approvePurchaseOrder(purchaseOrderId), {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type' : 'application/json',
+                'Accept'       : 'application/json',
+                'X-CSRF-TOKEN' : csrfToken,
+            },
+            credentials: 'include',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Gagal mengapprove purchase order' }));
+            throw new Error(errorData.message || 'Gagal mengapprove purchase order');
+        }
+
+        await loadLazyData();
+        await Swal.fire('Berhasil!', 'Purchase Order berhasil diapprove.', 'success');
+
+        return true;
+    } catch (error) {
+        console.error('Error approving purchase order:', error);
+        await Swal.fire('Error', error.message || 'Gagal mengapprove purchase order.', 'error');
+        return false;
+    }
+}
 
 // Validation Errors
 const validationErrors = ref([]);

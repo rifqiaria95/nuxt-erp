@@ -8,10 +8,12 @@ export interface Vendor {
 }
 
 export interface User {
-  id       : number
-  name     : string
-  createdAt: string
-  updatedAt: string
+  id        : number
+  fullName  : string
+  createdAt : string
+  updatedAt : string
+  approvedAt: string | null
+  receivedAt: string | null
 }
 
 export interface Perusahaan {
@@ -87,6 +89,9 @@ export interface PurchaseOrder {
   vendor?        : Vendor
   perusahaan?    : Perusahaan
   cabang?        : Cabang
+  createdByUser? : User
+  approvedByUser?: User
+  receivedByUser?: User
   purchaseOrderItems? : PurchaseOrderItem[]
 }
 
@@ -100,9 +105,9 @@ interface PurchaseOrderState {
 export const usePurchaseOrderStore = defineStore('purchaseOrder', {
   state: (): PurchaseOrderState => ({
     purchaseOrders: [],
-    purchaseOrder: null,
-    loading: false,
-    error: null
+    purchaseOrder : null,
+    loading       : false,
+    error         : null
   }),
   actions: {
     async fetchPurchaseOrders() {
@@ -129,6 +134,9 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           vendor         : item.vendor,
           perusahaan     : item.perusahaan,
           cabang         : item.cabang,
+          createdByUser  : item.createdByUser,
+          approvedByUser : item.approvedByUser,
+          receivedByUser : item.receivedByUser,
           approvedAt     : item.approvedAt,
           receivedAt     : item.receivedAt,
         }))

@@ -57,6 +57,7 @@ export default defineNuxtPlugin(() => {
 
     // Purchase Order
     purchaseOrder: () => `${apiBase}/purchase-order`,
+    approvePurchaseOrder: (id: number | string) => `${apiBase}/purchase-order/approvePurchaseOrder/${id}`,
     purchaseOrderUpdate: (id: number | string) => `${apiBase}/purchase-order/update/${id}`,
     getPurchaseOrderDetails: (id: number | string) => `${apiBase}/purchase-order/getPurchaseOrderDetails/${id}`,
 
