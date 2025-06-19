@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { apiFetch } from '~/utils/apiFetch'
 
 export interface Vendor {
   id       : number
@@ -112,41 +113,73 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
   actions: {
     async fetchPurchaseOrders() {
       this.loading = true
+      this.error = null
+      const { $api } = useNuxtApp()
       try {
-        const { $api } = useNuxtApp()
-        const response = await fetch($api.purchaseOrder())
-        const data = await response.json()
-
-        this.purchaseOrders = (data.data.data || data.data || data).map((item: any) => ({
-          id             : item.id,
-          name           : item.name,
-          noPo           : item.noPo,
-          up             : item.up,
-          vendorId       : item.vendorId,
-          perusahaanId   : item.perusahaanId,
-          cabangId       : item.cabangId,
-          dueDate        : item.dueDate,
-          createdAt      : item.createdAt,
-          updatedAt      : item.updatedAt,
-          createdBy      : item.createdBy,
-          approvedBy     : item.approvedBy,
-          receivedBy     : item.receivedBy,
-          vendor         : item.vendor,
-          perusahaan     : item.perusahaan,
-          cabang         : item.cabang,
-          createdByUser  : item.createdByUser,
-          approvedByUser : item.approvedByUser,
-          receivedByUser : item.receivedByUser,
-          approvedAt     : item.approvedAt,
-          receivedAt     : item.receivedAt,
-        }))
-      } catch (error) {
-        console.error('Gagal mengambil data purchaseOrder:', error)
+        const response = await apiFetch($api.purchaseOrder())
+        // Assuming the response structure is { data: { data: [...] } } or similar
+        this.purchaseOrders = response.data?.data || response.data || response || []
+      } catch (e) {
+        console.error('Gagal mengambil data purchaseOrder:', e)
+        this.error = e
       } finally {
         this.loading = false
       }
     },
 
+    async getPurchaseOrderDetails(poId: string) {
+      this.loading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+      try {
+        const resData = await apiFetch($api.getPurchaseOrderDetails(poId));
+        if (resData && resData.data) {
+          this.purchaseOrder = resData.data;
+        } else {
+          throw new Error('Struktur data tidak valid diterima dari API getPurchaseOrderDetails.');
+        }
+      } catch (e) {
+        console.error('Gagal mengambil detail purchase order:', e);
+        this.error = e;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async updatePurchaseOrderItemStatus(itemId: string, status: boolean, receivedQty: number) {
+      this.loading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+      try {
+        const resData = await apiFetch($api.purchaseOrderItemUpdateStatusPartial(itemId), {
+          method: 'PATCH',
+          body: { statusPartial: status, receivedQty: receivedQty },
+        });
+
+        const updatedPurchaseOrderItem = resData.data.purchaseOrderItem;
+        const updatedPurchaseOrder = resData.data.purchaseOrder;
+
+        if (this.purchaseOrder && this.purchaseOrder.purchaseOrderItems) {
+          const index = this.purchaseOrder.purchaseOrderItems.findIndex(item => item.id === itemId);
+          if (index !== -1) {
+            this.purchaseOrder.purchaseOrderItems[index].statusPartial = updatedPurchaseOrderItem.statusPartial;
+            this.purchaseOrder.purchaseOrderItems[index].receivedQty = updatedPurchaseOrderItem.receivedQty;
+          }
+          if (this.purchaseOrder.status !== updatedPurchaseOrder.status) {
+              this.purchaseOrder.status = updatedPurchaseOrder.status;
+          }
+        }
+        console.log('Status item PO dan Purchase Order berhasil diperbarui:', resData);
+      } catch (error) {
+        console.error('Gagal memperbarui status item PO atau PO:', error);
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // Keeping these simple actions as they are, assuming they operate on local state only for now
     addPurchaseOrder(purchaseOrder: PurchaseOrder) {
         this.purchaseOrders.push(purchaseOrder) 
     },
@@ -162,113 +195,5 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     getPurchaseOrderById(id: string): PurchaseOrder | undefined {
       return this.purchaseOrders.find(purchaseOrder => purchaseOrder.id === id)
     },
-
-    async getPurchaseOrderDetails(poId: string) {
-      try {
-        this.loading = true;
-        const { $api } = useNuxtApp();
-        const url = `${$api.getPurchaseOrderDetails(poId)}`;
-        const token = localStorage.getItem('token');
-
-        const response = await fetch(url, {
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          throw new Error(`Failed to fetch PO details! status: ${response.status}. Response: ${errorBody}`);
-        }
-
-        const resData = await response.json();
-
-        if (resData && resData.data) {
-          const poData = resData.data;
-
-          if (poData.purchaseOrderItems) {
-            poData.purchaseOrderItems = poData.purchaseOrderItems.map((item: any) => ({
-              ...item,
-              statusPartial: item.statusPartial ?? item.statusPartial,
-              receivedQty: item.receivedQty ?? item.receivedQty
-            }));
-          }
-
-          this.purchaseOrder = poData;
-        } else {
-          throw new Error('Invalid data structure received from getPurchaseOrderDetails API.');
-        }
-
-        console.log('Pinia store purchaseOrder state after refresh load:', this.purchaseOrder);
-      } catch (e) {
-        console.error('Error fetching purchase order details:', e);
-        this.error = e;
-      } finally {
-        this.loading = false;
-      }
-    },
-    async updatePurchaseOrderItemStatus(itemId: string, status: boolean, receivedQty: number) {
-      try {
-        this.loading = true;
-
-        const { $api } = useNuxtApp();
-        const url = `${$api.purchaseOrderItemUpdateStatusPartial(itemId)}`;
-
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-        const token = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
-
-        const response = await fetch(url, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ statusPartial: status, receivedQty: receivedQty }),
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          const errorBody = await response.text();
-          throw new Error(`HTTP error! status: ${response.status}. Response: ${errorBody}`);
-        }
-
-        const resData = await response.json();
-        const updatedPurchaseOrderItem = resData.data.purchaseOrderItem;
-        const updatedPurchaseOrder = resData.data.purchaseOrder;
-
-        if (this.purchaseOrder && this.purchaseOrder.purchaseOrderItems) {
-          const index = this.purchaseOrder.purchaseOrderItems.findIndex(item => item.id === itemId);
-          if (index !== -1) {
-            this.purchaseOrder.purchaseOrderItems[index].statusPartial = updatedPurchaseOrderItem.statusPartial;
-            this.purchaseOrder.purchaseOrderItems[index].receivedQty = updatedPurchaseOrderItem.receivedQty;
-          }
-
-          if (this.purchaseOrder.status !== updatedPurchaseOrder.status) {
-              this.purchaseOrder.status = updatedPurchaseOrder.status;
-          }
-        }
-
-        console.log('Status item PO dan Purchase Order berhasil diperbarui:', resData);
-
-      } catch (error) {
-        console.error('Gagal memperbarui status item PO atau PO:', error);
-        this.error = error;
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
-
   }
 })

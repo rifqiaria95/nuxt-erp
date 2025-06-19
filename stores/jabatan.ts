@@ -1,51 +1,72 @@
 import { defineStore } from 'pinia'
+import { apiFetch } from '~/utils/apiFetch'
 
 export interface Jabatan {
-  id_jabatan: number
-  nm_jabatan: string
+  id: number
+  nmJabatan: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface JabatanState {
-  jabatan: Jabatan[]
+  jabatans: Jabatan[]
   loading: boolean
 }
 
 export const useJabatanStore = defineStore('jabatan', {
-    state: (): JabatanState => ({
-    jabatan: [],
-    loading: false
+  state: (): JabatanState => ({
+    jabatans: [],
+    loading: false,
   }),
   actions: {
-    async fetchJabatan() {
+    async fetchJabatans() {
+      if (this.jabatans.length > 0) return; 
+
       this.loading = true
+      const { $api } = useNuxtApp()
+      const token = localStorage.getItem('token');
+      const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.token;
+
+      if (!csrfToken) {
+        throw new Error('CSRF token not found. Cannot proceed with request.');
+      }
       try {
-        const response = await fetch('http://localhost:3333/api/jabatan')
-        const data = await response.json()
-        this.jabatan = data.data // ambil dari data.data
+        const response = await fetch($api.jabatan(), {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+          },
+        })
+        const result = await response.json()
+        this.jabatans = result.data || []
       } catch (error) {
-        console.error('Failed to fetch jabatan:', error)
+        console.error('Gagal mengambil data jabatan:', error)
       } finally {
         this.loading = false
       }
     },
 
     addJabatan(jabatan: Jabatan) {
-        this.jabatan.push(jabatan) 
+        this.jabatans.push(jabatan) 
     },
     removeJabatan(jabatanId: number) {
-        this.jabatan = this.jabatan.filter(jabatan => jabatan.id_jabatan !== jabatanId)
+        this.jabatans = this.jabatans.filter(jabatan => jabatan.id !== jabatanId)
     },
     updateJabatan(updatedJabatan: Jabatan) {
-        const index = this.jabatan.findIndex(jabatan => jabatan.id_jabatan === updatedJabatan.id_jabatan)
+        const index = this.jabatans.findIndex(jabatan => jabatan.id === updatedJabatan.id)
         if (index !== -1) {
-            this.jabatan[index] = updatedJabatan
+            this.jabatans[index] = updatedJabatan
         }
     },
     getJabatanByName(name: string): Jabatan | undefined {
-      return this.jabatan.find(jabatan => jabatan.nm_jabatan.toLowerCase() === name.toLowerCase())
+      return this.jabatans.find(jabatan => jabatan.nmJabatan.toLowerCase() === name.toLowerCase())
     },
     getJabatanById(id: number): Jabatan | undefined {
-      return this.jabatan.find(jabatan => jabatan.id_jabatan === id)
+      return this.jabatans.find(jabatan => jabatan.id === id)
     }
   }
 })

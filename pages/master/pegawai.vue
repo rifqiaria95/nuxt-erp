@@ -133,11 +133,11 @@
                     :isEditMode="isEditMode" 
                     :selectedPegawaiData="selectedPegawai" 
                     :validationErrorsFromParent="validationErrors"
-                    :jabatanOptions="jabatan"
-                    :perusahaanOptions="perusahaan"
-                    :cabangOptions="cabang" 
-                    :divisiOptions="divisi" 
-                    :departemenOptions="departemen"
+                    :jabatanOptions="jabatans"
+                    :perusahaanOptions="perusahaans"
+                    :cabangOptions="cabangs" 
+                    :divisiOptions="divisis" 
+                    :departemenOptions="departemens"
                     @save="handleSavePegawai"
                     @close="handleCloseModal" 
                     @company-selected="handleCompanySelectedInModal"
@@ -152,7 +152,13 @@
  
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { storeToRefs } from 'pinia'
 import { usePegawaiStore } from '~/stores/pegawai'
+import { usePerusahaanStore } from '~/stores/perusahaan'
+import { useDivisiStore } from '~/stores/divisi'
+import { useDepartemenStore } from '~/stores/departemen'
+import { useCabangStore } from '~/stores/cabang'
+import { useJabatanStore } from '~/stores/jabatan'
 import vSelect from 'vue-select'
 import Swal from 'sweetalert2'
 import 'vue-select/dist/vue-select.css'
@@ -166,13 +172,24 @@ import InputText from 'primevue/inputtext'
 
 const { $api } = useNuxtApp()
 
-const myDataTableRef      = ref(null)
-const pegawai             = ref([])
-const selectedPegawai     = ref(null)
-const loading             = ref(false);
-const totalRecords        = ref(0);
-const globalFilterValue   = ref('');
-const lazyParams          = ref({
+const perusahaanStore = usePerusahaanStore()
+const cabangStore = useCabangStore()
+const divisiStore = useDivisiStore()
+const departemenStore = useDepartemenStore()
+const jabatanStore = useJabatanStore()
+
+const { perusahaans }   = storeToRefs(perusahaanStore)
+const { cabangs }       = storeToRefs(cabangStore)  
+const { divisis }        = storeToRefs(divisiStore)
+const { departemens }   = storeToRefs(departemenStore)
+const { jabatans }      = storeToRefs(jabatanStore)
+const myDataTableRef    = ref(null)
+const pegawai           = ref([])
+const selectedPegawai   = ref(null)
+const loading           = ref(false);
+const totalRecords      = ref(0);
+const globalFilterValue = ref('');
+const lazyParams        = ref({
     first: 0,
     rows: 10,
     sortField: null,
@@ -184,11 +201,6 @@ const lazyParams          = ref({
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
 // State untuk menu groups dan details (data utama tetap di parent)
-const jabatan = ref([])
-const perusahaan = ref([])
-const cabang = ref([])
-const divisi = ref([])
-const departemen = ref([])
 const stats = ref({
   total: undefined,
   pkwtt: undefined,
@@ -199,14 +211,8 @@ const stats = ref({
 
 // Selected states untuk filter di parent (jika masih ada filter UI di parent)
 // atau untuk trigger watch fetch data dependen.
-const selectedJabatan             = ref(null)
 const selectedPerusahaan          = ref(null)
-const selectedCabang              = ref(null)
 const selectedDivisi              = ref(null)
-const selectedDepartemen          = ref(null)
-const selectedStatusPegawai       = ref(null)
-const selectedPendidikanPegawai   = ref(null)
-const selectedJenisKelaminPegawai = ref(null)
 
 const validationErrors = ref([]); 
 
@@ -370,123 +376,6 @@ const fetchStats = async () => {
   }
 };
 
-// Fungsi untuk mengambil data menu groups
-const fetchJabatan = async () => {
-try {
-    const token = localStorage.getItem('token')
-    const response = await fetch($api.jabatan(), {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    
-    if (!response.ok) throw new Error('Gagal mengambil data jabatan')
-    
-    const data = await response.json()
-    jabatan.value = data.data || data
-} catch (error) {
-    console.error('Error fetching jabatan:', error)
-}
-}
-
-const fetchPerusahaan = async () => {
-try {
-    const token = localStorage.getItem('token')
-    const response = await fetch($api.perusahaan(), {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    
-    if (!response.ok) throw new Error('Gagal mengambil data perusahaan')
-    
-    const data = await response.json()
-    perusahaan.value = data.data || data
-} catch (error) {
-    console.error('Error fetching perusahaan:', error)
-}
-}
-
-// Fungsi untuk mengambil data cabang berdasarkan perusahaan
-const fetchCabang = async (perusahaanId) => {
-    if (!perusahaanId) {
-        cabang.value = [];
-        return;
-    }
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch($api.cabang(perusahaanId), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) throw new Error('Gagal mengambil data cabang');
-        const data = await response.json();
-        if (Array.isArray(data)) {
-            cabang.value = data;
-        } else if (data && Array.isArray(data.data)) {
-            cabang.value = data.data;
-        } else {
-            cabang.value = []; 
-        }
-    } catch (error) {
-        console.error('Error fetching cabang:', error);
-        cabang.value = [];
-    }
-};
-
-// Fungsi untuk mengambil data divisi
-const fetchDivisi = async () => {
-    try {
-        const token = localStorage.getItem('token')
-        const response = await fetch($api.divisi(), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        
-        if (!response.ok) throw new Error('Gagal mengambil data divisi')
-        
-        const data = await response.json()
-        divisi.value = data.data || data
-    } catch (error) {
-        console.error('Error fetching divisi:', error)
-    }
-}
-
-// Fungsi untuk mengambil data departemen berdasarkan divisi
-const fetchDepartemen = async (divisiId) => {
-    if (!divisiId) {
-        departemen.value = [];
-        return;
-    }
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch($api.departemen(divisiId), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) throw new Error('Gagal mengambil data departemen');
-        const data = await response.json();
-        if (Array.isArray(data)) {
-            departemen.value = data;
-        } else if (data && Array.isArray(data.data)) {
-            departemen.value = data.data;
-        } else {
-            departemen.value = [];
-        }
-    } catch (error) {
-        console.error('Error fetching departemen:', error);
-        departemen.value = [];
-    }
-};
-
 const loadLazyData = async () => {
     loading.value = true;
     try {
@@ -531,9 +420,11 @@ const loadLazyData = async () => {
 };
 
 onMounted(() => {
-    fetchJabatan();
-    fetchPerusahaan();
-    fetchDivisi();
+    perusahaanStore.fetchPerusahaans()
+    cabangStore.fetchCabangs()
+    divisiStore.fetchDivisis()
+    departemenStore.fetchDepartemensByDivisi(selectedDivisi.value)
+    jabatanStore.fetchJabatans()
     loadLazyData();
     fetchStats();
 });
@@ -575,8 +466,8 @@ function openAddPegawaiModal() {
 
     selectedPerusahaan.value = null;
     selectedDivisi.value = null;
-    cabang.value = [];
-    departemen.value = [];
+    cabangStore.fetchCabangByPerusahaan(null);
+    departemenStore.fetchDepartemensByDivisi(null);
 
     const modalEl = document.getElementById('PegawaiModal');
     if (modalEl && window.bootstrap) {
@@ -666,38 +557,12 @@ if (result.isConfirmed) {
 }
 };
 
-const filteredDepartemen = computed(() => {
-    return Array.isArray(departemen.value)
-    ? departemen.value.filter(d => d.divisiId === selectedDivisi.value)
-    : [];
-});
-
-watch(selectedDivisi, (val) => {
-    selectedDepartemen.value = null;
-    if (!val) {
-        departemen.value = []; 
-    }
-});
-
-const filteredCabang = computed(() => {
-    return Array.isArray(cabang.value)
-    ? cabang.value.filter(c => c.perusahaanId === selectedPerusahaan.value)
-    : [];
-});
-
-watch(selectedPerusahaan, (val) => {
-    selectedCabang.value = null;
-    if (!val) {
-        cabang.value = [];
-    }
-});
-
 const handleCompanySelectedInModal = (perusahaanId) => {
-    fetchCabang(perusahaanId);
+    cabangStore.fetchCabangByPerusahaan(perusahaanId);
 };
 
 const handleDivisionSelectedInModal = (divisiId) => {
-    fetchDepartemen(divisiId);
+    departemenStore.fetchDepartemensByDivisi(divisiId);
 };
 
 const getStatusBadge = (status) => {

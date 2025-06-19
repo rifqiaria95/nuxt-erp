@@ -2,50 +2,70 @@ import { defineStore } from 'pinia'
 
 export interface Divisi {
   id: number
-  nm_divisi: string
+  nmDivisi: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface DivisiState {
-  divisi: Divisi[]
+  divisis: Divisi[]
   loading: boolean
 }
 
 export const useDivisiStore = defineStore('divisi', {
-    state: (): DivisiState => ({
-    divisi: [],
-    loading: false
+  state: (): DivisiState => ({
+    divisis: [],
+    loading: false,
   }),
   actions: {
-    async fetchJabatan() {
+    async fetchDivisis() {
+      if (this.divisis.length > 0) return;
+
       this.loading = true
+      const { $api } = useNuxtApp()
+      const token = localStorage.getItem('token');
+      const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.token;
+
+      if (!csrfToken) {
+        throw new Error('CSRF token not found. Cannot proceed with request.');
+      }
       try {
-        const response = await fetch('http://localhost:3333/api/divisi')
-        const data = await response.json()
-        this.divisi = data.data // ambil dari data.data
+        const response = await fetch($api.divisi(), {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+          },
+        })
+        const result = await response.json()
+        this.divisis = result.data || []
       } catch (error) {
-        console.error('Failed to fetch divisi:', error)
+        console.error('Gagal mengambil data divisi:', error)
       } finally {
         this.loading = false
       }
     },
 
     addDivisi(divisi: Divisi) {
-        this.divisi.push(divisi) 
+        this.divisis.push(divisi) 
     },
     removeDivisi(divisiId: number) {
-        this.divisi = this.divisi.filter(divisi => divisi.id !== divisiId)
+        this.divisis = this.divisis.filter(divisi => divisi.id !== divisiId)
     },
     updateDivisi(updatedDivisi: Divisi) {
-        const index = this.divisi.findIndex(divisi => divisi.id === updatedDivisi.id)
+        const index = this.divisis.findIndex(divisi => divisi.id === updatedDivisi.id)
         if (index !== -1) {
-            this.divisi[index] = updatedDivisi
+            this.divisis[index] = updatedDivisi
         }
     },
     getDivisiByName(name: string): Divisi | undefined {
-      return this.divisi.find(divisi => divisi.nm_divisi.toLowerCase() === name.toLowerCase())
+      return this.divisis.find(divisi => divisi.nmDivisi.toLowerCase() === name.toLowerCase())
     },
     getDivisiById(id: number): Divisi | undefined {
-      return this.divisi.find(divisi => divisi.id === id)
+      return this.divisis.find(divisi => divisi.id === id)
     }
   }
 })

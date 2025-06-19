@@ -139,10 +139,8 @@
                         <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
                             <button
-                            data-bs-target="#Modal"
-                            data-bs-toggle="modal"
-                            class="btn btn-sm btn-primary mb-4 text-nowrap add-new-pegawai"
-                            @click="openAddCabangModal"
+                            class="btn btn-sm btn-primary mb-4 text-nowrap"
+                            @click="cabangStore.openModal()"
                             >
                             Tambah Cabang
                             </button>
@@ -162,41 +160,29 @@
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                 <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                <Dropdown v-model="params.rows" :options="[5, 10, 20, 50]" @change="handleRowsChange" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
-                                </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari cabang..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
-                                </div>
+                                <span class="p-input-icon-left">
+                                    <i class="ri-search-line"></i>
+                                    <InputText
+                                        v-model="globalFilterValue"
+                                        placeholder="Cari cabang..."
+                                        class="w-full md:w-20rem"
+                                    />
+                                </span>
                             </div>
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="cabang" 
-                            :rows="lazyParams.rows" 
+                            :data="cabangs" 
+                            :rows="params.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
                             @page="onPage($event)"
                             @sort="onSort($event)"
-                            responsiveLayout="scroll" 
-                            paginatorPosition="bottom"
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                         >
@@ -204,15 +190,19 @@
                             <Column field="kodeCabang" header="Kode Cabang" :sortable="true"></Column>
                             <Column field="nmCabang" header="Nama Cabang" :sortable="true"></Column>
                             <Column field="alamatCabang" header="Alamat" :sortable="true"></Column>
-                            <Column header="Perusahaan" :sortable="true">
+                            <Column header="Perusahaan" :sortable="true" field="perusahaan.nmPerusahaan">
                                 <template #body="slotProps">
-                                    {{ slotProps.data.perusahaan && slotProps.data.perusahaan.nmPerusahaan ? slotProps.data.perusahaan.nmPerusahaan : '-' }}
+                                    {{ slotProps.data.perusahaan?.nmPerusahaan || '-' }}
                                 </template>
                             </Column>
                             <Column header="Actions" :exportable="false" style="min-width:8rem">
                                 <template #body="slotProps">
-                                    <button @click="openEditCabangModal(slotProps.data)" class="btn btn-sm btn-route btn-text-secondary rounded-pill btn-route me-2"><i class="ri-edit-box-line"></i></button>
-                                    <button @click="deleteCabang(slotProps.data.id)" class="btn btn-sm btn-route btn-text-secondary rounded-pill btn-route"><i class="ri-delete-bin-7-line"></i></button>
+                                    <button @click="cabangStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2">
+                                        <i class="ri-edit-box-line ri-20px"></i>
+                                    </button>
+                                    <button @click="confirmDelete(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon">
+                                        <i class="ri-delete-bin-7-line ri-20px"></i>
+                                    </button>
                                 </template>
                             </Column>
                         </MyDataTable>
@@ -225,79 +215,71 @@
 
             <!-- Placeholder untuk CabangModal component -->
             <Modal 
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
-                :title="modalTitle" 
+                id="Modal"
+                :title="modalTitle"
                 :description="modalDescription"
-                :selectedCabang="selectedCabang"
+                :validation-errors-from-parent="validationErrors"
             >
-                <template #default>
-                    <form @submit.prevent="handleSubmit">
-                        <div class="row g-6">
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="kode_cabang" 
-                                        v-model="formCabang.kode_cabang" 
-                                        placeholder="Masukkan kode cabang"
-                                        required
-                                    >
-                                    <label for="name">Kode Cabang</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="nm_cabang" 
-                                        v-model="formCabang.nm_cabang" 
-                                        placeholder="Masukkan nama cabang"
-                                        required
-                                    >
-                                    <label for="name">Nama Cabang</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
+                <form @submit.prevent="handleSubmit">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline">
+                                <input 
                                     type="text" 
                                     class="form-control" 
-                                    id="alamat_cabang" 
-                                    v-model="formCabang.alamat_cabang" 
-                                    placeholder="Masukkan alamat cabang"
-                                    >
-                                    <label for="alamat_cabang">Alamat Cabang</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <v-select
-                                    v-model="formCabang.perusahaan_id"
-                                    :options="perusahaan"
-                                    label="nmPerusahaan"
-                                    :reduce="perusahaan => perusahaan.id"
-                                    placeholder="-- Pilih Perusahaan --"
-                                    id="perusahaanId"
-                                    class="perusahaanId"
-                                />   
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary me-2"
-                                    @click="handleSaveCabang"
+                                    id="kodeCabang" 
+                                    v-model="form.kode_cabang" 
+                                    placeholder="Masukkan kode cabang"
+                                    required
                                 >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="handleCloseModal">
-                                    Batal
-                                </button>
+                                <label for="kodeCabang">Kode Cabang</label>
                             </div>
                         </div>
-                    </form>
-                </template>
+                        <div class="col-md-6">
+                            <div class="form-floating form-floating-outline">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="nmCabang" 
+                                    v-model="form.nm_cabang" 
+                                    placeholder="Masukkan nama cabang"
+                                    required
+                                >
+                                <label for="nmCabang">Nama Cabang</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating form-floating-outline">
+                                <textarea 
+                                    class="form-control h-100" 
+                                    id="alamatCabang" 
+                                    v-model="form.alamat_cabang" 
+                                    placeholder="Masukkan alamat lengkap"
+                                    rows="4"
+                                ></textarea>
+                                <label for="alamatCabang">Alamat</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating form-floating-outline">
+                                <select id="perusahaanId" class="form-select" v-model="form.perusahaan_id" required>
+                                    <option value="" disabled>Pilih Perusahaan</option>
+                                    <option v-for="perusahaan in perusahaans" :key="perusahaan.id" :value="perusahaan.id">
+                                        {{ perusahaan.nmPerusahaan }}
+                                    </option>
+                                </select>
+                                <label for="perusahaanId">Perusahaan</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer mt-6">
+                        <button type="button" class="btn btn-outline-secondary" @click="cabangStore.closeModal()">Tutup</button>
+                        <button type="submit" class="btn btn-primary" :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Simpan
+                        </button>
+                    </div>
+                </form>
             </Modal>
         </div>
          <!-- / Content -->
@@ -307,373 +289,109 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
-import { usePerusahaanStore } from '~/stores/perusahaan'
+import { ref, onMounted, watch, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useCabangStore } from '~/stores/cabang'
-import Modal from '~/components/modal/Modal.vue'
+import { usePerusahaanStore } from '~/stores/perusahaan'
 import MyDataTable from '~/components/table/MyDataTable.vue'
-import Swal from 'sweetalert2'
-import vSelect from 'vue-select'
-import 'vue-select/dist/vue-select.css'
+import Modal from '~/components/modal/Modal.vue'
 import Dropdown from 'primevue/dropdown'
+import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
+import Swal from 'sweetalert2'
+import { useDebounceFn } from '@vueuse/core'
 
 const { $api } = useNuxtApp()
 
-const myDataTableRef = ref(null);
+const cabangStore = useCabangStore()
 const perusahaanStore = usePerusahaanStore()
-const cabangStore     = useCabangStore()
-const selectedCabang  = ref(null);
-const perusahaan      = ref([]);
-const cabang          = ref([])
-const loading         = ref(false);
-const isEditMode      = ref(false);
-const totalRecords    = ref(0);
-const globalFilterValue = ref('');
-const lazyParams      = ref({
-    first: 0,
-    rows: 10,
-    sortField: null,
-    sortOrder: null,
-    draw: 1,
-    search: '',
-});
 
-const formCabang = ref({
-  kode_cabang: '',
-  nm_cabang: '',
-  alamat_cabang: '',
-  perusahaan_id: null,
-});
+const { cabangs, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(cabangStore)
+const { perusahaans } = storeToRefs(perusahaanStore)
 
-const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
+const myDataTableRef = ref(null)
+const globalFilterValue = ref('')
 
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
+const modalTitle = computed(() => isEditMode.value ? 'Edit Cabang' : 'Tambah Cabang')
+const modalDescription = computed(() => isEditMode.value ? 'Ubah detail cabang di bawah ini.' : 'Isi detail cabang baru di bawah ini.')
 
-const modalTitle = computed(() => isEditMode.value ? 'Edit Cabang' : 'Tambah Cabang');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data cabang di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan cabang baru.');
-
-// Fungsi untuk menangani event close dari modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
-    resetParentFormState(); 
-};
-
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-const fetchPerusahaan = async () => {
-    try {
-        const token = localStorage.getItem('token')
-        const response = await fetch($api.perusahaan(), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        
-        if (!response.ok) throw new Error('Gagal mengambil data perusahaan')
-        
-        const data = await response.json()
-        perusahaan.value = data.data || data
-    } catch (error) {
-        console.error('Error fetching perusahaan:', error)
-    }
-}
-
-const handleSaveCabang = async () => {
-    loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
-    try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
-        let response;
-        let url;
-
-        // Validasi form sederhana
-        if (!formCabang.value.nm_cabang || !formCabang.value.alamat_cabang) {
-            Swal.fire('Validasi', 'Nama dan alamat cabang wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        if (isEditMode.value) {
-            // Cari ID cabang dari form atau selectedCabang
-            let cabangIdToUpdate = formCabang.value?.id || formCabang.value?.idCabang;
-            if (!cabangIdToUpdate && selectedCabang.value) {
-                cabangIdToUpdate = selectedCabang.value.id || selectedCabang.value.idCabang;
-            }
-            if (!cabangIdToUpdate) {
-                Swal.fire('Error', 'ID Cabang tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.cabang()}/${cabangIdToUpdate}`;
-            console.log('Updating cabang with ID:', cabangIdToUpdate, 'URL:', url);
-            // Update data
-            response = await fetch(url, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    kode_cabang : formCabang.value.kode_cabang,
-                    nm_cabang   : formCabang.value.nm_cabang,
-                    alamat_cabang: formCabang.value.alamat_cabang,
-                    perusahaan_id: formCabang.value.perusahaan_id,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.cabang();
-            response = await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify({
-                    kode_cabang : formCabang.value.kode_cabang,
-                    nm_cabang   : formCabang.value.nm_cabang,
-                    alamat_cabang: formCabang.value.alamat_cabang,
-                    perusahaan_id: formCabang.value.perusahaan_id,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Cabang berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} cabang`, 'error');
-            }
-        }
-    } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data cabang.', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-// Fungsi untuk menangani event load lazy data dari cabang
-const loadLazyData = async () => {
-    loading.value = true;
-    try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.cabang()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data cabang dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data cabang');
-        }
-
-        const result = await response.json();
-        cabang.value = result.data || []; 
-        totalRecords.value = parseInt(result.meta.total) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
-    } catch (error) {
-        console.error('Error loading lazy data for cabang:', error);
-        cabang.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data cabang: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
-    }
-};
+const modalInstance = ref(null)
 
 onMounted(() => {
-    loadLazyData();
-    fetchPerusahaan();
-});
-
-const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
-};
-
-const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
-const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
-};
-
-const exportData = (format) => {
-    if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
+    cabangStore.fetchCabangs()
+    perusahaanStore.fetchPerusahaans()
+    
+    const modalElement = document.getElementById('Modal')
+    if (modalElement) {
+        modalInstance.value = new bootstrap.Modal(modalElement)
     }
-};
+})
 
-const openAddCabangModal = () => {
-    isEditMode.value = false;
-    modalTitle.value = 'Tambah Cabang';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan cabang baru.';
-    resetParentFormState();
-};
-
-async function openEditCabangModal(cabangData) {
-    isEditMode.value = true;
-    // Ambil data cabang saat modal terbuka
-    selectedCabang.value = JSON.parse(JSON.stringify(cabangData));
-    formCabang.value = {
-        nm_cabang: cabangData.nmCabang || '',
-        alamat_cabang: cabangData.alamatCabang || '',
-        perusahaan_id: cabangData.perusahaanId || null
-    };
-    validationErrors.value = [];
-
-    // Tampilkan modal
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance.value?.show()
     } else {
-        console.error('CabangModal element tidak ditemukan atau Bootstrap belum dimuat.');
+        modalInstance.value?.hide()
+    }
+})
+
+const handleSubmit = async () => {
+    if (isEditMode.value) {
+        await cabangStore.updateCabang()
+    } else {
+        await cabangStore.createCabang()
     }
 }
 
-const deleteCabang = async (cabangId) => {
-    if (!cabangId) return;
-
-    const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This action cannot be undone!',
-        route: 'warning',
+const confirmDelete = (id) => {
+    Swal.fire({
+        title: 'Anda yakin?',
+        text: "Data yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#666CFF',
-        cancelButtonColor: '#A7A9B3',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            let url;
-
-            const token = localStorage.getItem('token');
-            // Ambil CSRF token
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData  = await csrfResponse.json();
-            const csrfToken = csrfData.token;
-
-            url = `${$api.cabang()}/${cabangId}`;
-
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type' : 'application/json',
-                    'X-CSRF-TOKEN' : csrfToken
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus cabang');
-            }
-
-            loadLazyData();
-
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Cabang berhasil dihapus.',
-                route: 'success'
-            });
-
-        } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                route: 'error'
-            });
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            cabangStore.deleteCabang(id).then(() => {
+                Swal.fire(
+                    'Dihapus!',
+                    'Data cabang berhasil dihapus.',
+                    'success'
+                )
+            })
         }
-    }
-};
+    })
+}
 
-const resetParentFormState = () => {
-    formCabang.value = {
-        kode_cabang: '',
-        nm_cabang: '',
-        alamat_cabang: '',
-        perusahaan_id: null,
-    };
-};
+const onPage = (event) => {
+    params.value.page = event.page + 1
+    params.value.rows = event.rows
+    cabangStore.fetchCabangs()
+}
+
+const onSort = (event) => {
+    params.value.sortField = event.sortField
+    params.value.sortOrder = event.sortOrder
+    cabangStore.fetchCabangs()
+}
+
+const handleRowsChange = () => {
+    params.value.page = 1
+    cabangStore.fetchCabangs()
+}
+
+const debouncedSearch = useDebounceFn(() => {
+    params.value.page = 1
+    params.value.filters = { global: { value: globalFilterValue.value } }
+    cabangStore.setFilters(params.value.filters)
+}, 500)
+
+watch(globalFilterValue, () => {
+    debouncedSearch()
+})
 </script>
 
 <style scoped>

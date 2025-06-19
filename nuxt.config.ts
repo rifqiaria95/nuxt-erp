@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     dirs: ['utils']
   },
   plugins: [
+    '~/plugins/jquery.client.ts',
     '~/plugins/api.client.ts',
     '~/plugins/primevue.ts',
   ],
@@ -62,9 +63,11 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/vendor/css/rtl/theme-default.css' },
         { rel: 'stylesheet', href: '/css/demo.css' },
 
-        // Vendors CSS - Keep only what is necessary and used by Vue components
+        // Vendors CSS
         { rel: 'stylesheet', href: '/vendor/libs/perfect-scrollbar/perfect-scrollbar.css' },
         { rel: 'stylesheet', href: '/vendor/libs/typeahead-js/typeahead.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/datatables-bs5/datatables.bootstrap5.css' },
+        { rel: 'stylesheet', href: '/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css' },
         { rel: 'stylesheet', href: '/vendor/libs/apex-charts/apex-charts.css' },
         { rel: 'stylesheet', href: '/vendor/libs/tagify/tagify.css' },
         { rel: 'stylesheet', href: '/vendor/libs/bootstrap-select/bootstrap-select.css' },
@@ -76,10 +79,45 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/vendor/css/pages/page-auth.css' },
       ],
       script: [
+        // Helpers & Config (biasanya dimuat di head)
+        { src: '/vendor/js/helpers.js', type: 'text/javascript' },
+        { src: '/js/config.js', type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/vendor/libs/jquery/jquery.js', body: true, type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/vendor/libs/datatables-bs5/datatables-bootstrap5.js', body: true, type: 'text/javascript' },
+        
+        // @ts-ignore
+        { src: '/vendor/libs/popper/popper.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/js/bootstrap.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/node-waves/node-waves.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/perfect-scrollbar/perfect-scrollbar.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/hammer/hammer.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/select2/select2.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/bootstrap-select/bootstrap-select.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/libs/typeahead-js/typeahead.js', body: true, type: 'text/javascript' },
+        // @ts-ignore
+        { src: '/vendor/js/menu.js', body: true, type: 'text/javascript' },
+        
         // @ts-ignore
         { src: '/vendor/libs/apex-charts/apexcharts.js', body: true, type: 'text/javascript' },
         // @ts-ignore
         { src: '/vendor/libs/swiper/swiper.js', body: true, type: 'text/javascript' },
+        
+        // @ts-ignore
+        { src: '/js/main.js', body: true, type: 'text/javascript' },
+
+        // @ts-ignore
+        { src: '/js/dashboards-analytics.js', body: true, type: 'text/javascript' }
       ]
     }
   },
