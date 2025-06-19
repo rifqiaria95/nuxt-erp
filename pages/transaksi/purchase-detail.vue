@@ -365,7 +365,7 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     }
 
     try {
-        await purchaseOrderStore.updatePurchaseOrderItemStatus(itemId, status, receivedQty)
+        await purchaseOrderStore.updateStatusPartial(itemId, status, receivedQty)
         await refreshPurchaseOrderDetails()
     } catch (error) {
         console.error('Failed to update status:', error)

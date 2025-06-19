@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import { useNuxtApp } from '#app'
+import Swal from 'sweetalert2'
 
 export interface Category {
   id: number
@@ -40,6 +42,7 @@ export interface Product {
   priceSell: number
   isService: boolean
   categoryId: number
+  image: string | File
   createdAt: string
   updatedAt: string
   category?: Category
@@ -49,114 +52,264 @@ export interface Product {
 }
 
 interface ProductState {
-  product: Product[]
+  products: Product[]
   loading: boolean
+  error: any
+  totalRecords: number
+  params: {
+    first: number
+    rows: number
+    sortField: string | null
+    sortOrder: number | null
+    search: string
+  }
+  form: Partial<Product>
+  isEditMode: boolean
+  showModal: boolean
+  validationErrors: any[]
 }
 
 export const useProductStore = defineStore('product', {
   state: (): ProductState => ({
-    product: [],
-    loading: false
+    products: [],
+    loading: false,
+    error: null,
+    totalRecords: 0,
+    params: {
+      first: 0,
+      rows: 10,
+      sortField: 'id',
+      sortOrder: 1,
+      search: '',
+    },
+    form: {
+      name: '',
+      sku: '',
+      unitId: undefined,
+      stockMin: 0,
+      priceBuy: 0,
+      isService: false,
+      image: '',
+      categoryId: undefined,
+    },
+    isEditMode: false,
+    showModal: false,
+    validationErrors: [],
   }),
   actions: {
-    async fetchProduct() {
+    async fetchProducts() {
+      this.loading = true
+      this.error = null
+      const { $api } = useNuxtApp()
       try {
-        this.loading = true;
+        const token = localStorage.getItem('token')
+        const params = new URLSearchParams({
+            page: ((this.params.first / this.params.rows) + 1).toString(),
+            rows: this.params.rows.toString(),
+            sortField: this.params.sortField || '',
+            sortOrder: (this.params.sortOrder || 1) > 0 ? 'asc' : 'desc',
+            search: this.params.search || '',
+        });
 
-        const { $api } = useNuxtApp();
-        const url = `${$api.product()}`;
+        const response = await fetch(`${$api.product()}?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            credentials: 'include'
+        });
 
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-        const token = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data produk dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data produk');
         }
-
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        })
-        const data = await response.json()
-        this.product = (data.data || data).map((item: any) => ({
-          id        : item.id,
-          sku       : item.sku,
-          name      : item.name,
-          unitId    : item.unitId,
-          stockMin  : item.stockMin,
-          priceBuy  : item.priceBuy,
-          isService : item.isService,
-          categoryId: item.categoryId,
-          createdAt : item.createdAt,
-          updatedAt : item.updatedAt,
-          category  : item.category
-            ? {
-                id: item.category.id,
-                name: item.category.name,
-                createdAt: item.category.createdAt,
-                updatedAt: item.category.updatedAt,
-              }
-            : undefined,
-          unit: item.unit
-            ? {
-                id: item.unit.id,
-                name: item.unit.name,
-                createdAt: item.unit.createdAt,
-                updatedAt: item.unit.updatedAt,
-              }
-            : undefined,
-          customer: item.customer
-            ? {
-                id: item.customer.id,
-                name: item.customer.name,
-                createdAt: item.customer.createdAt,
-                updatedAt: item.customer.updatedAt,
-              }
-            : undefined,
-          productCustomer: item.productCustomer
-            ? {
-                id: item.productCustomer.id,
-                productId: item.productCustomer.productId,
-                customerId: item.productCustomer.customerId,
-                priceSell: item.productCustomer.priceSell,
-                createdAt: item.productCustomer.createdAt,
-                updatedAt: item.productCustomer.updatedAt,
-              }
-            : undefined,
-        }))
-      } catch (error) {
-        console.error('Gagal mengambil data product:', error)
+        
+        const result = await response.json()
+        this.products = result.data
+        this.totalRecords = result.meta.total
+      } catch (e: any) {
+        this.error = e.message
+        Swal.fire('Error', `Tidak dapat memuat data produk: ${e.message}`, 'error');
       } finally {
         this.loading = false
       }
     },
+    
+    async saveProduct() {
+      this.loading = true;
+      this.validationErrors = [];
+      const { $api } = useNuxtApp();
 
-    addProduct(product: Product) {
-        this.product.push(product) 
+      try {
+          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.token;
+          const token = localStorage.getItem('token');
+
+          if (!csrfToken || !token) {
+              throw new Error('Otentikasi tidak valid. Silakan login kembali.');
+          }
+
+          const formData = new FormData();
+          Object.keys(this.form).forEach(key => {
+            const value = this.form[key as keyof typeof this.form];
+             if (key === 'isService') {
+                formData.append(key, value ? 'true' : 'false');
+            } else if (value !== null && value !== undefined) {
+                if (key === 'image' && value instanceof File) {
+                    formData.append(key, value);
+                } else if (key !== 'image') {
+                    formData.append(key, String(value));
+                }
+            }
+          });
+          
+          let url = $api.product();
+          let method = 'POST';
+
+          if (this.isEditMode && this.form.id) {
+              url = `${$api.product()}/${this.form.id}`;
+              formData.append('_method', 'PUT'); // adonisjs needs this for form-data PUT requests
+          }
+
+          const response = await fetch(url, {
+              method: 'POST', // Always POST for FormData with _method spoofing
+              headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'X-CSRF-TOKEN': csrfToken,
+                  'Accept': 'application/json',
+              },
+              body: formData,
+              credentials: 'include'
+          });
+
+          const result = await response.json();
+
+          if (!response.ok) {
+              if (result.errors) {
+                  this.validationErrors = Object.values(result.errors).flat();
+              }
+              throw new Error(result.message || 'Gagal menyimpan data produk');
+          }
+          
+          this.closeModal();
+          await this.fetchProducts();
+          Swal.fire('Berhasil!', `Produk berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+
+      } catch (error: any) {
+          Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+      } finally {
+          this.loading = false;
+      }
     },
-    removeProduct(productId: number) {
-        this.product = this.product.filter(product => product.id !== productId)
+
+    async deleteProduct(id: number) {
+      const { $api } = useNuxtApp();
+
+      const result = await Swal.fire({
+          title: 'Apakah Anda yakin?',
+          text: "Data produk yang dihapus tidak dapat dikembalikan!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Ya, hapus!',
+          cancelButtonText: 'Batal'
+      });
+
+      if (!result.isConfirmed) {
+          return;
+      }
+      
+      this.loading = true;
+      try {
+          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.token;
+          const token = localStorage.getItem('token');
+
+          if (!csrfToken || !token) {
+              throw new Error('Otentikasi tidak valid. Silakan login kembali.');
+          }
+
+          const response = await fetch($api.product() + `/${id}`, {
+              method: 'DELETE',
+              headers: {
+                  'X-CSRF-TOKEN': csrfToken,
+                  'Authorization': `Bearer ${token}`,
+                  'Accept': 'application/json',
+              },
+              credentials: 'include',
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || 'Gagal menghapus produk');
+          }
+
+          await this.fetchProducts();
+          Swal.fire('Berhasil!', 'Produk berhasil dihapus.', 'success');
+      } catch (error: any) {
+          console.error('Gagal menghapus produk:', error);
+          Swal.fire('Error', error.message || 'Gagal menghapus produk', 'error');
+      } finally {
+          this.loading = false;
+      }
     },
-    updateProduct(updatedProduct: Product) {
-        const index = this.product.findIndex(product => product.id === updatedProduct.id)
-        if (index !== -1) {
-            this.product[index] = updatedProduct
+
+    openModal(product: Product | null = null) {
+        this.isEditMode = !!product;
+        this.validationErrors = [];
+        if (product) {
+            this.form = { 
+              ...product,
+              stockMin: product.stockMin ? Math.round(product.stockMin) : 0,
+            };
+        } else {
+            this.form = {
+                name: '',
+                sku: '',
+                unitId: undefined,
+                stockMin: 0,
+                priceBuy: 0,
+                isService: false,
+                image: '',
+                categoryId: undefined,
+            };
         }
+        this.showModal = true;
     },
-    getProductBySku(sku: string): Product | undefined {
-      return this.product.find(product => product.sku.toLowerCase() === sku.toLowerCase())
+
+    closeModal() {
+        this.showModal = false;
+        this.isEditMode = false;
+        this.form = {};
+        this.validationErrors = [];
     },
-    getProductById(id: number): Product | undefined {
-      return this.product.find(product => product.id === id)
+
+    setPagination(event: any) {
+        this.params.first = event.first;
+        this.params.rows = event.rows;
+        this.fetchProducts();
+    },
+
+    setSort(event: any) {
+        this.params.sortField = event.sortField;
+        this.params.sortOrder = event.sortOrder;
+        this.fetchProducts();
+    },
+        
+    setSearch(value: string) {
+        this.params.search = value;
+        this.params.first = 0; // Reset to first page
+        this.fetchProducts();
+    },
+
+    handleImageChange(file: File) {
+        if (file) {
+            this.form.image = file;
+        }
     }
   }
 })

@@ -7,151 +7,62 @@
             List purchaseOrder yang terdaftar di sistem
             </p>
             <!-- purchaseOrder cards -->
-            <div class="row g-6">
+            <div class="row g-6 mb-6">
+                <!-- Static cards for display, can be made dynamic later -->
                 <div class="col-xl-4 col-lg-6 col-md-6">
                     <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 3 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kim Karlos"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/3.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Katy Turner"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Peter Adward"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-1">Total Orders</h5>
+                                <span class="badge bg-label-primary rounded-pill">Yearly</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <h1 class="mb-0 display-4">15</h1>
+                                <i class="ri-arrow-up-s-line ri-24px text-success"></i>
+                                <span class="fw-medium text-success">15.8%</span>
+                            </div>
+                            <p class="mb-0 mt-2">Analytics for last year</p>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Support</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#PegawaiModal"
-                            class="pegawai-edit-modal">
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-6 col-md-6">
                     <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 2 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kim Merchent"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/10.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Sam D'souza"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/13.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Nurvi Karlos"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-1">Pending Orders</h5>
+                                <span class="badge bg-label-warning rounded-pill">Weekly</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <h1 class="mb-0 display-4">5</h1>
+                                <i class="ri-arrow-down-s-line ri-24px text-danger"></i>
+                                <span class="fw-medium text-danger">8.2%</span>
+                            </div>
+                            <p class="mb-0 mt-2">Analytics for last week</p>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="pegawai-heading">
-                            <h5 class="mb-1">Restricted User</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#PegawaiModal"
-                            class="pegawai-edit-modal">
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
                     </div>
                 </div>
                 <div class="col-xl-4 col-lg-6 col-md-6">
                     <div class="card h-100">
-                    <div class="row h-100">
-                        <div class="col-5">
-                        <div class="d-flex align-items-end h-100 justify-content-center">
-                            <img
-                            src="/img/illustrations/add-new-role-illustration.png"
-                            class="img-fluid"
-                            alt="attachment"
-                            width="68" />
+                        <div class="row h-100">
+                            <div class="col-sm-5">
+                                <div class="d-flex align-items-end h-100 justify-content-center">
+                                    <img src="/img/illustrations/add-new-role-illustration.png" class="img-fluid" alt="Image" width="70">
+                                </div>
+                            </div>
+                            <div class="col-sm-7">
+                                <div class="card-body text-sm-end text-center ps-sm-0">
+                                    <button @click="purchaseOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                        Tambah Purchase Order
+                                    </button>
+                                    <p class="mb-0 mt-1">Buat Purchase Order baru</p>
+                                </div>
+                            </div>
                         </div>
-                        </div>
-                        <div class="col-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
-                            data-bs-target="#Modal"
-                            data-bs-toggle="modal"
-                            class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"
-                            @click="openAddPurchaseOrderModal"
-                            >
-                            Tambah Purchase Order
-                            </button>
-                        </div>
-                        </div>
-                    </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="row g-6">
                 <div class="col-12">
                     <h4 class="mt-6 mb-1">Total Purchase Order</h4>
                     <p class="mb-0">Find all of your company's administrator accounts and their associate Purchase Order.</p>
@@ -162,7 +73,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                 <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
@@ -188,8 +99,8 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="purchaseOrder" 
-                            :rows="lazyParams.rows" 
+                            :data="purchaseOrders" 
+                            :rows="params.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
@@ -202,11 +113,7 @@
                             >
                                 <Column header="#" :sortable="false">
                                     <template #body="slotProps">
-                                        {{
-                                            Number.isFinite(lazyParams.page) && Number.isFinite(lazyParams.rows)
-                                            ? ((lazyParams.page - 1) * lazyParams.rows + slotProps.index + 1)
-                                            : (slotProps.index + 1)
-                                        }}
+                                        {{ params.first + slotProps.index + 1 }}
                                     </template>
                                 </Column>
                                 <Column field="noPo" header="No. PO" :sortable="true"></Column>
@@ -221,14 +128,14 @@
                                 <Column field="createdByUser.fullName" header="Dibuat Oleh" :sortable="true">
                                     <template #body="slotProps">
                                         <span>
-                                            {{ slotProps.data.createdByUser.fullName }}
+                                            {{ slotProps.data.createdByUser?.fullName || '-' }}
                                         </span>
                                     </template>
                                 </Column>
-                                <Column field="approvedBy" header="Approved By" :sortable="true">
+                                <Column field="approvedByUser.fullName" header="Approved By" :sortable="true">
                                     <template #body="slotProps">
                                         <span>
-                                            {{ slotProps.data.approvedByUser.fullName }}
+                                            {{ slotProps.data.approvedByUser?.fullName || '-' }}
                                         </span>
                                     </template>
                                 </Column>
@@ -248,20 +155,9 @@
                                 <Column field="attachment" header="Nama File" :sortable="true">
                                     <template #body="slotProps">
                                         <div v-if="slotProps.data.attachment">
-                                            <span>
-                                                <a
-                                                    v-if="typeof slotProps.data.attachment === 'string'"
-                                                    :href="slotProps.data.attachment"
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    style="text-decoration: underline; color: #007bff;"
-                                                >
-                                                    {{ slotProps.data.attachment.split('/').pop() }}
-                                                </a>
-                                                <span v-else>
-                                                    {{ slotProps.data.attachment.name }}
-                                                </span>
-                                            </span>
+                                            <a :href="getAttachmentUrl(slotProps.data.attachment)" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #007bff;">
+                                                {{ slotProps.data.attachment.split('/').pop() }}
+                                            </a>
                                         </div>
                                         <div v-else>
                                             <span class="text-muted">Tidak ada file</span>
@@ -274,8 +170,8 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li v-if="userisAdmin || userisSuperAdmin && slotProps.data.status == 'draft'">
-                                                    <a class="dropdown-item" href="javascript:void(0)" @click="approvePurchaseOrder(slotProps.data.id)">
+                                                <li v-if="(userisAdmin || userisSuperAdmin) && slotProps.data.status == 'draft'">
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.approvePurchaseOrder(slotProps.data.id)">
                                                         <i class="ri-check-line me-2"></i> Approve
                                                     </a>
                                                 </li>
@@ -284,13 +180,13 @@
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'Received')">
-                                                    <a class="dropdown-item" href="javascript:void(0)" @click="openEditPurchaseOrderModal(slotProps.data)">
+                                                <li>
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'Received')">
-                                                    <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deletePurchaseOrder(slotProps.data.id)">
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="javascript:void(0)" @click="purchaseOrderStore.deletePurchaseOrder(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
                                                 </li>
@@ -306,332 +202,160 @@
             </div>
             <!--/ purchaseOrder cards -->
 
-            <!-- Placeholder untuk MenuModal component -->
             <Modal 
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
+                id="PurchaseOrderModal"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedPurchaseOrder="selectedPurchaseOrder"
+                :validation-errors-from-parent="validationErrors"
             >
                 <template #default>
-                    <div class="row">
-                        <div class="col">
-                            <ul class="nav nav-tabs" role="tablist">
-                                <li class="nav-item">
-                                    <button
-                                        class="nav-link active"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#form-tabs-personal"
-                                        role="tab"
-                                        aria-selected="true"
-                                        type="button">
-                                        <span class="ri-user-line ri-20px d-sm-none"></span>
-                                        <span class="d-none d-sm-block">Informasi Purchase Order</span>
-                                    </button>
-                                </li>
-                                <li class="nav-item">
-                                    <button
-                                        class="nav-link"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#form-tabs-perusahaan"
-                                        role="tab"
-                                        aria-selected="false"
-                                        type="button">
-                                        <span class="ri-folder-user-line ri-20px d-sm-none"></span>
-                                        <span class="d-none d-sm-block">List Product</span>
-                                    </button>
-                                </li>
-                            </ul>
+                    <form @submit.prevent="purchaseOrderStore.savePurchaseOrder()">
+                         <div class="row">
+                            <div class="col">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-info" role="tab" aria-selected="true" type="button">
+                                            <span class="ri-user-line ri-20px d-sm-none"></span>
+                                            <span class="d-none d-sm-block">Informasi Purchase Order</span>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#form-tabs-items" role="tab" aria-selected="false" type="button">
+                                            <span class="ri-folder-user-line ri-20px d-sm-none"></span>
+                                            <span class="d-none d-sm-block">List Product</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                    <form @submit.prevent="handleSubmit">
-                        <div class="tab-content">
-                            <!-- Tab Personal Info -->
-                            <div class="tab-pane fade active show" id="form-tabs-personal" role="tabpanel">
-                                <div class="row g-6">
+                        <div class="tab-content pt-6">
+                            <div class="tab-pane fade active show" id="form-tabs-info" role="tabpanel">
+                                <div class="row g-4">
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                id="noPoPurchaseOrder" 
-                                                v-model="formPurchaseOrder.noPo" 
-                                                placeholder="Masukkan no po purchaseOrder"
-                                                required
-                                            >
-                                            <label for="noPoPurchaseOrder">No Purchase Order</label>
+                                            <input type="text" v-model="form.noPo" class="form-control" placeholder="No PO" required>
+                                            <label>No Purchase Order</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <v-select v-model="form.vendorId" :options="vendors" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" v-model="form.up" class="form-control" placeholder="Untuk Perhatian" required>
+                                            <label>Untuk Perhatian</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <v-select
-                                                v-model="formPurchaseOrder.vendorId"
-                                                :options="vendor"
-                                                label="name"
-                                                :reduce="vendor => vendor.id"
-                                                placeholder="-- Pilih Vendor --"
-                                                id="vendor"
-                                                class="vendor"
-                                            />
-                                            <div v-if="!vendor || vendor.length === 0" class="text-danger mt-1">
-                                                Data vendor belum tersedia.
-                                            </div>
+                                            <input type="date" v-model="form.date" class="form-control" required>
+                                            <label>Tanggal PO</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input 
-                                                type="text" 
-                                                class="form-control" 
-                                                id="upPurchaseOrder" 
-                                                v-model="formPurchaseOrder.up" 
-                                                placeholder="Masukkan up purchaseOrder"
-                                                required
-                                            >
-                                            <label for="upPurchaseOrder">Untuk Perhatian</label>
+                                            <input type="date" v-model="form.dueDate" class="form-control" required>
+                                            <label>Jatuh Tempo</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <input 
-                                            type="date" 
-                                            class="form-control" 
-                                            id="datePurchaseOrder" 
-                                            v-model="formPurchaseOrder.date" 
-                                            placeholder="Masukkan tanggal purchaseOrder"
-                                            required
-                                            >
-                                            <label for="datePurchaseOrder">Tanggal PO</label>
-                                        </div>
+                                        <v-select v-model="form.perusahaanId" :options="perusahaans" label="nmPerusahaan" :reduce="p => p.id" placeholder="Pilih Perusahaan" class="v-select-style"/>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <input 
-                                            type="date" 
-                                            class="form-control" 
-                                            id="dueDatePurchaseOrder" 
-                                            v-model="formPurchaseOrder.dueDate" 
-                                            placeholder="Masukkan tanggal due date"
-                                            required
-                                            >
-                                            <label for="dueDatePurchaseOrder">Jatuh Tempo</label>
-                                        </div>
+                                        <v-select v-model="form.cabangId" :options="filteredCabangs" label="nmCabang" :reduce="c => c.id" placeholder="Pilih Cabang" class="v-select-style"/>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
-                                            <v-select
-                                                v-model="formPurchaseOrder.perusahaanId"
-                                                :options="perusahaan"
-                                                label="nmPerusahaan"
-                                                :reduce="perusahaan => perusahaan.id"
-                                                placeholder="-- Pilih Perusahaan --"
-                                                id="perusahaan"
-                                                class="perusahaan"
-                                            />
-                                            <div v-if="!perusahaan || perusahaan.length === 0" class="text-danger mt-1">
-                                                Data perusahaan belum tersedia.
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <v-select
-                                                v-model="formPurchaseOrder.cabangId"
-                                                :options="cabang"
-                                                label="nmCabang"
-                                                :reduce="cabang => cabang.id"
-                                                placeholder="-- Pilih Cabang --"
-                                                id="cabang"
-                                                class="cabang"
-                                            />
-                                            <div v-if="!cabang || cabang.length === 0" class="text-danger mt-1">
-                                                Data cabang belum tersedia.
-                                            </div>
+                                            <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)">
+                                            <label>Discount (%)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
-                                            <input 
-                                                type="number" 
-                                                class="form-control" 
-                                                id="discountPurchaseOrder" 
-                                                v-model="formPurchaseOrder.discountPercent" 
-                                                placeholder="Masukkan discount purchaseOrder"
-                                            >
-                                            <label for="discountPurchaseOrder">Discount</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-floating form-floating-outline">
-                                            <input 
-                                                type="number" 
-                                                class="form-control" 
-                                                id="taxPurchaseOrder" 
-                                                v-model="formPurchaseOrder.taxPercent" 
-                                                placeholder="Masukkan tax purchaseOrder"
-                                            >
-                                            <label for="taxPurchaseOrder">Tax</label>
+                                            <input type="number" v-model="form.taxPercent" class="form-control" placeholder="Tax (%)">
+                                            <label>Tax (%)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <input 
-                                                type="file" 
-                                                class="form-control" 
-                                                id="attachmentPurchaseOrder" 
-                                                @change="onFileChange"
-                                                placeholder="Masukkan attachment purchaseOrder"
-                                            >
-                                            <label for="attachmentPurchaseOrder">Attachment</label>
+                                            <input type="file" @change="onFileChange" class="form-control">
+                                            <label>Attachment</label>
+                                            <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
                                         </div>
                                     </div>
-                                     <div class="col-md-12">
+                                    <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <textarea
-                                                class="form-control h-px-100"
-                                                id="descriptionPurchaseOrder"
-                                                placeholder="Deskripsi Purchase Order"
-                                                v-model="formPurchaseOrder.description">
-                                            </textarea>
-                                            <label for="descriptionPurchaseOrder">Deskripsi Purchase Order</label>
+                                            <textarea v-model="form.description" class="form-control" placeholder="Deskripsi"></textarea>
+                                            <label>Deskripsi</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- Tab Account Details -->
-                            <div class="tab-pane fade" id="form-tabs-perusahaan" role="tabpanel">
-                                <div class="row g-6">
-                                    <div v-for="(item, index) in formPurchaseOrder.purchaseOrderItems" :key="index" class="repeater-item">
-                                        <div class="row">
-                                            <div class="mb-6 col-lg-6 col-xl-12 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <v-select
-                                                        v-model="item.warehouseId"
-                                                        :options="warehouse"
-                                                        :get-option-label="warehouse => `${warehouse.name} (${warehouse.code || 'N/A'})`"
-                                                        :reduce="warehouse => warehouse.id"
-                                                        placeholder="-- Pilih Gudang --"
-                                                        :id="`warehouse-${index}`"
-                                                        class="warehouse-select"
-                                                    />
-                                                    <div v-if="!warehouse || warehouse.length === 0" class="text-danger mt-1">
-                                                        Data gudang belum tersedia.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="mb-6 col-lg-6 col-xl-4 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <v-select
-                                                        v-model="item.productId"
-                                                        :options="products"
-                                                        :get-option-label="product => `${product.name} (${product.unit?.name || 'N/A'})`"
-                                                        :reduce="product => product.id"
-                                                        placeholder="-- Pilih Produk --"
-                                                        :id="`product-${index}`"
-                                                        class="product-select"
-                                                        @update:modelValue="onProductChange(index)"
-                                                    />
-                                                    <div v-if="!products || products.length === 0" class="text-danger mt-1">
-                                                        Data produk belum tersedia.
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="mb-6 col-lg-6 col-xl-2 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <input
-                                                        type="number"
-                                                        :id="`quantity-${index}`"
-                                                        class="form-control"
-                                                        placeholder="Jumlah"
-                                                        v-model.number="item.quantity"
-                                                        @input="onQuantityChange(index)" />
-                                                    <label :for="`quantity-${index}`">Jumlah</label>
-                                                </div>
-                                            </div>
-                                            <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <input
-                                                        type="text"
-                                                        :id="`price-${index}`"
-                                                        class="form-control"
-                                                        placeholder="Harga"
-                                                        v-model="item.price"
-                                                        readonly
-                                                    />
-                                                    <label :for="`price-${index}`">Harga</label>
-                                                </div>
-                                            </div>
-                                            <div class="mb-6 col-lg-6 col-xl-3 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <input
-                                                        type="text"
-                                                        :id="`subtotal-${index}`"
-                                                        class="form-control"
-                                                        placeholder="Subtotal"
-                                                        v-model="item.subtotal"
-                                                        readonly />
-                                                    <label :for="`subtotal-${index}`">Subtotal</label>
-                                                </div>
+                            <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
+                                <div v-for="(item, index) in form.purchaseOrderItems" :key="index" class="repeater-item mb-4">
+                                    <div class="row g-3">
+                                        <div class="col-12">
+                                            <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style"/>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <v-select v-model="item.productId" :options="products" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty">
+                                                <label>Jumlah</label>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="mb-6 col-lg-6 col-xl-9 col-12 mb-0">
-                                                <div class="form-floating form-floating-outline">
-                                                    <input
-                                                        type="text"
-                                                        :id="`description-${index}`"
-                                                        class="form-control"
-                                                        placeholder="Deskripsi"
-                                                        v-model="item.description" />
-                                                    <label :for="`description-${index}`">Deskripsi</label>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="mb-6 col-lg-2 col-xl-3 col-2 d-flex align-items-center mb-0">
-                                                <button type="button" class="btn btn-secondary" @click.prevent="removeItem(index)" style="width: 100%;">
-                                                    <span class="tf-icons ri-delete-bin-7-line ri-16px me-2"></span> Hapus
-                                                </button>
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" :value="formatRupiah(item.price)" class="form-control" placeholder="Harga" readonly>
+                                                <label>Harga</label>
                                             </div>
                                         </div>
-                                        <hr class="mt-0" />
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" :value="formatRupiah(item.subtotal)" class="form-control" placeholder="Subtotal" readonly>
+                                                <label>Subtotal</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                             <div class="form-floating form-floating-outline">
+                                                <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item">
+                                                <label>Deskripsi</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 d-flex align-items-center">
+                                            <button @click.prevent="purchaseOrderStore.removeItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
+                                        </div>
                                     </div>
-                                    <div class="mb-0">
-                                        <button class="btn btn-primary" @click.prevent="addItem">
-                                            <i class="ri-add-line me-1"></i>
-                                            <span class="align-middle">Tambah Item</span>
-                                        </button>
-                                    </div>                                    
-                                    <div class="mb-8 mt-0 col-12 mb-0 d-flex justify-content-end">
-                                        <span class="fw-bold text-end">Grand Total: {{ formatRupiah(grandTotal) }}</span>
-                                    </div>
+                                    <hr class="my-4">
+                                </div>
+                                <div class="mt-4">
+                                    <button @click.prevent="purchaseOrderStore.addItem()" class="btn btn-primary">Tambah Item</button>
+                                </div>
+                                <div class="d-flex justify-content-end mt-4">
+                                    <span class="fw-bold fs-5">Grand Total: {{ formatRupiah(grandTotal) }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end mt-6">
-                            <button
-                                type="submit"
-                                class="btn btn-primary me-2"
-                                @click="handleSavePurchaseOrder"
-                            >
-                                {{ isEditMode ? 'Update' : 'Simpan' }}
-                            </button>
-                            <button type="button" class="btn btn-secondary" @click="handleCloseModal">
-                                Batal
+                        <div class="modal-footer mt-6">
+                             <button type="button" class="btn btn-outline-secondary" @click="purchaseOrderStore.closeModal()">Tutup</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">
+                                <span v-if="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                                Simpan
                             </button>
                         </div>
                     </form>
                 </template>
             </Modal>
         </div>
-         <!-- / Content -->
- 
          <div class="content-backdrop fade"></div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
 import { useVendorStore } from '~/stores/vendor'
 import { usePerusahaanStore } from '~/stores/perusahaan'
@@ -641,14 +365,17 @@ import { useWarehouseStore } from '~/stores/warehouse'
 import { useUserStore } from '~/stores/user'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
-import Swal from 'sweetalert2'
 import vSelect from 'vue-select'
 import Dropdown from 'primevue/dropdown'
+import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import 'vue-select/dist/vue-select.css'
+import { useDebounceFn } from '@vueuse/core'
+import { useRouter } from 'vue-router'
 
-const config   = useRuntimeConfig();
-const { $api } = useNuxtApp()
+const config = useRuntimeConfig();
+const router = useRouter();
+
 // Store
 const myDataTableRef     = ref(null)
 const purchaseOrderStore = usePurchaseOrderStore()
@@ -660,79 +387,37 @@ const productStore       = useProductStore()
 const userStore          = useUserStore()
 const formatRupiah       = useFormatRupiah()
 
-const userisSuperAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
-});
+const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(purchaseOrderStore)
+const { vendors } = storeToRefs(vendorStore)
+const { perusahaans } = storeToRefs(perusahaanStore)
+const { cabangs } = storeToRefs(cabangStore)
+const { products } = storeToRefs(productStore)
+const { warehouses } = storeToRefs(warehouseStore)
+const { user } = storeToRefs(userStore)
 
-const userisAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'admin') ?? false;
-});
+
+const userisSuperAdmin = computed(() => user.value?.roles?.some(role => role.name === 'superadmin') ?? false);
+const userisAdmin = computed(() => user.value?.roles?.some(role => role.name === 'admin') ?? false);
 
 // State
-const selectedPurchaseOrder = ref(null);
-const purchaseOrder         = ref([])
-const vendor                = ref([])
-const cabang                = ref([])
-const perusahaan            = ref([])
-const products              = ref([])
-const warehouse             = ref([])
-const loading               = ref(false);
-const isEditMode            = ref(false);
-const totalRecords          = ref(0);
-const globalFilterValue     = ref('');
-const lazyParams            = ref({
-    first    : 0,
-    rows     : 10,
-    sortField: null,
-    sortOrder: null,
-    draw     : 1,
-    search   : '',
-});
+const globalFilterValue = ref('');
+const attachmentPreview = ref(null);
 
-const status       = ref([
-    { label: 'Draft', value: 'draft' },
-    { label: 'Approved', value: 'approved' },
-    { label: 'Rejected', value: 'rejected' },
-    { label: 'Partial', value: 'partial' },
-    { label: 'Received', value: 'received' },
-]);
-
-// Form
-const formPurchaseOrder = ref({
-  noPo           : '',
-  up             : '',
-  vendorId       : null,
-  perusahaanId   : null,
-  cabangId       : null,
-  date           : '',
-  dueDate        : '',
-  discountPercent: 0,
-  taxPercent     : 0,
-  description    : '',
-  attachment     : null,
-  status         : 'draft',
-  purchaseOrderItems: [
-    {
-      productId: null,
-      warehouseId: null,
-      quantity: 0,
-      unitPrice: 0,
-      price: '',
-      description: '',
-      subtotal: '',
-    }
-  ],
-});
+const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
+const modalTitle = computed(() => isEditMode.value ? 'Edit Purchase Order' : 'Tambah Purchase Order');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data purchaseOrder di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan purchaseOrder baru.');
 
 const grandTotal = computed(() => {
-  const totalItems = formPurchaseOrder.value.purchaseOrderItems.reduce((total, item) => {
+  if (!form.value || !form.value.purchaseOrderItems) return 0;
+  
+  const totalItems = form.value.purchaseOrderItems.reduce((total, item) => {
     const quantity = Number(item.quantity) || 0;
     const unitPrice = Number(item.unitPrice) || 0;
     return total + (quantity * unitPrice);
   }, 0);
 
-  const discountPercent = Number(formPurchaseOrder.value.discountPercent) || 0;
-  const taxPercent = Number(formPurchaseOrder.value.taxPercent) || 0;
+  const discountPercent = Number(form.value.discountPercent) || 0;
+  const taxPercent = Number(form.value.taxPercent) || 0;
 
   const discountAmount = totalItems * (discountPercent / 100);
   const totalAfterDiscount = totalItems - discountAmount;
@@ -741,711 +426,130 @@ const grandTotal = computed(() => {
   return totalAfterDiscount + taxAmount;
 });
 
-// Get Logo Url
 const getAttachmentUrl = (attachmentPath) => {
-    if (!attachmentPath || typeof attachmentPath !== 'string') {
-        return null;
-    }
-    if (attachmentPath.startsWith('http')) {
-        return attachmentPath;
-    }
-    if (!config.public.apiBase) {
-        return attachmentPath;
-    }
-    const origin = new URL(config.public.apiBase).origin;
-    const attachmentUrl = `${origin}/${attachmentPath}`;
-    return attachmentUrl;
+    if (!attachmentPath || typeof attachmentPath !== 'string') return null;
+    if (attachmentPath.startsWith('http')) return attachmentPath;
+    const baseUrl = (config.public.apiBase || '').replace('/api', '');
+    return `${baseUrl}/${attachmentPath}`;
 };
 
-// Rows Per Page Options Array
-const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
-// Modal Title
-const modalTitle = computed(() => isEditMode.value ? 'Edit Purchase Order' : 'Tambah Purchase Order');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data purchaseOrder di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan purchaseOrder baru.');
-
-// Handle Close Modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
-    resetParentFormState(); 
-};
-
-// Search Debounce Timer
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-// Watch Perusahaan Id
-watch(() => formPurchaseOrder.value.perusahaanId, (newPerusahaanId) => {
-    formPurchaseOrder.value.cabangId = null; 
-    cabang.value = [];
-    if (newPerusahaanId) {
-        fetchCabang(newPerusahaanId);
-    }
-});
-
-// On Before Unmount
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-// Fetch Perusahaan
-const fetchPerusahaan = async () => {
-    try {
-        const token = localStorage.getItem('token')
-        const response = await fetch($api.perusahaan(), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        
-        if (!response.ok) throw new Error('Gagal mengambil data perusahaan')
-        
-        const data = await response.json()
-        perusahaan.value = data.data || data
-    } catch (error) {
-        console.error('Error fetching perusahaan:', error)
-    }
-}
-
-// Fetch Cabang
-const fetchCabang = async (perusahaanId) => {
-    if (!perusahaanId) {
-        cabang.value = [];
-        return;
-    }
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch($api.cabang(perusahaanId), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        if (!response.ok) throw new Error('Gagal mengambil data cabang');
-        const data = await response.json();
-        if (Array.isArray(data)) {
-            cabang.value = data;
-        } else if (data && Array.isArray(data.data)) {
-            cabang.value = data.data;
-        } else {
-            cabang.value = []; 
-        }
-    } catch (error) {
-        console.error('Error fetching cabang:', error);
-        cabang.value = [];
-    }
-};
-
-// Fetch Vendor
-const fetchVendor = async () => {
-    try {
-        const token = localStorage.getItem('token')
-        const response = await fetch($api.vendor(), {
-            headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        
-        if (!response.ok) throw new Error('Gagal mengambil data vendor')
-        
-        const data = await response.json()
-        vendor.value = data.data;
-    } catch (error) {
-        console.error('Error fetching vendor:', error)
-    }
-}
-
-// Fetch Products
-const fetchProducts = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch($api.product(), {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Gagal mengambil data produk');
-        }
-
-        const result = await response.json();
-        products.value = result.data || result;
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        products.value = [];
-        Swal.fire('Error', `Tidak dapat memuat data produk: ${error.message}`, 'error');
-    }
-};
-
-// Fetch Warehouse
-const fetchWarehouse = async () => {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch($api.warehouse(), {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Gagal mengambil data gudang');
-        }
-
-        const result = await response.json();
-        warehouse.value = result.data || result;
-    } catch (error) {
-        console.error('Error fetching warehouse:', error);
-        warehouse.value = [];
-        Swal.fire('Error', `Tidak dapat memuat data gudang: ${error.message}`, 'error');
-    }
-};
-
-// Approve Purchase Order
-const approvePurchaseOrder = async (purchaseOrderId) => {
-    try {
-        const token = localStorage.getItem('token');
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-
-        const response = await fetch($api.approvePurchaseOrder(purchaseOrderId), {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type' : 'application/json',
-                'Accept'       : 'application/json',
-                'X-CSRF-TOKEN' : csrfToken,
-            },
-            credentials: 'include',
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal mengapprove purchase order' }));
-            throw new Error(errorData.message || 'Gagal mengapprove purchase order');
-        }
-
-        await loadLazyData();
-        await Swal.fire('Berhasil!', 'Purchase Order berhasil diapprove.', 'success');
-
-        return true;
-    } catch (error) {
-        console.error('Error approving purchase order:', error);
-        await Swal.fire('Error', error.message || 'Gagal mengapprove purchase order.', 'error');
-        return false;
-    }
-}
-
-// Validation Errors
-const validationErrors = ref([]);
-
-// Handle Save Purchase Order
-const handleSavePurchaseOrder = async () => {
-    loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
-    try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token        = localStorage.getItem('token');
-
-        // Validasi form sederhana
-        if (!formPurchaseOrder.value.noPo || !formPurchaseOrder.value.up) {
-            Swal.fire('Validasi', 'No PO dan Untuk Perhatian wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        const formData = new FormData()
-        formData.append('no_po', formPurchaseOrder.value.noPo)
-        formData.append('up', formPurchaseOrder.value.up)
-        formData.append('vendor_id', formPurchaseOrder.value.vendorId)
-        formData.append('perusahaan_id', formPurchaseOrder.value.perusahaanId)
-        formData.append('cabang_id', formPurchaseOrder.value.cabangId)
-        formData.append('date', formPurchaseOrder.value.date)
-        formData.append('due_date', formPurchaseOrder.value.dueDate)
-        formData.append('discount_percent', formPurchaseOrder.value.discountPercent)
-        formData.append('tax_percent', formPurchaseOrder.value.taxPercent)
-        formData.append('description', formPurchaseOrder.value.description)
-        formData.append('status', formPurchaseOrder.value.status)
-        if (userStore.user && userStore.user.id) {
-            formData.append('created_by', userStore.user.id.toString())
-        }
-        if (userStore.user && userStore.user.id) {
-            formData.append('approved_by', userStore.user.id.toString())
-        }
-        if (formPurchaseOrder.value.attachment) {
-            formData.append('attachment', formPurchaseOrder.value.attachment)
-        }
-        
-        // Loop item
-        formPurchaseOrder.value.purchaseOrderItems.forEach((item, i) => {
-            if (item.productId && item.quantity > 0) { // Basic validation
-                const subtotal = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)
-                formData.append(`purchase_order_items[${i}][product_id]`, item.productId)
-                formData.append(`purchase_order_items[${i}][warehouse_id]`, item.warehouseId)
-                formData.append(`purchase_order_items[${i}][quantity]`, item.quantity)
-                formData.append(`purchase_order_items[${i}][price]`, item.unitPrice)
-                formData.append(`purchase_order_items[${i}][subtotal]`, subtotal.toString())
-                formData.append(`purchase_order_items[${i}][description]`, item.description || '')
-            }
-        })
-        
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN' : csrfToken || '',
-            'Accept'       : 'application/json',
-        };
-
-        let url;
-        let response;
-
-        if (isEditMode.value) {
-            // Cari ID perusahaan dari form atau selectedPerusahaan
-            let poIdToUpdate = formPurchaseOrder.value?.id;
-            if (!poIdToUpdate && selectedPurchaseOrder.value) {
-                poIdToUpdate = selectedPurchaseOrder.value.id;
-            }
-            if (!poIdToUpdate) {
-                Swal.fire('Error', 'ID Purchase Order tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.purchaseOrder()}/${poIdToUpdate}`;
-            console.log('Updating purchaseOrder with ID:', poIdToUpdate, 'URL:', url);
-
-            response = await fetch(url, {
-                method: 'POST', // Menggunakan POST untuk mengirim FormData untuk pembaruan
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.purchaseOrder();
-            response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Purchase Order berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} purchaseOrder`, 'error');
-            }
-        }
-    } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data purchaseOrder.', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-// Load Lazy Data
-const loadLazyData = async () => {
-    loading.value = true;
-    try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.purchaseOrder()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data purchaseOrder dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data purchaseOrder');
-        }
-
-        const result = await response.json();
-        purchaseOrder.value = result.data || []; 
-        totalRecords.value = parseInt(result.meta.total) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
-    } catch (error) {
-        console.error('Error loading lazy data for purchaseOrder:', error);
-        purchaseOrder.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data purchaseOrder: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-// On Mounted
+let modalInstance = null;
 onMounted(() => {
-    loadLazyData();
-    fetchVendor();
-    fetchPerusahaan();
-    fetchProducts();
-    fetchWarehouse();
+    purchaseOrderStore.fetchPurchaseOrders();
+    vendorStore.fetchVendors();
+    perusahaanStore.fetchPerusahaans();
+    cabangStore.fetchCabangs();
+    productStore.fetchProducts();
+    warehouseStore.fetchWarehouses();
     userStore.loadUser();
+
+    const modalElement = document.getElementById('PurchaseOrderModal')
+    if (modalElement) {
+        modalInstance = new bootstrap.Modal(modalElement)
+    }
 });
 
-const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
-};
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance?.show()
+        if (isEditMode.value && form.value.attachment_url) {
+            attachmentPreview.value = form.value.attachment_url
+        } else if (isEditMode.value && form.value.attachment) {
+            attachmentPreview.value = getAttachmentUrl(form.value.attachment)
+        } else {
+            attachmentPreview.value = null
+        }
+    } else {
+        modalInstance?.hide()
+    }
+})
 
+watch(() => form.value.perusahaanId, (newPerusahaanId) => {
+    if (newPerusahaanId) {
+        cabangStore.fetchCabangByPerusahaan(newPerusahaanId);
+        if(!isEditMode.value) form.value.cabangId = null;
+    }
+});
+
+const filteredCabangs = computed(() => {
+    if (!form.value.perusahaanId) return [];
+    return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
+});
+
+const debouncedSearch = useDebounceFn(() => {
+    purchaseOrderStore.setSearch(globalFilterValue.value)
+}, 500)
+watch(globalFilterValue, debouncedSearch);
+
+const onPage = (event) => purchaseOrderStore.setPagination(event);
 const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
+    params.value.first = 0;
+    purchaseOrderStore.fetchPurchaseOrders();
 };
-
-const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
-};
+const onSort = (event) => purchaseOrderStore.setSort(event);
 
 const exportData = (format) => {
-    if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
-    }
+    if (format === 'csv') myDataTableRef.value.exportCSV();
 };
-
-// Definisikan attachmentPreview terlebih dahulu
-const attachmentPreview = ref(null);
 
 function onFileChange(e) {
   const file = e.target.files[0];
-  formPurchaseOrder.value.attachment = file;
   if (file) {
-    const objectURL = URL.createObjectURL(file);
-    attachmentPreview.value = objectURL;
+    form.value.attachment = file;
+    attachmentPreview.value = URL.createObjectURL(file);
   } else {
-    formPurchaseOrder.value.attachment = null;
+    form.value.attachment = null;
     attachmentPreview.value = null;
   }
 }
 
-// On Product Change
 const onProductChange = (index) => {
-  const selectedProductId = formPurchaseOrder.value.purchaseOrderItems[index].productId;
-  const selectedProduct = products.value.find(product => product.id === selectedProductId);
+  const selectedProductId = form.value.purchaseOrderItems[index].productId;
+  const selectedProduct = products.value.find(p => p.id === selectedProductId);
 
   if (selectedProduct) {
-    const item = formPurchaseOrder.value.purchaseOrderItems[index];
+    const item = form.value.purchaseOrderItems[index];
     item.unitPrice = selectedProduct.priceBuy;
-    item.price = formatRupiah(selectedProduct.priceBuy);
-    // Setelah harga unit diatur, hitung subtotalnya
-    calculateSubtotal(index); // Panggil fungsi baru
-  } else {
-    // Jika produk tidak dipilih, reset harga dan subtotal
-    const item = formPurchaseOrder.value.purchaseOrderItems[index];
-    item.unitPrice = 0;
-    item.price = formatRupiah(0);
+    item.price = Number(selectedProduct.priceBuy) || 0;
     calculateSubtotal(index);
   }
 };
 
-// On Quantity Change
 const onQuantityChange = (index) => {
   calculateSubtotal(index);
 };
 
-// Calculate Subtotal
 const calculateSubtotal = (index) => {
-  const item = formPurchaseOrder.value.purchaseOrderItems[index];
-
-  // Pastikan quantity dan unitPrice adalah angka
+  const item = form.value.purchaseOrderItems[index];
   const quantity = Number(item.quantity) || 0;
   const unitPrice = Number(item.unitPrice) || 0;
-
-  // Hitung subtotal
-  const subtotalValue = quantity * unitPrice;
-
-  // Update item.subtotal dengan nilai yang sudah diformat
-  item.subtotal = formatRupiah(subtotalValue);
+  item.subtotal = quantity * unitPrice;
 };
 
-// View Purchase Order Details
 const viewPurchaseOrderDetails = (purchaseOrderId) => {
-    // Cek apakah router.push berhasil membuka halaman, jika tidak gunakan window.location
-    try {
-        router.push({ path: `/transaksi/purchase-detail?id=${purchaseOrderId}` });
-    } catch (e) {
-        window.location.href = `/transaksi/purchase-detail?id=${purchaseOrderId}`;
-    }
-};
-
-// Open Add Purchase Order Modal
-const openAddPurchaseOrderModal = () => {
-    isEditMode.value = false;
-    modalTitle.value = 'Tambah Purchase Order';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan purchaseOrder baru.';
-    resetParentFormState();
-    formPurchaseOrder.value.status = 'draft';
-    if (formPurchaseOrder.value.purchaseOrderItems.length === 0) {
-        addItem();
-    }
-};
-
-// Open Edit Purchase Order Modal
-async function openEditPurchaseOrderModal(purchaseOrderData) {
-    isEditMode.value = true;
-    selectedPurchaseOrder.value = { ...purchaseOrderData };
-
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '';
-        return new Date(dateStr).toISOString().split('T')[0];
-    };
-
-    // Ambil perusahaanId dan cabangId dari data purchaseOrder
-    const perusahaanId = purchaseOrderData.perusahaan?.id ?? purchaseOrderData.perusahaanId;
-    let cabangId = purchaseOrderData.cabang?.id ?? purchaseOrderData.cabangId;
-
-    // Jika cabangId tidak ada, coba ambil dari relasi cabang pada data purchaseOrder
-    if (!cabangId && purchaseOrderData.cabang) {
-        cabangId = purchaseOrderData.cabang.id;
-    }
-
-    formPurchaseOrder.value = {
-        id                : purchaseOrderData.id,
-        noPo              : purchaseOrderData.noPo,
-        up                : purchaseOrderData.up,
-        date              : formatDate(purchaseOrderData.date),
-        dueDate           : formatDate(purchaseOrderData.dueDate),
-        perusahaanId      : perusahaanId,
-        cabangId          : cabangId,
-        vendorId          : purchaseOrderData.vendor?.id ?? purchaseOrderData.vendorId,
-        priceBuy          : purchaseOrderData.priceBuy ?? '',
-        priceSell         : purchaseOrderData.priceSell ?? '',
-        attachment        : purchaseOrderData.attachment,
-        status            : purchaseOrderData.status,
-        discountPercent   : purchaseOrderData.discountPercent,
-        taxPercent        : purchaseOrderData.taxPercent,
-        description       : purchaseOrderData.description,
-        purchaseOrderItems: (purchaseOrderData.purchaseOrderItems || []).map(item => {
-            const unitPrice = parseFloat(item.price) || 0; // Asumsi item.price dari API adalah harga satuan
-            const subtotal = (parseFloat(item.quantity) || 0) * unitPrice;
-            return {
-                warehouseId: item.warehouse_id || item.warehouseId,
-                productId  : item.product_id || item.productId,
-                quantity   : item.quantity,
-                price      : formatRupiah(unitPrice),
-                unitPrice  : unitPrice,
-                description: item.description,
-                subtotal   : formatRupiah(subtotal)
-            }
-        }),
-    };
-
-    if (formPurchaseOrder.value.purchaseOrderItems.length === 0) {
-        addItem();
-    }
-
-    if (purchaseOrderData.attachment) {
-        attachmentPreview.value = getAttachmentUrl(purchaseOrderData.attachment);
-    } else {
-        attachmentPreview.value = null;
-    }
-
-    validationErrors.value = [];
-
-    // Pastikan fetchCabang dipanggil sebelum set cabangId agar data cabang tersedia
-    if (formPurchaseOrder.value.perusahaanId) {
-        await fetchCabang(formPurchaseOrder.value.perusahaanId);
-        // Tunggu data cabang selesai di-fetch, lalu set cabangId lagi agar select cabang terisi dengan benar
-        await nextTick();
-        formPurchaseOrder.value.cabangId = cabangId;
-    }
-
-    // Tunggu DOM update agar binding form sudah siap sebelum show modal
-    await nextTick();
-
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('PurchaseOrderModal element tidak ditemukan atau Bootstrap belum dimuat.');
-    }
-}
-
-// Delete Purchase Order
-const deletePurchaseOrder = async (productId) => {
-    if (!productId) return;
-
-    const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This action cannot be undone!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#666CFF',
-        cancelButtonColor: '#A7A9B3',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            let url;
-
-            const token = localStorage.getItem('token');
-            // Ambil CSRF token
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData  = await csrfResponse.json();
-            const csrfToken = csrfData.token;
-
-            url = `${$api.purchaseOrder()}/${productId}`;
-
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type' : 'application/json',
-                    'X-CSRF-TOKEN' : csrfToken
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus purchaseOrder');
-            }
-
-            loadLazyData();
-
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Purchase Order berhasil dihapus.',
-                icon: 'success'
-            });
-
-        } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
-        }
-    }
+    router.push({ path: `/transaksi/purchase-detail`, query: { id: purchaseOrderId } });
 };
 
 const getStatusBadge = (status) => {
     switch (status) {
-        case 'draft':
-            return { text: 'Draft', class: 'badge rounded-pill bg-label-secondary' };
-        case 'approved':
-            return { text: 'Approved', class: 'badge rounded-pill bg-label-primary' };
-        case 'received':
-            return { text: 'Received', class: 'badge rounded-pill bg-label-success' };
-        case 'rejected':
-            return { text: 'Rejected', class: 'badge rounded-pill bg-label-danger' };
-        case 'partial':
-            return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
-        default:
-            return { text: '-', class: 'badge rounded-pill bg-label-light' };
+        case 'draft': return { text: 'Draft', class: 'badge rounded-pill bg-label-secondary' };
+        case 'approved': return { text: 'Approved', class: 'badge rounded-pill bg-label-primary' };
+        case 'received': return { text: 'Received', class: 'badge rounded-pill bg-label-success' };
+        case 'rejected': return { text: 'Rejected', class: 'badge rounded-pill bg-label-danger' };
+        case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
+        default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }
-};
-
-// Reset Parent Form State
-const resetParentFormState = () => {
-    formPurchaseOrder.value = {
-        noPo: '',
-        up: '',
-        date: '',
-        dueDate: '',
-        perusahaanId: null,
-        cabangId: null,
-        vendorId: null,
-        priceBuy: '',
-        priceSell: '',
-        attachment: null,
-        status: 'draft',
-        description: '',
-        purchaseOrderItems: [],
-    };
-    attachmentPreview.value = null;
-};
-
-// Add Item
-const addItem = () => {
-  formPurchaseOrder.value.purchaseOrderItems.push({
-    productId: null,
-    warehouseId: null,
-    quantity: 1,
-    price: formatRupiah(0),
-    description: '',
-    unitPrice: 0,
-    subtotal: formatRupiah(0)
-  });
-};
-
-// Remove Item
-const removeItem = (index) => {
-  formPurchaseOrder.value.purchaseOrderItems.splice(index, 1);
 };
 
 </script>
 
 <style scoped>
+    .v-select-style {
+        min-height: 48px;
+    }
+
+    :deep(.v-select-style .vs__dropdown-toggle),
     :deep(.perusahaan .vs__dropdown-toggle),
     :deep(.warehouse-select .vs__dropdown-toggle),
     :deep(.status .vs__dropdown-toggle),

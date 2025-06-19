@@ -162,7 +162,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                 <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
@@ -188,8 +188,8 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="perusahaan" 
-                            :rows="lazyParams.rows" 
+                            :data="perusahaans" 
+                            :rows="params.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
@@ -258,7 +258,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="kodePerusahaan" 
-                                        v-model="formPerusahaan.kode_perusahaan" 
+                                        v-model="form.kode_perusahaan" 
                                         placeholder="Masukkan kode perusahaan"
                                         required
                                     >
@@ -271,7 +271,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="nmPerusahaan" 
-                                        v-model="formPerusahaan.nm_perusahaan" 
+                                        v-model="form.nm_perusahaan" 
                                         placeholder="Masukkan nama perusahaan"
                                         required
                                     >
@@ -284,9 +284,9 @@
                                     type="text" 
                                     class="form-control" 
                                     id="npwpPerusahaan" 
-                                    v-model="formPerusahaan.npwp_perusahaan" 
+                                    v-model="form.npwp_perusahaan" 
                                     placeholder="Masukkan npwp perusahaan"
-                                    @input="formPerusahaan.npwp_perusahaan = $event.target.value.replace(/[^0-9]/g, '')"
+                                    @input="form.npwp_perusahaan = $event.target.value.replace(/[^0-9]/g, '')"
                                     inputmode="numeric"
                                     pattern="[0-9]*"
                                     required
@@ -300,7 +300,7 @@
                                         class="form-control h-px-100"
                                         id="alamat_perusahaan"
                                         placeholder="Alamat Perusahaan"
-                                        v-model="formPerusahaan.alamat_perusahaan">
+                                        v-model="form.alamat_perusahaan">
                                     </textarea>
                                     <label for="alamat_perusahaan">Alamat Perusahaan</label>
                                 </div>
@@ -329,13 +329,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { storeToRefs } from 'pinia'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
-import Swal from 'sweetalert2'
 import { usePerusahaanStore } from '~/stores/perusahaan'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
+import Column from 'primevue/column'
+import { useDebounceFn } from '@vueuse/core'
 
 const config = useRuntimeConfig();
 const getLogoUrl = (logoPath) => {
@@ -353,252 +355,58 @@ const getLogoUrl = (logoPath) => {
     return imageUrl;
 };
 
-const { $api } = useNuxtApp()
+const myDataTableRef = ref(null)
+const perusahaanStore = usePerusahaanStore()
+const { perusahaans, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(perusahaanStore)
 
-const myDataTableRef     = ref(null)
-const perusahaanStore    = usePerusahaanStore()
-const selectedPerusahaan = ref(null);
-const perusahaan         = ref([])
-const loading            = ref(false);
-const isEditMode         = ref(false);
-const logoFile           = ref(null);
-const logoPreview        = ref('');
-const totalRecords       = ref(0);
-const globalFilterValue  = ref('');
-const lazyParams         = ref({
-    first: 0,
-    rows: 10,
-    sortField: null,
-    sortOrder: null,
-    draw: 1,
-    search: '',
-});
-
-const formPerusahaan = ref({
-  kode_perusahaan: '',
-  nm_perusahaan: '',
-  npwp_perusahaan: '',
-  alamat_perusahaan: ''
-});
-
+const globalFilterValue = ref('')
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
 const modalTitle = computed(() => isEditMode.value ? 'Edit Perusahaan' : 'Tambah Perusahaan');
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data perusahaan di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan perusahaan baru.');
 
-// Fungsi untuk menangani event close dari modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
-    resetParentFormState(); 
-};
-
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
-
-const handleSavePerusahaan = async () => {
-    loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
-    try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
-
-        // Validasi form sederhana
-        if (!formPerusahaan.value.nm_perusahaan || !formPerusahaan.value.npwp_perusahaan) {
-            Swal.fire('Validasi', 'Nama dan NPWP perusahaan wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('kode_perusahaan', formPerusahaan.value.kode_perusahaan);
-        formData.append('nm_perusahaan', formPerusahaan.value.nm_perusahaan);
-        formData.append('npwp_perusahaan', formPerusahaan.value.npwp_perusahaan);
-        formData.append('alamat_perusahaan', formPerusahaan.value.alamat_perusahaan);
-
-        if (formPerusahaan.value.logo && formPerusahaan.value.logo instanceof File) {
-            formData.append('logo_perusahaan', formPerusahaan.value.logo);
-        }
-
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken || '',
-            'Accept': 'application/json',
-        };
-
-        let url;
-        let response;
-
-        if (isEditMode.value) {
-            // Cari ID perusahaan dari form atau selectedPerusahaan
-            let perusahaanIdToUpdate = formPerusahaan.value?.id || formPerusahaan.value?.idPerusahaan;
-            if (!perusahaanIdToUpdate && selectedPerusahaan.value) {
-                perusahaanIdToUpdate = selectedPerusahaan.value.id || selectedPerusahaan.value.idPerusahaan;
-            }
-            if (!perusahaanIdToUpdate) {
-                Swal.fire('Error', 'ID Perusahaan tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.perusahaan()}/${perusahaanIdToUpdate}`;
-            console.log('Updating perusahaan with ID:', perusahaanIdToUpdate, 'URL:', url);
-
-            response = await fetch(url, {
-                method: 'POST', // Menggunakan POST untuk mengirim FormData untuk pembaruan
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.perusahaan();
-            response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Perusahaan berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} perusahaan`, 'error');
-            }
-        }
-    } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data perusahaan.', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-// Fungsi untuk menangani event load lazy data dari perusahaan
-const loadLazyData = async () => {
-    loading.value = true;
-    try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.perusahaan()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data perusahaan dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data perusahaan');
-        }
-
-        const result = await response.json();
-        perusahaan.value = result.data || []; 
-        totalRecords.value = parseInt(result.meta.total) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
-    } catch (error) {
-        console.error('Error loading lazy data for perusahaan:', error);
-        perusahaan.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data perusahaan: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
+let modalInstance = null
 onMounted(() => {
-    loadLazyData();
+    perusahaanStore.fetchPerusahaans();
+    const modalElement = document.getElementById('Modal')
+    if (modalElement) {
+        modalInstance = new bootstrap.Modal(modalElement)
+    }
 });
 
-const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
-};
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance?.show()
+    } else {
+        modalInstance?.hide()
+    }
+})
+
+const debouncedSearch = useDebounceFn(() => {
+    perusahaanStore.setSearch(globalFilterValue.value)
+}, 500)
+watch(globalFilterValue, debouncedSearch);
+
+
+const onPage = (event) => perusahaanStore.setPagination(event);
 
 const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
+    params.value.first = 0;
+    perusahaanStore.fetchPerusahaans();
 };
 
-function onLogoChange(e) {
+const onSort = (event) => perusahaanStore.setSort(event);
+
+const onLogoChange = (e) => {
   const file = e.target.files[0];
-  formPerusahaan.value.logo = file;
   if (file) {
-    const objectURL = URL.createObjectURL(file);
-    logoPreview.value = objectURL;
-  } else {
-    formPerusahaan.value.logo = '';
+    perusahaanStore.setLogo(file);
   }
 }
-
-const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
-};
 
 const exportData = (format) => {
     if (format === 'csv') {
         myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
     }
 };
 
@@ -612,8 +420,8 @@ const openAddPerusahaanModal = () => {
 async function openEditPerusahaanModal(perusahaanData) {
     isEditMode.value = true;
     // Mapping manual dari response API ke field form
-    selectedPerusahaan.value = { ...perusahaanData };
-    formPerusahaan.value = {
+    perusahaanStore.selectedPerusahaan = { ...perusahaanData };
+    form.value = {
         kode_perusahaan: perusahaanData.kode_perusahaan ?? perusahaanData.kodePerusahaan ?? '',
         logo: perusahaanData.logo ?? perusahaanData.logoPerusahaan ?? '',
         nm_perusahaan: perusahaanData.nm_perusahaan ?? perusahaanData.nmPerusahaan ?? '',
@@ -677,7 +485,7 @@ const deletePerusahaan = async (perusahaanId) => {
                 throw new Error(errorData.message || 'Gagal menghapus perusahaan');
             }
 
-            loadLazyData();
+            perusahaanStore.fetchPerusahaans();
 
             await Swal.fire({
                 title: 'Berhasil!',
@@ -696,7 +504,7 @@ const deletePerusahaan = async (perusahaanId) => {
 };
 
 const resetParentFormState = () => {
-    formPerusahaan.value = {
+    form.value = {
         kode_perusahaan: '',
         logo: '',
         nm_perusahaan: '',

@@ -21,7 +21,7 @@
                     image-alt="Tambah Gudang"
                     button-text="Tambah Gudang"
                     modal-target="#Modal" 
-                    @button-click="openAddWarehouseModal"
+                    @button-click="warehouseStore.openModal()"
                     :column-class="cardBoxColumnClass"
                 />
             </div>
@@ -36,7 +36,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                 <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
@@ -50,6 +50,7 @@
                                 </div>
                                 <div class="input-group">
                                     <span class="p-input-icon-left">
+                                         <i class="ri-search-line"></i>
                                         <InputText
                                             v-model="globalFilterValue"
                                             placeholder="Cari Gudang..."
@@ -62,8 +63,8 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="warehouse" 
-                            :rows="lazyParams.rows" 
+                            :data="warehouses" 
+                            :rows="params.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
@@ -82,8 +83,8 @@
                                 <Column field="email" header="Email Gudang" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="openEditWarehouseModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deleteWarehouse(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button @click="warehouseStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="warehouseStore.deleteWarehouse(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -96,14 +97,12 @@
 
             <!-- Placeholder untuk WarehouseModal component -->
             <Modal 
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedWarehouse="selectedWarehouse"
+                :validation-errors-from-parent="validationErrors"
             >
                 <template #default>
-                    <form @submit.prevent="handleSubmit">
+                    <form @submit.prevent="warehouseStore.saveWarehouse()">
                         <div class="row g-6">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -111,7 +110,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="kodeGudang" 
-                                        v-model="formWarehouse.code" 
+                                        v-model="form.code" 
                                         placeholder="Masukkan kode gudang"
                                         required
                                     >
@@ -124,7 +123,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="nmGudang" 
-                                        v-model="formWarehouse.name" 
+                                        v-model="form.name" 
                                         placeholder="Masukkan nama gudang"
                                         required
                                     >
@@ -137,7 +136,7 @@
                                         type="email" 
                                         class="form-control" 
                                         id="emailGudang" 
-                                        v-model="formWarehouse.email" 
+                                        v-model="form.email" 
                                         placeholder="Masukkan email gudang"
                                         required
                                     >
@@ -150,7 +149,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="phoneGudang" 
-                                        v-model="formWarehouse.phone" 
+                                        v-model="form.phone" 
                                         placeholder="Masukkan no. telepon gudang"
                                         required
                                     >
@@ -163,23 +162,18 @@
                                         class="form-control h-px-100"
                                         id="alamatGudang"
                                         placeholder="Masukkan alamat gudang"
-                                        v-model="formWarehouse.address">
+                                        v-model="form.address">
                                     </textarea>
                                     <label for="alamatGudang">Alamat Gudang</label>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary me-2"
-                                    @click="handleSaveWarehouse"
-                                >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="handleCloseModal">
-                                    Batal
-                                </button>
-                            </div>
+                        </div>
+                        <div class="modal-footer mt-6">
+                            <button type="button" class="btn btn-outline-secondary" @click="warehouseStore.closeModal()">Tutup</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">
+                                <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Simpan
+                            </button>
                         </div>
                     </form>
                 </template>
@@ -192,393 +186,68 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
-import Swal from 'sweetalert2'
 import { useWarehouseStore } from '~/stores/warehouse'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
-
-const { $api } = useNuxtApp()
+import Column from 'primevue/column'
+import { useDebounceFn } from '@vueuse/core'
 
 const myDataTableRef = ref(null)
-const warehouseStore      = useWarehouseStore()
-const selectedWarehouse  = ref(null);
-const warehouse          = ref([])
-const loading          = ref(false);
-const isEditMode       = ref(false);
-const totalRecords     = ref(0);
-const globalFilterValue = ref('');
-const lazyParams        = ref({
-    first: 0,
-    rows: 10,
-    sortField: null,
-    sortOrder: null,
-    draw: 1,
-    search: '',
-});
+const warehouseStore = useWarehouseStore()
+const { warehouses, loading, stats, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(warehouseStore)
 
-const formWarehouse = ref({
-  name: '',
-  address: '',
-  code: '',
-  phone: '',
-  email: '',
-});
-
-const stats = ref({
-  total: undefined
-})
+const globalFilterValue = ref('')
 
 const cardBoxColumnClass = computed(() => {
   return stats.value.total !== undefined ? 'col-6' : 'col-xl-4 col-lg-6 col-md-6';
 });
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
-
 const modalTitle = computed(() => isEditMode.value ? 'Edit Gudang' : 'Tambah Gudang');
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data gudang di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan gudang baru.');
 
-// Fungsi untuk menangani event close dari modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
-    resetParentFormState(); 
-};
-
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
-
-const handleSaveWarehouse = async () => {
-    loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
-    try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
-        let response;
-        let url;
-
-        // Validasi form sederhana
-        if (!formWarehouse.value.name) {
-            Swal.fire('Validasi', 'Nama warehouse wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        if (isEditMode.value) {
-            // Cari ID warehouse dari form atau selectedMenuGroup
-            let warehouseIdToUpdate = formWarehouse.value?.id || selectedWarehouse.value?.id;
-            if (!warehouseIdToUpdate) {
-                Swal.fire('Error', 'ID Gudang tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.warehouse()}/${warehouseIdToUpdate}`;
-            console.log('Updating warehouse with ID:', warehouseIdToUpdate, 'URL:', url);
-            // Update data
-            response = await fetch(url, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    name   : formWarehouse.value.name,
-                    address: formWarehouse.value.address,
-                    code   : formWarehouse.value.code,
-                    phone  : formWarehouse.value.phone,
-                    email  : formWarehouse.value.email,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.warehouse();
-            response = await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify({
-                    name   : formWarehouse.value.name,
-                    address: formWarehouse.value.address,
-                    code   : formWarehouse.value.code,
-                    phone  : formWarehouse.value.phone,
-                    email  : formWarehouse.value.email,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Gudang berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} warehouse`, 'error');
-            }
-        }
-    } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data warehouse.', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-const fetchStats = async () => {
-  const defaultStats = {
-    total: undefined,
-  };
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch($api.getTotalWarehouse(), {
-        headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        }
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      if (result && typeof result === 'object' && result !== null) {
-        stats.value = {
-            total: result.total,
-        };
-      } else {
-        stats.value = defaultStats;
-        console.warn('Data statistik dari API tidak dalam format objek yang diharapkan atau null:', result);
-      }
-    } else {
-        stats.value = defaultStats;
-        console.error('Gagal mengambil data statistik, status respons:', response.status);
-    }
-  } catch (error) {
-    console.error('Gagal mengambil data statistik (exception):', error);
-    stats.value = defaultStats;
-  }
-};
-
-// Fungsi untuk menangani event load lazy data dari warehouse
-const loadLazyData = async () => {
-    loading.value = true;
-    try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.warehouse()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data warehouse dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data warehouse');
-        }
-
-        const result = await response.json();
-        warehouse.value = result.data || []; 
-        totalRecords.value = parseInt(result.meta.total) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
-    } catch (error) {
-        console.error('Error loading lazy data for warehouse:', error);
-        warehouse.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data warehouse: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
+let modalInstance = null
 onMounted(() => {
-    loadLazyData();
-    fetchStats();
+    warehouseStore.fetchWarehouses()
+    warehouseStore.fetchStats()
+    const modalElement = document.getElementById('Modal')
+    if (modalElement) {
+        modalInstance = new bootstrap.Modal(modalElement)
+    }
 });
 
-const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
-};
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance?.show()
+    } else {
+        modalInstance?.hide()
+    }
+})
+
+const debouncedSearch = useDebounceFn(() => {
+    warehouseStore.setSearch(globalFilterValue.value)
+}, 500)
+watch(globalFilterValue, debouncedSearch)
+
+const onPage = (event) => warehouseStore.setPagination(event);
 
 const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
+    params.value.first = 0;
+    warehouseStore.fetchWarehouses();
 };
 
-const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
-};
+const onSort = (event) => warehouseStore.setSort(event);
 
 const exportData = (format) => {
     if (format === 'csv') {
         myDataTableRef.value.exportCSV();
     } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
+        // Implement PDF export if needed
     }
-};
-
-const openAddWarehouseModal = () => {
-    isEditMode.value = false;
-    modalTitle.value = 'Tambah Gudang';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan warehouse baru.';
-    resetParentFormState();
-};
-
-async function openEditWarehouseModal(warehouseData) {
-    isEditMode.value = true;
-    // Ambil data warehouse saat modal terbuka
-    selectedWarehouse.value = JSON.parse(JSON.stringify(warehouseData));
-    formWarehouse.value = {
-        id: warehouseData.id,
-        name       : warehouseData.name || '',
-        address    : warehouseData.address || '',
-        code       : warehouseData.code || '',
-        phone      : warehouseData.phone || '',
-        email      : warehouseData.email || '',
-    };
-    validationErrors.value = [];
-
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('WarehouseModal element tidak ditemukan atau Bootstrap belum dimuat.');
-    }
-}
-
-const deleteWarehouse = async (id) => {
-    if (!id) return;
-
-    const result = await Swal.fire({
-        title             : 'Are you sure?',
-        text              : 'This action cannot be undone!',
-        icon              : 'warning',
-        showCancelButton  : true,
-        confirmButtonColor: '#666CFF',
-        cancelButtonColor : '#A7A9B3',
-        confirmButtonText : 'Yes, delete it!',
-        cancelButtonText  : 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            let url;
-
-            const token = localStorage.getItem('token');
-            // Ambil CSRF token
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData  = await csrfResponse.json();
-            const csrfToken = csrfData.token;
-
-             url = `${$api.warehouse()}/${id}`;
-
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type' : 'application/json',
-                    'X-CSRF-TOKEN' : csrfToken
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus warehouse');
-            }
-
-            loadLazyData();
-
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Gudang berhasil dihapus.',
-                icon: 'success'
-            });
-
-        } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
-        }
-    }
-};
-
-const resetParentFormState = () => {
-    formWarehouse.value = {
-        name: '',
-        address: '',
-        code: '',
-        phone: '',
-        email: '',
-    };
 };
 </script>

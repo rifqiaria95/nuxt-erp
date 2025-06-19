@@ -139,10 +139,8 @@
                         <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
                             <button
-                            data-bs-target="#Modal"
-                            data-bs-toggle="modal"
                             class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"
-                            @click="openAddVendorModal"
+                            @click="vendorStore.openModal()"
                             >
                             Tambah Vendor
                             </button>
@@ -162,7 +160,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                 <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
@@ -188,8 +186,8 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="vendor" 
-                            :rows="lazyParams.rows" 
+                            :data="vendors" 
+                            :rows="params.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
@@ -200,15 +198,11 @@
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
-                            <Column field="id" header="#" :sortable="true"></Column> 
-                                <Column field="logo" header="Logo" :sortable="true">
+                                <Column field="id" header="#" :sortable="true"></Column> 
+                                <Column field="logo" header="Logo" :sortable="false">
                                     <template #body="slotProps">
-                                        <div v-if="slotProps.data.logo">
-                                            <img :src="getLogoUrl(slotProps.data.logo)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
-                                        </div>
-                                        <div v-else>
-                                            <span class="text-muted">Tidak ada logo</span>
-                                        </div>
+                                        <img v-if="slotProps.data.logo_url" :src="slotProps.data.logo_url" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                        <span v-else class="text-muted">No Logo</span>
                                     </template>
                                 </Column>
                                 <Column field="name" header="Nama Vendor" :sortable="true"></Column>
@@ -218,8 +212,8 @@
                                 <Column field="phone" header="Phone Vendor" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="openEditVendorModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deleteVendor(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button @click="vendorStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
+                                        <button @click="vendorStore.deleteVendor(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -230,28 +224,24 @@
             </div>
             <!--/ vendor cards -->
 
-            <!-- Placeholder untuk MenuModal component -->
             <Modal 
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
+                id="VendorModal"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedVendor="selectedVendor"
+                :validation-errors-from-parent="validationErrors"
             >
                 <template #default>
-                    <form @submit.prevent="handleSubmit">
-                        <div class="row g-6">
+                    <form @submit.prevent="vendorStore.saveVendor()">
+                        <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="file" 
                                         class="form-control" 
-                                        id="logoVendor" 
                                         @change="onLogoChange"
-                                        placeholder="Masukkan logo vendor"
-                                        :required="!isEditMode"
                                     >
-                                    <label for="logoVendor">Logo Vendor</label>
+                                    <label>Logo Vendor</label>
+                                    <img v-if="logoPreview" :src="logoPreview" alt="Preview" class="mt-2" style="max-height: 100px;" />
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -259,12 +249,11 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
-                                        id="nmVendor" 
-                                        v-model="formVendor.name" 
+                                        v-model="form.name" 
                                         placeholder="Masukkan nama vendor"
                                         required
                                     >
-                                    <label for="nmVendor">Nama Vendor</label>
+                                    <label>Nama Vendor</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -272,12 +261,11 @@
                                     <input 
                                         type="email" 
                                         class="form-control" 
-                                        id="emailVendor" 
-                                        v-model="formVendor.email" 
+                                        v-model="form.email" 
                                         placeholder="Masukkan email vendor"
                                         required
                                     >
-                                    <label for="emailVendor">Email Vendor</label>
+                                    <label>Email Vendor</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -285,15 +273,11 @@
                                     <input 
                                     type="text" 
                                     class="form-control" 
-                                    id="phoneVendor" 
-                                    v-model="formVendor.phone" 
+                                    v-model="form.phone" 
                                     placeholder="Masukkan no. telp vendor"
-                                    @input="formVendor.phone = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
                                     required
                                     >
-                                    <label for="phoneVendor">No. Telp Vendor</label>
+                                    <label>No. Telp Vendor</label>
                                 </div>
                             </div>
                             <div class="col-md-12">
@@ -301,40 +285,30 @@
                                     <input 
                                     type="text" 
                                     class="form-control" 
-                                    id="npwpVendor" 
-                                    v-model="formVendor.npwp" 
+                                    v-model="form.npwp" 
                                     placeholder="Masukkan npwp vendor"
-                                    @input="formVendor.npwp = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
                                     required
                                     >
-                                    <label for="npwpVendor">NPWP Vendor</label>
+                                    <label>NPWP Vendor</label>
                                 </div>
                             </div>
                             <div class="col-md-12">
                                 <div class="form-floating form-floating-outline">
                                     <textarea
                                         class="form-control h-px-100"
-                                        id="alamat_vendor"
                                         placeholder="Alamat Vendor"
-                                        v-model="formVendor.address">
+                                        v-model="form.address">
                                     </textarea>
-                                    <label for="alamat_vendor">Alamat Vendor</label>
+                                    <label>Alamat Vendor</label>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary me-2"
-                                    @click="handleSaveVendor"
-                                >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="handleCloseModal">
-                                    Batal
-                                </button>
-                            </div>
+                        </div>
+                        <div class="modal-footer mt-6">
+                             <button type="button" class="btn btn-outline-secondary" @click="vendorStore.closeModal()">Tutup</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">
+                                <span v-if="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                                Simpan
+                            </button>
                         </div>
                     </form>
                 </template>
@@ -347,382 +321,73 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
-import Swal from 'sweetalert2'
 import { useVendorStore } from '~/stores/vendor'
 import Dropdown from 'primevue/dropdown'
+import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
+import { useDebounceFn } from '@vueuse/core'
 
-const config   = useRuntimeConfig();
-const { $api } = useNuxtApp()
+const vendorStore = useVendorStore()
+const { vendors, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(vendorStore)
 
 const myDataTableRef = ref(null)
-const vendorStore    = useVendorStore()
-const selectedVendor = ref(null);
-const vendor         = ref([])
-const loading           = ref(false);
-const isEditMode        = ref(false);
-const totalRecords      = ref(0);
-const globalFilterValue = ref('');
-const lazyParams        = ref({
-    first: 0,
-    rows: 10,
-    sortField: null,
-    sortOrder: null,
-    draw: 1,
-    search: '',
-});
-
-const formVendor = ref({
-  name: '',
-  address: '',
-  email: '',
-  phone: '',
-  npwp: '',
-  logo: ''
-});
-
-const getLogoUrl = (logoPath) => {
-    if (!logoPath || typeof logoPath !== 'string') {
-        return null;
-    }
-    if (logoPath.startsWith('http')) {
-        return logoPath;
-    }
-    if (!config.public.apiBase) {
-        return logoPath;
-    }
-    const origin = new URL(config.public.apiBase).origin;
-    const imageUrl = `${origin}/${logoPath}`;
-    return imageUrl;
-};
+const globalFilterValue = ref('')
+const logoPreview = ref(null)
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
-
 const modalTitle = computed(() => isEditMode.value ? 'Edit Vendor' : 'Tambah Vendor');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data vendor di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan vendor baru.');
+const modalDescription = computed(() => isEditMode.value ? 'Ubah detail vendor.' : 'Isi untuk menambah vendor baru.');
 
-// Fungsi untuk menangani event close dari modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
-            modalInstance.hide();
-        }
-    }
-    resetParentFormState(); 
-};
-
-let searchDebounceTimer = null;
-watch(globalFilterValue, (newValue) => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-
-    searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
-    }, 500);
-});
-
-onBeforeUnmount(() => {
-    if (searchDebounceTimer) {
-        clearTimeout(searchDebounceTimer);
-    }
-});
-
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
-
-const handleSaveVendor = async () => {
-    loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
-    try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
-
-        // Validasi form sederhana
-        if (!formVendor.value.name || !formVendor.value.npwp) {
-            Swal.fire('Validasi', 'Nama dan NPWP vendor wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('name', formVendor.value.name);
-        formData.append('npwp', formVendor.value.npwp);
-        formData.append('address', formVendor.value.address);
-        formData.append('email', formVendor.value.email);
-        formData.append('phone', formVendor.value.phone);
-
-        if (formVendor.value.logo && formVendor.value.logo instanceof File) {
-            formData.append('logo', formVendor.value.logo);
-        }
-
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken || '',
-            'Accept': 'application/json',
-        };
-
-        let url;
-        let response;
-
-        if (isEditMode.value) {
-            // Cari ID perusahaan dari form atau selectedPerusahaan
-            let vendorIdToUpdate = formVendor.value?.id || formVendor.value?.idVendor;
-            if (!vendorIdToUpdate && selectedVendor.value) {
-                vendorIdToUpdate = selectedVendor.value.id || selectedVendor.value.idVendor;
-            }
-            if (!vendorIdToUpdate) {
-                Swal.fire('Error', 'ID Vendor tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.vendor()}/${vendorIdToUpdate}`;
-            console.log('Updating vendor with ID:', vendorIdToUpdate, 'URL:', url);
-
-            response = await fetch(url, {
-                method: 'POST', // Menggunakan POST untuk mengirim FormData untuk pembaruan
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.vendor();
-            response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: headers,
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Vendor berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} vendor`, 'error');
-            }
-        }
-    } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data vendor.', 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
-// Fungsi untuk menangani event load lazy data dari vendor
-const loadLazyData = async () => {
-    loading.value = true;
-    try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.vendor()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data vendor dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data vendor');
-        }
-
-        const result = await response.json();
-        vendor.value = result.data || []; 
-        totalRecords.value = parseInt(result.meta.total) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
-    } catch (error) {
-        console.error('Error loading lazy data for vendor:', error);
-        vendor.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data vendor: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
-    }
-};
-
+let modalInstance = null;
 onMounted(() => {
-    loadLazyData();
+    vendorStore.fetchVendors();
+    const modalElement = document.getElementById('VendorModal')
+    if (modalElement) {
+        modalInstance = new bootstrap.Modal(modalElement)
+    }
 });
 
-const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
-};
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance?.show()
+        if (isEditMode.value && form.value.logo_url) {
+            logoPreview.value = form.value.logo_url;
+        } else {
+            logoPreview.value = null;
+        }
+    } else {
+        modalInstance?.hide()
+    }
+})
 
+const debouncedSearch = useDebounceFn(() => {
+    vendorStore.setSearch(globalFilterValue.value)
+}, 500)
+watch(globalFilterValue, debouncedSearch);
+
+const onPage = (event) => vendorStore.setPagination(event);
 const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
+    params.value.first = 0;
+    vendorStore.fetchVendors();
 };
-
-const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
-};
+const onSort = (event) => vendorStore.setSort(event);
 
 const exportData = (format) => {
-    if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
-    }
+    if (format === 'csv') myDataTableRef.value.exportCSV();
 };
 
 function onLogoChange(e) {
   const file = e.target.files[0];
-  formVendor.value.logo = file;
   if (file) {
-    const objectURL = URL.createObjectURL(file);
-    logoPreview.value = objectURL;
+    form.value.logo = file;
+    logoPreview.value = URL.createObjectURL(file);
   } else {
-    formVendor.value.logo = '';
+    form.value.logo = null;
+    logoPreview.value = null;
   }
 }
-
-const openAddVendorModal = () => {
-    isEditMode.value = false;
-    modalTitle.value = 'Tambah Vendor';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan vendor baru.';
-    resetParentFormState();
-};
-
-async function openEditVendorModal(vendorData) {
-    isEditMode.value = true;
-    // Mapping manual dari response API ke field form
-    selectedVendor.value = { ...vendorData };
-    formVendor.value = {
-        name   : vendorData.name ?? vendorData.nmVendor ?? '',
-        address: vendorData.address ?? vendorData.alamatVendor ?? '',
-        email  : vendorData.email ?? vendorData.emailVendor ?? '',
-        phone  : vendorData.phone ?? vendorData.phoneVendor ?? '',
-        npwp   : vendorData.npwp ?? vendorData.npwpVendor ?? '',
-        logo   : vendorData.logo ?? vendorData.logoVendor ?? ''
-    };
-    validationErrors.value = [];
-
-    // Tunggu DOM update agar binding form sudah siap sebelum show modal
-    await nextTick();
-
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('VendorModal element tidak ditemukan atau Bootstrap belum dimuat.');
-    }
-}
-
-const deleteVendor = async (vendorId) => {
-    if (!vendorId) return;
-
-    const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This action cannot be undone!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#666CFF',
-        cancelButtonColor: '#A7A9B3',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            let url;
-
-            const token = localStorage.getItem('token');
-            // Ambil CSRF token
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData  = await csrfResponse.json();
-            const csrfToken = csrfData.token;
-
-            url = `${$api.vendor()}/${vendorId}`;
-
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type' : 'application/json',
-                    'X-CSRF-TOKEN' : csrfToken
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus vendor');
-            }
-
-            loadLazyData();
-
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Vendor berhasil dihapus.',
-                icon: 'success'
-            });
-
-        } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
-        }
-    }
-};
-
-const resetParentFormState = () => {
-    formVendor.value = {
-        name: '',
-        address: '',
-        email: '',
-        phone: '',
-        npwp: '',
-        logo: ''
-    };
-};
 </script>

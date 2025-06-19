@@ -76,14 +76,14 @@
   </template>
 
   <script setup>
-    import { useMenuGroupsStore } from '~/stores/menu-group';
-    import { useMenuDetailsStore } from '~/stores/menu-detail';
+    import { useMenuGroupStore } from '~/stores/menu-group';
+    import { useMenuDetailStore } from '~/stores/menu-detail';
     import { ref, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router';
     import { useLayoutStore } from '~/stores/layout';
 
-    const menuGroupsStore = useMenuGroupsStore();
-    const menuDetailsStore = useMenuDetailsStore();
+    const menuGroupsStore = useMenuGroupStore();
+    const menuDetailsStore = useMenuDetailStore();
     const route = useRoute();
     const layoutStore = useLayoutStore();
 
