@@ -23,7 +23,17 @@ export const useWarehouseStore = defineStore('warehouse', {
     async fetchWarehouse() {
       this.loading = true
       try {
-        const response = await fetch('http://localhost:3333/api/warehouse')
+        const { $api } = useNuxtApp();
+        const url = `${$api.warehouse()}`;
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(url, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          credentials: 'include'
+        });
         const data = await response.json()
         this.warehouse = data.data // ambil dari data.data
       } catch (error) {

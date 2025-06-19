@@ -650,15 +650,15 @@ import 'vue-select/dist/vue-select.css'
 const config   = useRuntimeConfig();
 const { $api } = useNuxtApp()
 // Store
-const myDataTableRef        = ref(null)
-const purchaseOrderStore    = usePurchaseOrderStore()
-const vendorStore           = useVendorStore()
-const perusahaanStore       = usePerusahaanStore()
-const warehouseStore = useWarehouseStore()
-const cabangStore           = useCabangStore()
-const productStore          = useProductStore()
-const userStore             = useUserStore()
-const formatRupiah          = useFormatRupiah()
+const myDataTableRef     = ref(null)
+const purchaseOrderStore = usePurchaseOrderStore()
+const vendorStore        = useVendorStore()
+const perusahaanStore    = usePerusahaanStore()
+const warehouseStore     = useWarehouseStore()
+const cabangStore        = useCabangStore()
+const productStore       = useProductStore()
+const userStore          = useUserStore()
+const formatRupiah       = useFormatRupiah()
 
 const userisSuperAdmin = computed(() => {
     return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
@@ -1181,7 +1181,6 @@ function onFileChange(e) {
     attachmentPreview.value = null;
   }
 }
-
 
 // On Product Change
 const onProductChange = (index) => {

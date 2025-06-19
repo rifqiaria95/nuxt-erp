@@ -1,5 +1,5 @@
   <template>
-    <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+    <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
       <div class="app-brand demo">
         <a href="index.html" class="app-brand-link">
           <span class="app-brand-logo demo">
@@ -40,26 +40,35 @@
             v-for="group in [...menuGroupsStore.menuGroups].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
             :key="group.id"
             :class="{
-              open: group.menuDetails && group.menuDetails.some(detail => detail.route === $route.path),
-              active: group.menuDetails && group.menuDetails.some(detail => detail.route === $route.path)
+              open: isGroupOpen(group),
+              active: isGroupActive(group)
             }"
           >
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
+            <a href="javascript:void(0);" class="menu-link menu-toggle" @click="toggleGroup(group.id)">
               <i :class="['menu-icon', 'tf-icons', group.icon]"></i>
               <div>{{ group.name }}</div>
             </a>
-            <ul class="menu-sub" v-if="group.menuDetails && group.menuDetails.length">
-              <li
-                class="menu-item"
-                v-for="detail in [...group.menuDetails].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
-                :key="detail.id"
-                :class="{ active: detail.route === $route.path }"
-              >
-                <a :href="detail.route" class="menu-link">
-                  <div>{{ detail.name }}</div>
-                </a>
-              </li>
-            </ul>
+            <transition
+              name="menu-expand"
+              @before-enter="beforeEnter"
+              @enter="enter"
+              @after-enter="afterEnter"
+              @before-leave="beforeLeave"
+              @leave="leave"
+            >
+              <ul class="menu-sub" v-show="isGroupOpen(group)" v-if="group.menuDetails && group.menuDetails.length">
+                <li
+                  class="menu-item"
+                  v-for="detail in [...group.menuDetails].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
+                  :key="detail.id"
+                  :class="{ active: detail.route === $route.path }"
+                >
+                  <a :href="detail.route" class="menu-link">
+                    <div>{{ detail.name }}</div>
+                  </a>
+                </li>
+              </ul>
+            </transition>
           </li>
         </template>
       </ul>
@@ -67,31 +76,104 @@
   </template>
 
   <script setup>
-    import {
-      useMenuGroupsStore
-    } from '~/stores/menu-group';
-    import {
-      useMenuDetailsStore
-    } from '~/stores/menu-detail';
-    import {
-      onMounted
-    } from 'vue';
+    import { useMenuGroupsStore } from '~/stores/menu-group';
+    import { useMenuDetailsStore } from '~/stores/menu-detail';
+    import { ref, onMounted, watch } from 'vue';
+    import { useRoute } from 'vue-router';
+    import { useLayoutStore } from '~/stores/layout';
 
     const menuGroupsStore = useMenuGroupsStore();
     const menuDetailsStore = useMenuDetailsStore();
+    const route = useRoute();
+    const layoutStore = useLayoutStore();
+
+    const openGroupIds = ref(new Set());
+
+    const handleMouseEnter = () => {
+      layoutStore.setSidebarHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+      layoutStore.setSidebarHovered(false);
+    };
+
+    const toggleGroup = (groupId) => {
+      if (openGroupIds.value.has(groupId)) {
+        openGroupIds.value.delete(groupId);
+      } else {
+        openGroupIds.value.clear();
+        openGroupIds.value.add(groupId);
+      }
+    };
+
+    const isGroupActive = (group) => {
+      return group.menuDetails?.some(detail => detail.route === route.path);
+    };
+
+    const isGroupOpen = (group) => {
+      return openGroupIds.value.has(group.id);
+    };
 
     function toggleSidebar() {
-      document.body.classList.toggle('layout-menu-expanded');
+      layoutStore.toggleSidebar();
     }
 
-    onMounted(() => {
-      menuGroupsStore.fetchMenuGroups();
-      menuDetailsStore.fetchMenuDetails();
+    const setActiveGroup = () => {
+      const activeGroup = menuGroupsStore.menuGroups.find(isGroupActive);
+      if (activeGroup) {
+        if (!openGroupIds.value.has(activeGroup.id)) {
+          openGroupIds.value.clear();
+          openGroupIds.value.add(activeGroup.id);
+        }
+      }
+    };
+
+    onMounted(async () => {
+      await menuGroupsStore.fetchMenuGroups();
+      await menuDetailsStore.fetchMenuDetails();
+      setActiveGroup();
     });
+
+    watch(() => route.path, () => {
+      setActiveGroup();
+    });
+
+    // --- Transition Hooks for smooth animation ---
+    const beforeEnter = (el) => {
+      el.style.height = '0';
+      el.style.overflow = 'hidden';
+    };
+
+    const enter = (el, done) => {
+      el.style.height = el.scrollHeight + 'px';
+      el.addEventListener('transitionend', done, { once: true });
+    };
+
+    const afterEnter = (el) => {
+      el.style.height = 'auto';
+    };
+
+    const beforeLeave = (el) => {
+      el.style.height = el.scrollHeight + 'px';
+      el.style.overflow = 'hidden';
+    };
+
+    const leave = (el, done) => {
+      // Force repaint before starting the transition
+      getComputedStyle(el).height;
+      requestAnimationFrame(() => {
+          el.style.height = '0';
+      });
+      el.addEventListener('transitionend', done, { once: true });
+    };
   </script>
 
   <style>
     #layout-menu {
       padding-top: 1rem;
+    }
+    .menu-sub {
+      transition: height 0.3s ease-in-out;
+      overflow: hidden;
     }
   </style>
