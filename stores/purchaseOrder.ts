@@ -210,18 +210,28 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             }
 
             const formData = new FormData()
-            
+
             // Append main form data
-            Object.keys(this.form).forEach(key => {
-                const value = this.form[key];
-                if (key !== 'purchaseOrderItems' && key !== 'attachment' && value !== null && value !== undefined) {
-                    // Gunakan camelCase keys langsung dari form
+            const dataToAppend = { ...this.form };
+            // Hapus data relasi dan data yang tidak perlu dikirim
+            delete dataToAppend.purchaseOrderItems;
+            delete dataToAppend.attachment;
+            delete dataToAppend.vendor;
+            delete dataToAppend.perusahaan;
+            delete dataToAppend.cabang;
+            delete dataToAppend.createdByUser;
+            delete dataToAppend.approvedByUser;
+            delete dataToAppend.receivedByUser;
+
+            Object.keys(dataToAppend).forEach(key => {
+                const value = dataToAppend[key];
+                if (value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
 
-            // Append createdBy and approvedBy using camelCase
-            if (userStore.user && userStore.user.id) {
+            // Append createdBy hanya untuk PO baru
+            if (!this.isEditMode && userStore.user && userStore.user.id) {
                 formData.append('createdBy', userStore.user.id.toString())
                 if(this.form.status === 'approved') {
                     formData.append('approvedBy', userStore.user.id.toString())
@@ -239,7 +249,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                     Object.keys(item).forEach(itemKey => {
                         const value = item[itemKey];
                         if (value !== null && value !== undefined) {
-                           // The key for the array itself must be camelCase as per the validator
                            formData.append(`purchaseOrderItems[${i}][${itemKey}]`, value);
                         }
                     });
@@ -249,7 +258,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             const method = this.isEditMode ? 'POST' : 'POST';
             const url = this.isEditMode ? `${$api.purchaseOrder()}/${this.form.id}` : $api.purchaseOrder();
             if (this.isEditMode) {
-                formData.append('_method', 'PUT'); // Adonis requires this for form-data PUT requests
+                formData.append('_method', 'PUT');
             }
             
             // Kirim data ke API
@@ -410,19 +419,26 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         this.validationErrors = [];
 
         if (purchaseOrderData) {
-            const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : '';
-            this.form = {
+            const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : null;
+            
+            // Salin data dan format tanggal dengan benar
+            const formData: { [key: string]: any } = {
                 ...JSON.parse(JSON.stringify(purchaseOrderData)),
-                date: formatDate(purchaseOrderData.date),
-                dueDate: formatDate(purchaseOrderData.dueDate),
-                purchaseOrderItems: (purchaseOrderData.purchaseOrderItems || []).map((item: any) => ({
-                    ...item,
-                    productId: item.productId,
-                    warehouseId: item.warehouseId,
-                })),
-                attachment: null, // Reset attachment, will be handled separately
+                attachment: null, // Reset attachment, akan ditangani secara terpisah
             };
-            if (this.form.purchaseOrderItems.length === 0) {
+
+            const dateFields = ['date', 'dueDate', 'approvedAt', 'receivedAt'];
+            dateFields.forEach(field => {
+                if (formData[field]) {
+                    formData[field] = formatDate(formData[field]);
+                }
+            });
+
+            this.form = formData;
+
+            // Pastikan purchaseOrderItems ada
+            if (!this.form.purchaseOrderItems || this.form.purchaseOrderItems.length === 0) {
+                this.form.purchaseOrderItems = [];
                 this.addItem();
             }
         } else {
@@ -431,7 +447,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 date: '', dueDate: '', discountPercent: 0, taxPercent: 0, description: '',
                 attachment: null, status: 'draft', purchaseOrderItems: [],
             };
-            this.addItem(); // Add one default item for new PO
+            this.addItem(); // Tambahkan satu item default untuk PO baru
         }
         this.showModal = true;
     },

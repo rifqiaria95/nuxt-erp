@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
 import type { MenuGroup } from './menu-group'
+import { useMenuGroupStore } from './menu-group'
 
 export interface MenuDetail {
   id: number
@@ -156,6 +157,11 @@ export const useMenuDetailStore = defineStore('menu-detail', {
         
         this.closeModal();
         await this.fetchMenuDetails();
+
+        // Refresh menu groups in the sidebar
+        const menuGroupStore = useMenuGroupStore();
+        await menuGroupStore.fetchAllMenuGroups();
+        
         Swal.fire('Berhasil!', `Menu detail berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
 
       } catch (error: any) {
@@ -213,6 +219,10 @@ export const useMenuDetailStore = defineStore('menu-detail', {
           }
 
           await this.fetchMenuDetails();
+          // Refresh menu groups in the sidebar
+          const menuGroupStore = useMenuGroupStore();
+          await menuGroupStore.fetchAllMenuGroups();
+
           Swal.fire('Berhasil!', 'Menu detail berhasil dihapus.', 'success');
       } catch (error: any) {
           console.error('Gagal menghapus menu detail:', error);

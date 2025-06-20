@@ -129,8 +129,7 @@
     };
 
     onMounted(async () => {
-      await menuGroupsStore.fetchMenuGroups();
-      await menuDetailsStore.fetchMenuDetails();
+      await menuGroupsStore.fetchAllMenuGroups();
       setActiveGroup();
     });
 
@@ -169,11 +168,30 @@
   </script>
 
   <style>
+    .layout-menu {
+      transition: width 0.25s ease-in-out;
+    }
+
+    html:not(.layout-menu-collapsed) .layout-menu {
+        width: 260px;
+    }
+
+    html.layout-menu-collapsed .layout-menu {
+        width: 82px;
+    }
+
+    html.layout-menu-collapsed.layout-menu-hover .layout-menu {
+        width: 260px;
+    }
+
     #layout-menu {
       padding-top: 1rem;
     }
     .menu-sub {
       transition: height 0.3s ease-in-out;
       overflow: hidden;
+    }
+    .menu-inner {
+      overflow-y: auto;
     }
   </style>

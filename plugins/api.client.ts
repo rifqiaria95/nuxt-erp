@@ -73,6 +73,8 @@ export default defineNuxtPlugin(() => {
 
     // Stock In & Stock Out
     stockIn          : () => `${apiBase}/stock-in`,
+    stock            : () => `${apiBase}/stock`,
+    getTotalStock    : () => `${apiBase}/stock/getTotalStock`,
     getStockInDetails: (id: number | string) => `${apiBase}/stock-in/getStockInDetails/${id}`,
     postStockIn      : (id: number | string) => `${apiBase}/stock-in/postStockIn/${id}`,
     countStockIn     : () => `${apiBase}/stock-in/getTotalStockIn`,

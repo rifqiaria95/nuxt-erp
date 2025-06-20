@@ -35,7 +35,7 @@
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                 <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="stockInStore.handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
@@ -61,13 +61,13 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
                             ref="myDataTableRef"
-                            :data="stockIn" 
-                            :rows="lazyParams.rows" 
+                            :data="stockIns" 
+                            :rows="params.rows" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
-                            @page="onPage($event)"
-                            @sort="onSort($event)"
+                            @page="stockInStore.setPagination($event)"
+                            @sort="stockInStore.setSort($event)"
                             responsiveLayout="scroll" 
                             paginatorPosition="bottom"
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
@@ -76,8 +76,8 @@
                                 <Column header="#" :sortable="false">
                                     <template #body="slotProps">
                                         {{
-                                            Number.isFinite(lazyParams.page) && Number.isFinite(lazyParams.rows)
-                                            ? ((lazyParams.page - 1) * lazyParams.rows + slotProps.index + 1)
+                                            Number.isFinite(params.page) && Number.isFinite(params.rows)
+                                            ? ((params.page - 1) * params.rows + slotProps.index + 1)
                                             : (slotProps.index + 1)
                                         }}
                                     </template>
@@ -142,7 +142,7 @@
                                                     </a>
                                                 </li>
                                                 <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'draft')">
-                                                    <a class="dropdown-item" href="javascript:void(0)" @click="openEditStockInModal(slotProps.data)">
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="stockInStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
@@ -180,7 +180,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="name" 
-                                        v-model="formStockIn.noSi" 
+                                        v-model="form.noSi" 
                                         placeholder="Masukkan no SI"
                                         required
                                     >
@@ -193,7 +193,7 @@
                                         type="date" 
                                         class="form-control" 
                                         id="date" 
-                                        v-model="formStockIn.date" 
+                                        v-model="form.date" 
                                         placeholder="Masukkan tanggal"
                                         required
                                     >
@@ -203,7 +203,7 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <v-select
-                                        v-model="formStockIn.warehouseId"
+                                        v-model="form.warehouseId"
                                         :options="warehouses"
                                         label="name"
                                         :reduce="warehouse => warehouse.id"
@@ -215,7 +215,7 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <v-select
-                                        v-model="formStockIn.status"
+                                        v-model="form.status"
                                         :options="status"
                                         label="label"
                                         :reduce="status => status.value"
@@ -232,7 +232,7 @@
                                 >
                                     {{ isEditMode ? 'Update' : 'Simpan' }}
                                 </button>
-                                <button type="button" class="btn btn-secondary" @click="handleCloseModal">
+                                <button type="button" class="btn btn-secondary" @click="stockInStore.closeModal()">
                                     Batal
                                 </button>
                             </div>
@@ -261,6 +261,7 @@ import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
+import { useRouter } from 'vue-router'
 
 const { $api } = useNuxtApp()
 
@@ -268,22 +269,12 @@ const myDataTableRef            = ref(null)
 const userStore                 = useUserStore()
 const stockInStore              = useStockStore()
 const warehouseStore            = useWarehouseStore()
-const { stats }                 = storeToRefs(stockInStore)
+const { stockIns, totalRecords, stats, params, form, isEditMode, showModal, validationErrors } = storeToRefs(stockInStore)
 const { warehouse: warehouses } = storeToRefs(warehouseStore)
 const selectedStockIn           = ref(null);
-const stockIn                   = ref([])
 const loading                   = ref(false);
-const isEditMode                = ref(false);
-const totalRecords              = ref(0);
 const globalFilterValue         = ref('');
-const lazyParams                = ref({
-    first: 0,
-    rows: 10,
-    sortField: null,
-    sortOrder: null,
-    draw: 1,
-    search: '',
-});
+const router                    = useRouter()
 
 const userisSuperAdmin = computed(() => {
     return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
@@ -291,13 +282,6 @@ const userisSuperAdmin = computed(() => {
 
 const userisAdmin = computed(() => {
     return userStore.user?.roles?.some(role => role.name === 'admin') ?? false;
-});
-
-const formStockIn = ref({
-  noSi: '',
-  date: '',
-  warehouseId: null,
-  status: '',
 });
 
 const status       = ref([
@@ -311,16 +295,17 @@ const modalTitle = computed(() => isEditMode.value ? 'Edit Stock In' : 'Tambah S
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data stock in di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan stock in baru.');
 
 // Fungsi untuk menangani event close dari modal
-const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
+watch(showModal, (newValue) => {
+    const modalEl = document.getElementById('Modal');
     if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) {
+        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        if (newValue) {
+            modalInstance.show();
+        } else {
             modalInstance.hide();
         }
     }
-    resetParentFormState(); 
-};
+});
 
 let searchDebounceTimer = null;
 watch(globalFilterValue, (newValue) => {
@@ -329,9 +314,7 @@ watch(globalFilterValue, (newValue) => {
     }
 
     searchDebounceTimer = setTimeout(() => {
-        lazyParams.value.search = newValue;
-        lazyParams.value.first = 0;
-        loadLazyData();
+        stockInStore.setSearch(newValue);
     }, 500);
 });
 
@@ -341,110 +324,37 @@ onBeforeUnmount(() => {
     }
 });
 
-
-// Tambahkan state untuk error validasi agar bisa digunakan di modal
-const validationErrors = ref([]);
-
 const handleSaveStockIn = async () => {
-    loading.value = true;
-    validationErrors.value = []; // reset error sebelum submit
+    if (!form.value.noSi) {
+        return Swal.fire('Validasi', 'No SI wajib diisi.', 'warning');
+    }
+
     try {
-        // Ambil CSRF token
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-        const token = localStorage.getItem('token');
-        let response;
-        let url;
-
-        // Validasi form sederhana
-        if (!formStockIn.value.noSi) {
-            Swal.fire('Validasi', 'No SI wajib diisi.', 'warning');
-            loading.value = false;
-            return;
-        }
-
-        if (isEditMode.value) {
-            // Cari ID jabatan dari form atau selectedMenuGroup
-            let stockInIdToUpdate = formStockIn.value?.id || selectedStockIn.value?.id;
-            if (!stockInIdToUpdate) {
-                Swal.fire('Error', 'ID Stock In tidak ditemukan untuk update.', 'error');
-                loading.value = false;
-                return;
-            }
-            url = `${$api.stockIn()}/${stockInIdToUpdate}`;
-            console.log('Updating stock in with ID:', stockInIdToUpdate, 'URL:', url);
-            // Update data
-            response = await fetch(url, {
-                method: 'PUT',
-                body: JSON.stringify({
-                    noSi       : formStockIn.value.noSi,
-                    date       : formStockIn.value.date,
-                    warehouseId: formStockIn.value.warehouseId,
-                    status     : formStockIn.value.status,
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-        } else {
-            // Create baru
-            url = $api.stockIn();
-            response = await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify({
-                    noSi       : formStockIn.value.noSi,
-                    date       : formStockIn.value.date,
-                    warehouseId: formStockIn.value.warehouseId,
-                    status     : 'draft',
-                }),
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-        }
-
-        if (response.ok) {
-            await loadLazyData();
-            handleCloseModal();
-            await Swal.fire(
-                'Berhasil!',
-                `Stock In berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
-        } else {
-            let errorData;
-            try {
-                errorData = await response.json();
-            } catch (e) {
-                errorData = { message: 'Gagal memproses respons server.' };
-            }
-            if (errorData.errors) {
-                validationErrors.value = Array.isArray(errorData.errors)
-                    ? errorData.errors
-                    : Object.values(errorData.errors).flat();
-                Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-            } else {
-                Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock in`, 'error');
-            }
-        }
+        await stockInStore.saveStockIn();
+        await stockInStore.fetchStockInsPaginated();
+        stockInStore.closeModal();
+        Swal.fire(
+            'Berhasil!',
+            `Stock In berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
+            'success'
+        );
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data stock in.', 'error');
-    } finally {
-        loading.value = false;
+        const errorData = error;
+        if (errorData.errors) {
+            stockInStore.validationErrors = Array.isArray(errorData.errors)
+                ? errorData.errors
+                : Object.values(errorData.errors).flat();
+            Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+        } else {
+            Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock in`, 'error');
+        }
     }
 };
 
 const postStockIn = async (id) => {
     try {
         await stockInStore.postStockIn(id);
-        await loadLazyData();
+        await stockInStore.fetchStockInsPaginated();
         await Swal.fire(
             'Berhasil!',
             `Stock In berhasil diposting.`,
@@ -462,7 +372,7 @@ const postStockIn = async (id) => {
         try {
             const parsedError = JSON.parse(errorMessage);
             if (parsedError.errors) {
-                 validationErrors.value = Array.isArray(parsedError.errors)
+                 stockInStore.validationErrors = Array.isArray(parsedError.errors)
                     ? parsedError.errors
                     : Object.values(parsedError.errors).flat();
                 return Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
@@ -478,70 +388,19 @@ const postStockIn = async (id) => {
 
 // Fungsi untuk menangani event load lazy data dari jabatan
 const loadLazyData = async () => {
-    loading.value = true;
     try {
-        const token = localStorage.getItem('token');
-        const params = new URLSearchParams({
-            page     : (lazyParams.value.first / lazyParams.value.rows) + 1,
-            rows     : lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || '',
-            sortOrder: lazyParams.value.sortOrder || '',
-            draw     : lazyParams.value.draw || 1,
-            search   : lazyParams.value.search || '',
-        });
-
-        const response = await fetch(`${$api.stockIn()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data stock in dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data stock in');
-        }
-
-        const result = await response.json();
-        stockIn.value = result.data || []; 
-        totalRecords.value = parseInt(result.meta.total) || 0;
-        if (result.draw) {
-             lazyParams.value.draw = parseInt(result.draw);
-        }
-
+        await stockInStore.fetchStockInsPaginated();
     } catch (error) {
-        console.error('Error loading lazy data for stock in:', error);
-        stockIn.value = [];
-        totalRecords.value = 0;
-        Swal.fire('Error', `Tidak dapat memuat data stock in: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
+        const error_message = error.message;
+        Swal.fire('Error', `Tidak dapat memuat data stock in: ${error_message}`, 'error');
     }
 };
 
 onMounted(() => {
     loadLazyData();
     stockInStore.fetchStats();
-    warehouseStore.fetchWarehouse();
+    warehouseStore.fetchWarehouses();
 });
-
-const onPage = (event) => {
-    lazyParams.value.first = event.first;
-    lazyParams.value.rows = event.rows;
-    loadLazyData();
-};
-
-const handleRowsChange = () => {
-    lazyParams.value.first = 0;
-    loadLazyData();
-};
-
-const onSort = (event) => {
-    lazyParams.value.sortField = event.sortField;
-    lazyParams.value.sortOrder = event.sortOrder;
-    loadLazyData();
-};
 
 const exportData = (format) => {
     if (format === 'csv') {
@@ -553,31 +412,8 @@ const exportData = (format) => {
 
 // View Stock In Details
 const viewStockInDetails = (stockInId) => {
-    const url = `${$api.getStockInDetails(stockInId)}`;
-    window.open(url, '__blank');
+    router.push({ path: `/stock/stockin-detail`, query: { id: stockInId } });
 };
-
-async function openEditStockInModal(stockInData) {
-    isEditMode.value = true;
-    // Ambil data stock in saat modal terbuka
-    selectedStockIn.value = JSON.parse(JSON.stringify(stockInData));
-    formStockIn.value = {
-        id         : stockInData.id,
-        noSi       : stockInData.noSi || '',
-        date       : stockInData.date ? new Date(stockInData.date).toISOString().slice(0, 10) : '',
-        warehouseId: stockInData.warehouse ? stockInData.warehouse.id : null,
-        status     : stockInData.status || 'draft',
-    };
-    validationErrors.value = [];
-
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('Stock InModal element tidak ditemukan atau Bootstrap belum dimuat.');
-    }
-}
 
 const deleteStockIn = async (id) => {
     if (!id) return;
@@ -620,15 +456,6 @@ const getStatusBadge = (status) => {
         case 'posted':
             return { text: 'Posted', class: 'badge rounded-pill bg-label-success' };
     }
-};
-
-const resetParentFormState = () => {
-    formStockIn.value = {
-        noSi: '',
-        date: '',
-        warehouseId: null,
-        status: '',
-    };
 };
 </script>
 

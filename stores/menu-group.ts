@@ -84,6 +84,39 @@ export const useMenuGroupStore = defineStore('menu-group', {
       }
     },
 
+    async fetchAllMenuGroups() {
+      this.loading = true
+      this.error = null
+      const { $api } = useNuxtApp()
+      try {
+        const params = new URLSearchParams({
+            page     : '1',
+            rows     : '999', // Ambil semua data
+        });
+
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${$api.menuGroups()}?${params.toString()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Gagal mengambil semua data menu group');
+        }
+
+        const result = await response.json();
+        this.menuGroups = result.data || [];
+      } catch (e: any) {
+        this.error = e.message
+        // Fail silently for sidebar
+        console.error(`Tidak dapat memuat data menu group untuk sidebar: ${e.message}`);
+      } finally {
+        this.loading = false
+      }
+    },
+
     async saveMenuGroup() {
       this.loading = true;
       this.validationErrors = [];

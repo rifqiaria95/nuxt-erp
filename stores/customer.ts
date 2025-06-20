@@ -243,7 +243,7 @@ export const useCustomerStore = defineStore('customer', {
         }
 
         const result = await response.json();
-        this.selectedCustomer = result.data;
+        this.selectedCustomer = result;
 
       } catch (e: any) {
         this.error = e.message;
