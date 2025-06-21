@@ -1,5 +1,5 @@
 <template>
-    <div class="modal fade" id="Modal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" :id="id" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-body">
@@ -27,6 +27,10 @@
 import { ref, computed, onMounted, watch, defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
+  id: {
+    type: String,
+    required: true
+  },
   title: {
     type: String,
     default: 'Judul Modal Default'

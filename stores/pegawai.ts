@@ -298,7 +298,14 @@ export const usePegawaiStore = defineStore('pegawai', {
         closeModal() {
             this.showModal = false;
             this.isEditMode = false;
-            this.form = {};
+            this.form = {
+                nm_pegawai: '', email: '', full_name: '', tgl_lahir_pegawai: '', tmp_lahir_pegawai: '',
+                no_tlp_pegawai: '', alamat_pegawai: '', pendidikan_pegawai: null, status_pegawai: 1,
+                no_ktp_pegawai: '', nik_pegawai: '', npwp_pegawai: '', jenis_kelamin_pegawai: null,
+                tgl_masuk_pegawai: '', tgl_keluar_pegawai: null, istri_suami_pegawai: '', anak_1: '', anak_2: '',
+                user_id: '', jabatan_id: null, perusahaan_id: null, cabang_id: null, divisi_id: null,
+                departemen_id: null, gaji_pegawai: 0, tunjangan_pegawai: 0, avatar: null, avatarPreview: '',
+            };
             this.validationErrors = [];
             this.initialHistory = { cabangId: null, departemenId: null };
         },

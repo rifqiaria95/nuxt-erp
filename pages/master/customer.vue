@@ -445,7 +445,9 @@ const getLogoUrl = (logoPath) => {
 
 let modalInstance = null
 onMounted(() => {
-    customerStore.fetchCustomers();
+    if (customerStore.customers.length === 0) {
+      customerStore.fetchCustomers();
+    }
     productStore.fetchProducts(); // Fetch products for the select dropdown
     const modalElement = document.getElementById('CustomerModal')
     if (modalElement) {

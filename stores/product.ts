@@ -1,27 +1,9 @@
 import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
-
-export interface Category {
-  id: number
-  name: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Unit {
-  id: number
-  name: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface Customer {
-  id: number
-  name: string
-  createdAt: string
-  updatedAt: string
-}
+import type { Category } from './kategori'
+import type { Customer } from './customer'
+import type { Unit } from './unit'
 
 export interface ProductCustomer {
   id: number
@@ -72,7 +54,7 @@ interface ProductState {
 export const useProductStore = defineStore('product', {
   state: (): ProductState => ({
     products: [],
-    loading: false,
+    loading: true,
     error: null,
     totalRecords: 0,
     params: {
@@ -106,8 +88,8 @@ export const useProductStore = defineStore('product', {
         const params = new URLSearchParams({
             page: ((this.params.first / this.params.rows) + 1).toString(),
             rows: this.params.rows.toString(),
-            sortField: this.params.sortField || '',
-            sortOrder: (this.params.sortOrder || 1) > 0 ? 'asc' : 'desc',
+            sortField: this.params.sortField || 'id',
+            sortOrder: this.params.sortOrder === -1 ? 'desc' : 'asc',
             search: this.params.search || '',
         });
 
@@ -297,6 +279,7 @@ export const useProductStore = defineStore('product', {
     setSort(event: any) {
         this.params.sortField = event.sortField;
         this.params.sortOrder = event.sortOrder;
+        this.params.first = 0; // Reset to first page
         this.fetchProducts();
     },
         

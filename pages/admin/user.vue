@@ -97,7 +97,7 @@
                             <Column field="id" header="#" :sortable="true"></Column> 
                                 <Column field="fullName" header="Nama Lengkap" :sortable="true"></Column>
                                 <Column field="email" header="Email" :sortable="true"></Column>
-                                <Column field="roles" header="Role" :sortable="true">
+                                <Column field="roles" header="Role" :sortable="false">
                                     <template #body="slotProps">
                                         <span v-for="role in slotProps.data.roles" :key="role.id">
                                             {{ role.name }}
@@ -126,6 +126,7 @@
 
             <!-- Placeholder untuk UserModal component -->
             <Modal 
+                id="UserModal"
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
@@ -264,7 +265,7 @@ onMounted(() => {
     userStore.fetchUsers()
     userStore.fetchRoles()
     userStore.fetchStats()
-    const modalElement = document.getElementById('Modal')
+    const modalElement = document.getElementById('UserModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }

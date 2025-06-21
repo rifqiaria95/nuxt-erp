@@ -29,12 +29,13 @@ interface PerusahaanState {
   isEditMode: boolean
   showModal: boolean
   validationErrors: any[]
+  selectedPerusahaan: Perusahaan | null
 }
 
 export const usePerusahaanStore = defineStore('perusahaan', {
   state: (): PerusahaanState => ({
     perusahaans: [],
-    loading: false,
+    loading: true,
     error: null,
     totalRecords: 0,
     params: {
@@ -48,6 +49,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
     isEditMode: false,
     showModal: false,
     validationErrors: [],
+    selectedPerusahaan: null,
   }),
   actions: {
     async fetchPerusahaans() {
@@ -208,6 +210,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
         this.isEditMode = false;
         this.form = {};
         this.validationErrors = [];
+        this.selectedPerusahaan = null;
     },
     setPagination(event: any) {
         this.params.first = event.first;

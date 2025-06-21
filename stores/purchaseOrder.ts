@@ -3,54 +3,11 @@ import { apiFetch } from '~/utils/apiFetch'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
 import { useUserStore } from '~/stores/user'
-
-export interface Vendor {
-  id       : number
-  name     : string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface User {
-  id        : number
-  fullName  : string
-  createdAt : string
-  updatedAt : string
-  approvedAt: string | null
-  receivedAt: string | null
-}
-
-export interface Perusahaan {
-  id           : number
-  nmPerusahaan: string
-  createdAt    : string
-  updatedAt    : string
-}
-
-export interface Cabang {
-  id          : number
-  nmCabang    : string
-  alamatCabang: string
-  kodeCabang  : string
-  perusahaanId: number
-  createdAt   : string
-  updatedAt   : string
-}
-
-export interface Product {
-  id       : number
-  name     : string
-  sku      : string
-  unitId   : number
-  categoryId: number
-  stockMin : string
-  priceBuy : string
-  priceSell: string
-  isService: boolean
-  image    : string
-  createdAt: string
-  updatedAt: string
-}
+import type { Vendor } from './vendor'
+import type { User } from './userManagement'
+import type { Perusahaan } from './perusahaan'
+import type { Cabang } from './cabang'
+import type { Product } from './product'
 
 export interface PurchaseOrderItem {
   id             : string
@@ -123,7 +80,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
   state: (): PurchaseOrderState => ({
     purchaseOrders: [],
     purchaseOrder : null,
-    loading       : false,
+    loading       : true,
     error         : null,
     totalRecords: 0,
     params: {
@@ -444,8 +401,14 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         } else {
             this.form = {
                 noPo: '', up: '', vendorId: null, perusahaanId: null, cabangId: null,
-                date: '', dueDate: '', discountPercent: 0, taxPercent: 0, description: '',
-                attachment: null, status: 'draft', purchaseOrderItems: [],
+                date: new Date().toISOString().split('T')[0], 
+                dueDate: new Date().toISOString().split('T')[0], 
+                discountPercent: 0, 
+                taxPercent: 0, 
+                description: '',
+                attachment: null, 
+                status: 'draft', 
+                purchaseOrderItems: [],
             };
             this.addItem(); // Tambahkan satu item default untuk PO baru
         }

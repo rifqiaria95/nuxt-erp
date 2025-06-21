@@ -8,7 +8,7 @@ export default defineNuxtPlugin(() => {
   const authBase = config.public.authBase || '';
 
   // <<<---- TAMBAHAN UNTUK DEBUGGING ---->>>
-  console.log('API Base URL:', apiBase);
+  // console.log('API Base URL:', apiBase);
   // <<<------------------------------------>>>
 
   // Endpoint helper

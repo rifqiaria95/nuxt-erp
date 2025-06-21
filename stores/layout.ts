@@ -4,8 +4,12 @@ export const useLayoutStore = defineStore('layout', {
   state: () => ({
     isSidebarExpanded: true, // Sidebar is expanded by default
     isSidebarHovered: false, // Track hover state
+    loading: false,
   }),
   actions: {
+    setLoading(isLoading: boolean) {
+      this.loading = isLoading;
+    },
     toggleSidebar() {
       this.isSidebarExpanded = !this.isSidebarExpanded;
       this.updateHtmlClasses();

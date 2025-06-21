@@ -139,10 +139,10 @@
                         <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
                             <button
-                            data-bs-target="#Modal"
+                            data-bs-target="#PerusahaanModal"
                             data-bs-toggle="modal"
                             class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"
-                            @click="openAddPerusahaanModal"
+                            @click="perusahaanStore.openModal()"
                             >
                             Tambah Perusahaan
                             </button>
@@ -216,8 +216,8 @@
                                 <Column field="npwpPerusahaan" header="NPWP Perusahaan" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="openEditPerusahaanModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deletePerusahaan(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button @click="perusahaanStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button @click="perusahaanStore.deletePerusahaan(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -230,6 +230,7 @@
 
             <!-- Placeholder untuk MenuModal component -->
             <Modal 
+                id="PerusahaanModal"
                 :isEditMode="isEditMode"
                 :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
@@ -237,7 +238,7 @@
                 :selectedPerusahaan="selectedPerusahaan"
             >
                 <template #default>
-                    <form @submit.prevent="handleSubmit">
+                    <form @submit.prevent="perusahaanStore.savePerusahaan()">
                         <div class="row g-6">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -247,7 +248,6 @@
                                         id="logoPerusahaan" 
                                         @change="onLogoChange"
                                         placeholder="Masukkan logo perusahaan"
-                                        :required="!isEditMode"
                                     >
                                     <label for="logoPerusahaan">Logo Perusahaan</label>
                                 </div>
@@ -305,18 +305,13 @@
                                     <label for="alamat_perusahaan">Alamat Perusahaan</label>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary me-2"
-                                    @click="handleSavePerusahaan"
-                                >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="handleCloseModal">
-                                    Batal
-                                </button>
-                            </div>
+                            <div class="modal-footer mt-6">
+                            <button type="button" class="btn btn-outline-secondary" @click="perusahaanStore.closeModal()">Tutup</button>
+                            <button type="submit" class="btn btn-primary" :disabled="loading">
+                                <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                Simpan
+                            </button>
+                        </div>
                         </div>
                     </form>
                 </template>
@@ -357,7 +352,7 @@ const getLogoUrl = (logoPath) => {
 
 const myDataTableRef = ref(null)
 const perusahaanStore = usePerusahaanStore()
-const { perusahaans, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(perusahaanStore)
+const { perusahaans, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, selectedPerusahaan } = storeToRefs(perusahaanStore)
 
 const globalFilterValue = ref('')
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
@@ -368,7 +363,7 @@ const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data pe
 let modalInstance = null
 onMounted(() => {
     perusahaanStore.fetchPerusahaans();
-    const modalElement = document.getElementById('Modal')
+    const modalElement = document.getElementById('PerusahaanModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
@@ -410,106 +405,4 @@ const exportData = (format) => {
     }
 };
 
-const openAddPerusahaanModal = () => {
-    isEditMode.value = false;
-    modalTitle.value = 'Tambah Perusahaan';
-    modalDescription.value = 'Silakan isi form di bawah ini untuk menambahkan perusahaan baru.';
-    resetParentFormState();
-};
-
-async function openEditPerusahaanModal(perusahaanData) {
-    isEditMode.value = true;
-    // Mapping manual dari response API ke field form
-    perusahaanStore.selectedPerusahaan = { ...perusahaanData };
-    form.value = {
-        kode_perusahaan: perusahaanData.kode_perusahaan ?? perusahaanData.kodePerusahaan ?? '',
-        logo: perusahaanData.logo ?? perusahaanData.logoPerusahaan ?? '',
-        nm_perusahaan: perusahaanData.nm_perusahaan ?? perusahaanData.nmPerusahaan ?? '',
-        npwp_perusahaan: perusahaanData.npwp_perusahaan ?? perusahaanData.npwpPerusahaan ?? '',
-        alamat_perusahaan: perusahaanData.alamat_perusahaan ?? perusahaanData.alamatPerusahaan ?? ''
-    };
-    validationErrors.value = [];
-
-    // Tunggu DOM update agar binding form sudah siap sebelum show modal
-    await nextTick();
-
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-        modalInstance.show();
-    } else {
-        console.error('PerusahaanModal element tidak ditemukan atau Bootstrap belum dimuat.');
-    }
-}
-
-const deletePerusahaan = async (perusahaanId) => {
-    if (!perusahaanId) return;
-
-    const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This action cannot be undone!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#666CFF',
-        cancelButtonColor: '#A7A9B3',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            let url;
-
-            const token = localStorage.getItem('token');
-            // Ambil CSRF token
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData  = await csrfResponse.json();
-            const csrfToken = csrfData.token;
-
-            url = `${$api.perusahaan()}/${perusahaanId}`;
-
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type' : 'application/json',
-                    'X-CSRF-TOKEN' : csrfToken
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus perusahaan');
-            }
-
-            perusahaanStore.fetchPerusahaans();
-
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Perusahaan berhasil dihapus.',
-                icon: 'success'
-            });
-
-        } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
-        }
-    }
-};
-
-const resetParentFormState = () => {
-    form.value = {
-        kode_perusahaan: '',
-        logo: '',
-        nm_perusahaan: '',
-        npwp_perusahaan: '',
-        alamat_perusahaan: ''
-    };
-};
 </script>

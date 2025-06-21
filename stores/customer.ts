@@ -103,6 +103,12 @@ export const useCustomerStore = defineStore('customer', {
         this.loading = false
       }
     },
+    async prefetchCustomers() {
+      if (this.customers.length > 0 || this.loading) {
+        return;
+      }
+      await this.fetchCustomers();
+    },
     async saveCustomer() {
       this.loading = true
       this.validationErrors = [];

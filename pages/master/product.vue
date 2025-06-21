@@ -2,134 +2,160 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Product</h4>
-            <p class="mb-6">
-            List product yang terdaftar di sistem
-            </p>
-            <!-- product cards -->
-            <div class="row g-6 mb-6">
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card h-100">
-                    <div class="row h-100">
-                        <div class="col-sm-5">
-                        <div class="d-flex align-items-end h-100 justify-content-center">
-                            <img
-                            src="/img/illustrations/add-new-role-illustration.png"
-                            class="img-fluid"
-                            alt="Image"
-                            width="70" />
-                        </div>
-                        </div>
-                        <div class="col-sm-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
-                            @click="productStore.openModal()"
-                            class="btn btn-primary mb-2 text-nowrap add-new-role"
-                            >
-                            Tambah Product
-                            </button>
-                             <p class="mb-0 mt-1">Buat Product baru</p>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
+            <div v-if="loading">
+                <!-- Skeleton loader -->
+                <div class="animate-pulse space-y-2">
+                    <div class="h-6 bg-gray-200 rounded"></div>
+                    <div class="h-6 bg-gray-200 rounded w-1/2"></div>
                 </div>
             </div>
-
-            <div class="row g-6">
-                <div class="col-12">
-                    <!-- product Table -->
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
+            <template v-else>
+                <div v-if="products.length > 0">
+                    <h4 class="mb-1">List Product</h4>
+                    <p class="mb-6">
+                        List product yang terdaftar di sistem
+                    </p>
+                    <div class="row g-6 mb-6">
+                        <div class="col-xl-4 col-lg-6 col-md-6">
+                            <div class="card h-100">
+                            <div class="row h-100">
+                                <div class="col-sm-5">
+                                <div class="d-flex align-items-end h-100 justify-content-center">
+                                    <img
+                                    src="/img/illustrations/add-new-role-illustration.png"
+                                    class="img-fluid"
+                                    alt="Image"
+                                    width="70" />
+                                </div>
+                                </div>
+                                <div class="col-sm-7">
+                                <div class="card-body text-sm-end text-center ps-sm-0">
+                                    <button
+                                    @click="productStore.openModal()"
+                                    class="btn btn-primary mb-2 text-nowrap add-new-role"
+                                    >
+                                    Tambah Product
                                     </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
+                                    <p class="mb-0 mt-1">Buat Product baru</p>
                                 </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                         <i class="ri-search-line"></i>
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari product..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-datatable table-responsive py-3 px-3">
-                        <MyDataTable 
-                            ref="myDataTableRef"
-                            :data="products" 
-                            :rows="params.rows" 
-                            :loading="loading"
-                            :totalRecords="totalRecords"
-                            :lazy="true"
-                            @page="onPage($event)"
-                            @sort="onSort($event)"
-                            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
-                            >
-                            <Column field="id" header="#" :sortable="true"></Column> 
-                                <Column field="image" header="Gambar" :sortable="true">
-                                    <template #body="slotProps">
-                                        <div v-if="slotProps.data.image">
-                                            <img :src="getLogoUrl(slotProps.data.image)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
-                                        </div>
-                                        <div v-else>
-                                            <span class="text-muted">Tidak ada image</span>
-                                        </div>
-                                    </template>
-                                </Column>
-                                <Column field="sku" header="No. Product" :sortable="true"></Column>
-                                <Column field="name" header="Nama Product" :sortable="true"></Column>
-                                <Column field="unit.name" header="Satuan" :sortable="true"></Column>
-                                <Column field="stockMin" header="Stok Minimum" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ Math.round(slotProps.data.stockMin) }}
-                                    </template>
-                                </Column>
-                                <Column field="priceBuy" header="Harga Beli" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
-                                    </template>
-                                </Column>
-                                <Column field="isService" header="Service" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span :class="getStatusBadge(slotProps.data.isService).class">
-                                            {{ getStatusBadge(slotProps.data.isService).text }}
-                                        </span>
-                                    </template>
-                                </Column>
-                                <Column header="Kategori" :sortable="true">
-                                    <template #body="slotProps">
-                                        {{ slotProps.data.category && slotProps.data.category.name ? slotProps.data.category.name : '-' }}
-                                    </template>
-                                </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                    <template #body="slotProps">
-                                        <button @click="productStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="productStore.deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                    </template>
-                                </Column>
-                        </MyDataTable>
+                            </div>
                         </div>
                     </div>
-                    <!--/ product Table -->
-                </div>
-            </div>
-            <!--/ product cards -->
 
+                    <div class="row g-6">
+                        <div class="col-12">
+                            <!-- product Table -->
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                    <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+                                        <span class="me-2">Baris:</span>
+                                        <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="btn-group me-2">
+                                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="ri-upload-2-line me-1"></i> Export
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                                <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="p-input-icon-left">
+                                                <InputText
+                                                    v-model="globalFilterValue"
+                                                    placeholder="Cari product..."
+                                                    class="w-full md:w-20rem"
+                                                />
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-datatable table-responsive py-3 px-3">
+                                <MyDataTable 
+                                    ref="myDataTableRef"
+                                    :data="products" 
+                                    :rows="params.rows" 
+                                    :loading="loading"
+                                    :totalRecords="totalRecords"
+                                    :lazy="true"
+                                    :sort-field="params.sortField"
+                                    :sort-order="params.sortOrder"
+                                    sort-mode="single"
+                                    @page="onPage($event)"
+                                    @sort="onSort($event)"
+                                    responsiveLayout="scroll"
+                                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
+                                    >
+                                    <Column field="id" header="#" :sortable="true"></Column> 
+                                        <Column field="image" header="Gambar" :sortable="true">
+                                            <template #body="slotProps">
+                                                <div v-if="slotProps.data.image">
+                                                    <img :src="getLogoUrl(slotProps.data.image)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                                </div>
+                                                <div v-else>
+                                                    <span class="text-muted">Tidak ada image</span>
+                                                </div>
+                                            </template>
+                                        </Column>
+                                        <Column field="sku" header="No. Product" :sortable="true"></Column>
+                                        <Column field="name" header="Nama Product" :sortable="true"></Column>
+                                        <Column field="unit.name" header="Satuan" :sortable="true"></Column>
+                                        <Column field="stockMin" header="Stok Minimum" :sortable="true">
+                                            <template #body="slotProps">
+                                                {{ Math.round(slotProps.data.stockMin) }}
+                                            </template>
+                                        </Column>
+                                        <Column field="priceBuy" header="Harga Beli" :sortable="true">
+                                            <template #body="slotProps">
+                                                {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
+                                            </template>
+                                        </Column>
+                                        <Column field="isService" header="Service" :sortable="true">
+                                            <template #body="slotProps">
+                                                <span :class="getStatusBadge(slotProps.data.isService).class">
+                                                    {{ getStatusBadge(slotProps.data.isService).text }}
+                                                </span>
+                                            </template>
+                                        </Column>
+                                        <Column header="Kategori" field="category.name" :sortable="true">
+                                            <template #body="slotProps">
+                                                {{ slotProps.data.category && slotProps.data.category.name ? slotProps.data.category.name : '-' }}
+                                            </template>
+                                        </Column>
+                                        <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                            <template #body="slotProps">
+                                                <button @click="productStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                                <button @click="productStore.deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                            </template>
+                                        </Column>
+                                </MyDataTable>
+                                </div>
+                            </div>
+                            <!--/ product Table -->
+                        </div>
+                    </div>
+                    <!--/ product cards -->
+                </div>
+                <div v-else class="text-center">
+                    <div class="d-flex flex-column align-items-center">
+                        <img src="/img/illustrations/misc-under-maintenance-illustration.png" alt="page-misc-under-maintenance" width="300" class="img-fluid" />
+                        <h4 class="mt-4">Tidak ada data Product</h4>
+                        <p class="mb-4">
+                            Saat ini belum ada data product yang tersedia.<br />
+                            Silakan buat product baru untuk memulai.
+                        </p>
+                        <button @click="productStore.openModal()" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>
+                            Tambah Product
+                        </button>
+                    </div>
+                </div>
+            </template>
             <!-- Placeholder untuk MenuModal component -->
             <Modal 
                 id="ProductModal"

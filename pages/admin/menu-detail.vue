@@ -2,100 +2,120 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Menu Detail</h4>
-            <p class="mb-6">
-            List menu detail yang terdaftar di sistem
-            </p>
-            <!-- menu detail cards -->
-            <div class="row g-6 mb-6">
-                 <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card h-100">
-                    <div class="row h-100">
-                        <div class="col-sm-5">
-                        <div class="d-flex align-items-end h-100 justify-content-center">
-                            <img
-                            src="/img/illustrations/add-new-role-illustration.png"
-                            class="img-fluid"
-                            alt="Image"
-                            width="70" />
-                        </div>
-                        </div>
-                        <div class="col-sm-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                           <button @click="menuDetailStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
-                                Tambah Menu Detail
-                            </button>
-                            <p class="mb-0 mt-1">Buat Menu Detail baru</p>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
+            <div v-if="loading" class="text-center">
+                <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
-            <div class="row g-6">
-                <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Menu Detail</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate Menu Detail.</p>
-                </div>
-                <div class="col-12">
-                    <!-- menu detail Table -->
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+            <template v-else>
+                <div v-if="menuDetails.length > 0">
+                    <h4 class="mb-1">List Menu Detail</h4>
+                    <p class="mb-6">
+                    List menu detail yang terdaftar di sistem
+                    </p>
+                    <div class="row g-6 mb-6">
+                        <div class="col-xl-4 col-lg-6 col-md-6">
+                            <div class="card h-100">
+                            <div class="row h-100">
+                                <div class="col-sm-5">
+                                <div class="d-flex align-items-end h-100 justify-content-center">
+                                    <img
+                                    src="/img/illustrations/add-new-role-illustration.png"
+                                    class="img-fluid"
+                                    alt="Image"
+                                    width="70" />
+                                </div>
+                                </div>
+                                <div class="col-sm-7">
+                                <div class="card-body text-sm-end text-center ps-sm-0">
+                                <button @click="menuDetailStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
+                                        Tambah Menu Detail
+                                    </button>
+                                    <p class="mb-0 mt-1">Buat Menu Detail baru</p>
+                                </div>
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <span class="p-input-icon-left">
-                                    <i class="ri-search-line"></i>
-                                    <InputText v-model="globalFilterValue" placeholder="Cari Menu Detail..." class="w-full md:w-20rem" />
-                                </span>
                             </div>
                         </div>
-                        <div class="card-datatable table-responsive py-3 px-3">
-                        <MyDataTable 
-                            ref="myDataTableRef"
-                            :data="menuDetails" 
-                            :rows="params.rows" 
-                            :loading="loading"
-                            :totalRecords="totalRecords"
-                            :lazy="true"
-                            @page="onPage($event)"
-                            @sort="onSort($event)"
-                            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
-                            >
-                                <Column field="id" header="#" :sortable="true"></Column> 
-                                <Column field="name" header="Nama Menu Detail" :sortable="true"></Column>
-                                <Column field="route" header="Route" :sortable="true"></Column>
-                                <Column field="order" header="Order" :sortable="true"></Column>
-                                <Column field="status" header="Status" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span :class="getStatusBadge(slotProps.data.status).class">
-                                            {{ getStatusBadge(slotProps.data.status).text }}
+                    </div>
+                    <div class="row g-6">
+                        <div class="col-12">
+                            <h4 class="mt-6 mb-1">Total Menu Detail</h4>
+                            <p class="mb-0">Find all of your company's administrator accounts and their associate Menu Detail.</p>
+                        </div>
+                        <div class="col-12">
+                            <!-- menu detail Table -->
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                    <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+                                        <span class="me-2">Baris:</span>
+                                        <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="p-input-icon-left">
+                                            <InputText v-model="globalFilterValue" placeholder="Cari Menu Detail..." class="w-full md:w-20rem" />
                                         </span>
-                                    </template>
-                                </Column>
-                                <Column field="menuGroupId" header="Menu Group" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span>{{ slotProps.data.menuGroup?.name || '-' }}</span>
-                                    </template>
-                                </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                    <template #body="slotProps">
-                                        <button @click="menuDetailStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
-                                        <button @click="menuDetailStore.deleteMenuDetail(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
-                                    </template>
-                                </Column>
-                        </MyDataTable>
+                                    </div>
+                                </div>
+                                <div class="card-datatable table-responsive py-3 px-3">
+                                <MyDataTable 
+                                    ref="myDataTableRef"
+                                    :data="menuDetails" 
+                                    :rows="params.rows" 
+                                    :loading="loading"
+                                    :totalRecords="totalRecords"
+                                    :lazy="true"
+                                    @page="onPage($event)"
+                                    @sort="onSort($event)"
+                                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
+                                    >
+                                        <Column field="id" header="#" :sortable="true"></Column> 
+                                        <Column field="name" header="Nama Menu Detail" :sortable="true"></Column>
+                                        <Column field="route" header="Route" :sortable="true"></Column>
+                                        <Column field="order" header="Order" :sortable="true"></Column>
+                                        <Column field="status" header="Status" :sortable="true">
+                                            <template #body="slotProps">
+                                                <span :class="getStatusBadge(slotProps.data.status).class">
+                                                    {{ getStatusBadge(slotProps.data.status).text }}
+                                                </span>
+                                            </template>
+                                        </Column>
+                                        <Column field="menuGroupId" header="Menu Group" :sortable="true">
+                                            <template #body="slotProps">
+                                                <span>{{ slotProps.data.menuGroup?.name || '-' }}</span>
+                                            </template>
+                                        </Column>
+                                        <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                            <template #body="slotProps">
+                                                <button @click="menuDetailStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
+                                                <button @click="menuDetailStore.deleteMenuDetail(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
+                                            </template>
+                                        </Column>
+                                </MyDataTable>
+                                </div>
+                            </div>
+                            <!--/ menu detail Table -->
                         </div>
                     </div>
-                    <!--/ menu detail Table -->
+                    <!--/ menu detail cards -->
                 </div>
-            </div>
-            <!--/ menu detail cards -->
-
-            <!-- Placeholder untuk MenuModal component -->
+                <div v-else class="text-center">
+                    <div class="d-flex flex-column align-items-center">
+                        <img src="/img/illustrations/misc-under-maintenance-illustration.png" alt="page-misc-under-maintenance" width="300" class="img-fluid" />
+                        <h4 class="mt-4">Tidak ada data Menu Detail</h4>
+                        <p class="mb-4">
+                            Saat ini belum ada data menu detail yang tersedia.<br />
+                            Silakan buat menu detail baru untuk memulai.
+                        </p>
+                        <button @click="menuDetailStore.openModal()" class="btn btn-primary">
+                            <i class="ri-add-line me-1"></i>
+                            Tambah Menu Detail
+                        </button>
+                    </div>
+                </div>
+                <!-- Placeholder untuk MenuModal component -->
+            </template>
             <Modal 
                 id="MenuDetailModal"
                 :title="modalTitle" 
@@ -104,7 +124,7 @@
             >
                 <template #default>
                     <form @submit.prevent="menuDetailStore.saveMenuDetail()">
-                        <div class="row g-6">
+                        <div class="row g-6 p-3">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
@@ -212,22 +232,22 @@ const statusOptions = ref([
 const modalTitle = computed(() => isEditMode.value ? 'Edit Menu Detail' : 'Tambah Menu Detail');
 const modalDescription = computed(() => isEditMode.value ? 'Ubah detail menu.' : 'Isi untuk menambah menu detail baru.');
 
-let modalInstance = null
+let modalInstance = null;
 onMounted(() => {
     menuDetailStore.fetchMenuDetails();
-    const modalElement = document.getElementById('MenuDetailModal')
+    const modalElement = document.getElementById('MenuDetailModal');
     if (modalElement) {
-        modalInstance = new bootstrap.Modal(modalElement)
+        modalInstance = new bootstrap.Modal(modalElement);
     }
 });
 
 watch(showModal, (newValue) => {
     if (newValue) {
-        modalInstance?.show()
+        modalInstance?.show();
     } else {
-        modalInstance?.hide()
+        modalInstance?.hide();
     }
-})
+});
 
 const debouncedSearch = useDebounceFn(() => {
     menuDetailStore.setSearch(globalFilterValue.value)

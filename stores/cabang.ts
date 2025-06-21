@@ -1,21 +1,13 @@
 import { defineStore } from 'pinia'
+import type { Perusahaan } from './perusahaan'
 // We will use native fetch as requested, so apiFetch is no longer needed here.
-
-export interface Perusahaan {
-  id: number
-  nmPerusahaan: string
-  npwpPerusahaan: string
-  alamatPerusahaan: string
-  createdAt: string
-  updatedAt: string
-}
 
 export interface Cabang {
   id: number
-  kode_cabang: string
-  nm_cabang: string
-  alamat_cabang: string
-  perusahaan_id: number
+  kodeCabang: string
+  nmCabang: string
+  alamatCabang: string
+  perusahaanId: number
   createdAt: string
   updatedAt: string
   perusahaan?: Perusahaan
@@ -41,10 +33,10 @@ interface CabangState {
 
 const initialFormState: Partial<Cabang> = {
   id: undefined,
-  kode_cabang: '',
-  nm_cabang: '',
-  alamat_cabang: '',
-  perusahaan_id: undefined,
+  kodeCabang: '',
+  nmCabang: '',
+  alamatCabang: '',
+  perusahaanId: undefined,
 }
 
 export const useCabangStore = defineStore('cabang', {
@@ -81,6 +73,15 @@ export const useCabangStore = defineStore('cabang', {
         }
 
         const url = new URL($api.cabang())
+        url.searchParams.append('page', this.params.page.toString())
+        url.searchParams.append('rows', this.params.rows.toString())
+        if (this.params.sortField) {
+          url.searchParams.append('sortField', this.params.sortField)
+          url.searchParams.append('sortOrder', this.params.sortOrder === 1 ? 'asc' : 'desc')
+        }
+        if (this.params.filters?.global?.value) {
+          url.searchParams.append('search', this.params.filters.global.value)
+        }
 
         const response = await fetch(url, {
           method: 'GET',
@@ -93,15 +94,6 @@ export const useCabangStore = defineStore('cabang', {
           credentials: 'include'
         })
         
-        url.searchParams.append('page', this.params.page.toString())
-        url.searchParams.append('rows', this.params.rows.toString())
-        if (this.params.sortField) {
-            url.searchParams.append('sortField', this.params.sortField)
-            url.searchParams.append('sortOrder', this.params.sortOrder === 1 ? 'asc' : 'desc')
-        }
-        if (this.params.filters?.global?.value) {
-            url.searchParams.append('search', this.params.filters.global.value)
-        }
         if (!response.ok) throw new Error('Gagal mengambil data cabang')
 
         const result = await response.json()
@@ -259,10 +251,10 @@ export const useCabangStore = defineStore('cabang', {
         // Pastikan form diisi dengan data yang sesuai dari object cabang
         this.form = { 
           id: cabang.id,
-          kode_cabang: cabang.kode_cabang,
-          nm_cabang: cabang.nm_cabang,
-          alamat_cabang: cabang.alamat_cabang,
-          perusahaan_id: cabang.perusahaan_id
+          kodeCabang: cabang.kodeCabang,
+          nmCabang: cabang.nmCabang,
+          alamatCabang: cabang.alamatCabang,
+          perusahaanId: cabang.perusahaanId
         }
       } else {
         this.isEditMode = false

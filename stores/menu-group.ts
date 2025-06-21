@@ -31,7 +31,7 @@ interface MenuGroupState {
 export const useMenuGroupStore = defineStore('menu-group', {
     state: (): MenuGroupState => ({
         menuGroups: [],
-        loading: false,
+        loading: true,
         error: null,
         totalRecords: 0,
         params: {
@@ -82,6 +82,16 @@ export const useMenuGroupStore = defineStore('menu-group', {
       } finally {
         this.loading = false
       }
+    },
+
+    async prefetchMenuGroups() {
+        if (this.menuGroups.length > 0 && this.params.rows === 999) { // Already fetched all
+            return;
+        }
+        if(this.loading) return;
+        
+        // This store has two fetch actions, we should prefetch the one for the main page, not fetchAll
+        await this.fetchMenuGroups();
     },
 
     async fetchAllMenuGroups() {

@@ -215,7 +215,7 @@
 
             <!-- Placeholder untuk CabangModal component -->
             <Modal 
-                id="Modal"
+                id="CabangModal"
                 :title="modalTitle"
                 :description="modalDescription"
                 :validation-errors-from-parent="validationErrors"
@@ -228,7 +228,7 @@
                                     type="text" 
                                     class="form-control" 
                                     id="kodeCabang" 
-                                    v-model="form.kode_cabang" 
+                                    v-model="form.kodeCabang" 
                                     placeholder="Masukkan kode cabang"
                                     required
                                 >
@@ -241,7 +241,7 @@
                                     type="text" 
                                     class="form-control" 
                                     id="nmCabang" 
-                                    v-model="form.nm_cabang" 
+                                    v-model="form.nmCabang" 
                                     placeholder="Masukkan nama cabang"
                                     required
                                 >
@@ -253,7 +253,7 @@
                                 <textarea 
                                     class="form-control h-100" 
                                     id="alamatCabang" 
-                                    v-model="form.alamat_cabang" 
+                                    v-model="form.alamatCabang" 
                                     placeholder="Masukkan alamat lengkap"
                                     rows="4"
                                 ></textarea>
@@ -262,7 +262,7 @@
                         </div>
                         <div class="col-12">
                             <div class="form-floating form-floating-outline">
-                                <select id="perusahaanId" class="form-select" v-model="form.perusahaan_id" required>
+                                <select id="perusahaanId" class="form-select" v-model="form.perusahaanId" required>
                                     <option value="" disabled>Pilih Perusahaan</option>
                                     <option v-for="perusahaan in perusahaans" :key="perusahaan.id" :value="perusahaan.id">
                                         {{ perusahaan.nmPerusahaan }}
@@ -321,7 +321,7 @@ onMounted(() => {
     cabangStore.fetchCabangs()
     perusahaanStore.fetchPerusahaans()
     
-    const modalElement = document.getElementById('Modal')
+    const modalElement = document.getElementById('CabangModal')
     if (modalElement) {
         modalInstance.value = new bootstrap.Modal(modalElement)
     }

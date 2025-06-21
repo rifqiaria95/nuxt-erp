@@ -37,7 +37,7 @@ export const useMenuDetailStore = defineStore('menu-detail', {
     state: (): MenuDetailState => ({
         menuDetails: [],
         menuGroups: [],
-        loading: false,
+        loading: true,
         error: null,
         totalRecords: 0,
         params: {
@@ -69,8 +69,8 @@ export const useMenuDetailStore = defineStore('menu-detail', {
         const token = localStorage.getItem('token');
         const response = await fetch(`${$api.menuDetails()}?${params.toString()}`, {
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json',
             }
         });
 

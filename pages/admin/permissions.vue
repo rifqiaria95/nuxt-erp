@@ -1,207 +1,232 @@
 <template>
-    <!-- Content wrapper -->
-    <div class="content-wrapper">
-         <!-- Content -->
- 
-         <div class="container-xxl flex-grow-1 container-p-y">
-             <h4 class="mb-1">Permissions List</h4>
-             <p class="mb-6">
-             A permission provided access to predefined menus and features so that depending on assigned permission an
-             administrator can have access to what user needs.
-             </p>
-             <!-- permission cards -->
-            <div class="row g-6 mb-6">
-                <!-- Card total permission -->
-                <CardBox
-                    v-if="stats.total !== undefined"
-                    title="Total Permission"
-                    :total="stats.total + ' Permission'"
-                />
-                <!-- Card statistik per role, dinamis sesuai data dari backend -->
-                <CardBox
-                    v-for="role in stats.roles"
-                    :key="role.id"
-                    :title="role.name.charAt(0).toUpperCase() + role.name.slice(1)"
-                    :total="role.total + ' Permission'"
-                />
-                <CardBox
-                    :isAddButtonCard="true"
-                    image-src="/img/illustrations/add-new-role-illustration.png"
-                    image-alt="Tambah Permission"
-                    button-text="Tambah Permission"
-                    modal-target="#Modal" 
-                    @button-click="openAddPermissionModal"
-                />
-            </div>
- 
-             <div class="row g-6">
-                 <div class="col-12">
-                     <h4 class="mt-6 mb-1">Total Roles with their Permissions</h4>
-                     <p class="mb-0">Find all of your company's administrator accounts and their associate Permissions.</p>
-                 </div>
-                 <div class="col-12">
-                    <!-- permission Table -->
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+    <div>
+        <!-- Content wrapper -->
+        <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+                <div v-if="loading" class="text-center">
+                    <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <template v-else>
+                    <div v-if="permissions.length > 0">
+                        <h4 class="mb-1">List Permissions</h4>
+                        <p class="mb-6">
+                            List permissions yang terdaftar di sistem
+                        </p>
+                        <div class="row g-6 mb-6">
+                            <!-- Card total permission -->
+                            <CardBox
+                                v-if="stats.total !== undefined"
+                                title="Total Permission"
+                                :total="stats.total + ' Permission'"
+                            />
+                            <!-- Card statistik per role, dinamis sesuai data dari backend -->
+                            <CardBox
+                                v-for="role in stats.roles"
+                                :key="role.id"
+                                :title="role.name.charAt(0).toUpperCase() + role.name.slice(1)"
+                                :total="role.total + ' Permission'"
+                            />
+                            <CardBox
+                                :isAddButtonCard="true"
+                                image-src="/img/illustrations/add-new-role-illustration.png"
+                                image-alt="Tambah Permission"
+                                button-text="Tambah Permission"
+                                modal-target="#PermissionModal" 
+                                @button-click="openAddPermissionModal"
+                            />
+                        </div>
+            
+                        <div class="row g-6">
+                            <div class="col-12">
+                                <h4 class="mt-6 mb-1">Total Roles with their Permissions</h4>
+                                <p class="mb-0">Find all of your company's administrator accounts and their associate Permissions.</p>
                             </div>
-                            <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
+                            <div class="col-12">
+                                <!-- permission Table -->
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                        <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+                                            <span class="me-2">Baris:</span>
+                                            <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="btn-group me-2">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="ri-upload-2-line me-1"></i> Export
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="input-group">
+                                                <span class="p-input-icon-left">
+                                                <InputText
+                                                    v-model="globalFilterValue"
+                                                    placeholder="Cari permission..."
+                                                    class="w-full md:w-20rem"
+                                                />
+                                            </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-datatable table-responsive py-3 px-3">
+                                    <MyDataTable 
+                                        ref="myDataTableRef"
+                                        :data="permissions" 
+                                        :rows="lazyParams.rows" 
+                                        :loading="loading"
+                                        :totalRecords="totalRecords"
+                                        :lazy="true"
+                                        @page="onPage($event)"
+                                        @sort="onSort($event)"
+                                        responsiveLayout="scroll" 
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                        currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
+                                        :filters="filters"
+                                        :globalFilterFields="['name', 'menuGroups', 'menuDetails']"
+                                        >
+                                        <Column field="id" header="#" :sortable="true" style="width: 50px;"></Column> 
+                                            <Column field="name" header="Nama Permission" :sortable="true"></Column>
+                                            
+                                            <Column field="menuGroups" header="Menu Group" :sortable="true">
+                                                <template #body="slotProps">
+                                                    <span v-if="Array.isArray(slotProps.data.menuGroups) && slotProps.data.menuGroups.length > 0">
+                                                        {{ slotProps.data.menuGroups.map(g => g.name).join(', ') }}
+                                                    </span>
+                                                    <span v-else>-</span>
+                                                </template>
+                                            </Column>
+                                            <Column field="menuDetails" header="Menu Details" :sortable="true">
+                                                <template #body="slotProps">
+                                                    <span v-if="Array.isArray(slotProps.data.menuDetails) && slotProps.data.menuDetails.length > 0">
+                                                        {{ slotProps.data.menuDetails.map(d => d.name).join(', ') }}
+                                                    </span>
+                                                    <span v-else>-</span>
+                                                </template>
+                                            </Column>
+                                            <Column field="assignedRoles" header="Assigned To">
+                                                <template #body="slotProps">
+                                                    <template v-if="Array.isArray(slotProps.data.assignedRoles) && slotProps.data.assignedRoles.length > 0">
+                                                        <span v-for="r in slotProps.data.assignedRoles" :key="r.id" 
+                                                            :class="['badge', 'rounded-pill', getBadgeClass(r.id), 'mt-1']"
+                                                            style="margin-right: 5px;">
+                                                            {{ r.name }}
+                                                        </span>
+                                                    </template>
+                                                    <span v-else>-</span>
+                                                </template>
+                                            </Column>
+                                            <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                                <template #body="slotProps">
+                                                    <button @click="openEditPermissionModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                                    <button @click="deletePermission(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                                </template>
+                                            </Column>
+                                    </MyDataTable>
+                                    </div>
                                 </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                    <InputText
-                                        v-model="globalFilterValue"
-                                        placeholder="Cari permission..."
-                                        class="w-full md:w-20rem"
-                                    />
-                                </span>
-                                </div>
+                                <!--/ permission Table -->
                             </div>
                         </div>
-                        <div class="card-datatable table-responsive py-3 px-3">
-                        <MyDataTable 
-                            ref="myDataTableRef"
-                            :data="permissions" 
-                            :rows="lazyParams.rows" 
-                            :loading="loading"
-                            :totalRecords="totalRecords"
-                            :lazy="true"
-                            @page="onPage($event)"
-                            @sort="onSort($event)"
-                            responsiveLayout="scroll" 
-                            paginatorPosition="bottom"
-                            paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
-                            currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
-                            :filters="filters"
-                            :globalFilterFields="['name', 'menuGroups', 'menuDetails']"
-                            >
-                            <Column field="id" header="#" :sortable="true" style="width: 50px;"></Column> 
-                                <Column field="name" header="Nama Permission" :sortable="true"></Column>
-                                
-                                <Column field="menuGroups" header="Menu Group" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span v-if="Array.isArray(slotProps.data.menuGroups) && slotProps.data.menuGroups.length > 0">
-                                            {{ slotProps.data.menuGroups.map(g => g.name).join(', ') }}
-                                        </span>
-                                        <span v-else>-</span>
-                                    </template>
-                                </Column>
-                                <Column field="menuDetails" header="Menu Details" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span v-if="Array.isArray(slotProps.data.menuDetails) && slotProps.data.menuDetails.length > 0">
-                                            {{ slotProps.data.menuDetails.map(d => d.name).join(', ') }}
-                                        </span>
-                                        <span v-else>-</span>
-                                    </template>
-                                </Column>
-                                <Column field="assignedRoles" header="Assigned To">
-                                    <template #body="slotProps">
-                                        <template v-if="Array.isArray(slotProps.data.assignedRoles) && slotProps.data.assignedRoles.length > 0">
-                                            <span v-for="r in slotProps.data.assignedRoles" :key="r.id" 
-                                                  :class="['badge', 'rounded-pill', getBadgeClass(r.id), 'mt-1']"
-                                                  style="margin-right: 5px;">
-                                                {{ r.name }}
-                                            </span>
-                                        </template>
-                                        <span v-else>-</span>
-                                    </template>
-                                </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                    <template #body="slotProps">
-                                        <button @click="openEditPermissionModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="deletePermission(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                    </template>
-                                </Column>
-                        </MyDataTable>
+                        <!--/ permission cards -->
+                    </div>
+                    <div v-else class="text-center">
+                        <div class="d-flex flex-column align-items-center">
+                            <img src="/img/illustrations/misc-under-maintenance-illustration.png" alt="page-misc-under-maintenance" width="300" class="img-fluid" />
+                            <h4 class="mt-4">Tidak ada data Permission</h4>
+                            <p class="mb-4">
+                                Saat ini belum ada data permission yang tersedia.<br />
+                                Silakan buat permission baru untuk memulai.
+                            </p>
+                            <button @click="permissionsStore.openModal()" class="btn btn-primary">
+                                <i class="ri-add-line me-1"></i>
+                                Tambah Permission
+                            </button>
                         </div>
                     </div>
-                    <!--/ permission Table -->
-                 </div>
-             </div>
-             <!--/ permission cards -->
- 
-            <Modal 
-                :validationErrorsFromParent="validationErrors"
-                :title="modalTitle" 
-                :description="modalDescription"
-            >
-                <template #default>
-                    <form @submit.prevent="handleSavePermission">
-                        <div class="row g-3">
-                            <div class="col-12 mb-3">
-                                <label for="modalPermissionName">Permission Name</label>
-                                <input
-                                    type="text"
-                                    id="modalPermissionName"
-                                    v-model="formPermission.name"
-                                    class="form-control"
-                                    placeholder="Enter a permission name"
-                                    required
-                                />
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label for="menuGroup">Menu Group</label>
-                                <v-select
-                                    v-model="formPermission.menuGroupId"
-                                    :options="menuGroups"
-                                    label="name"
-                                    :reduce="group => group.id"
-                                    placeholder="-- Pilih Menu Group --"
-                                    id="menuGroup"
-                                    class="menu-group"
-                                />                                    
-                            </div>
-                            <div class="col-6 mb-3">
-                                <label for="menuDetail">Menu Detail</label>
-                                <v-select
-                                    v-model="formPermission.menuDetailId"
-                                    :options="filteredMenuDetails"
-                                    label="name"
-                                    :reduce="detail => detail.id"
-                                    placeholder="-- Pilih Menu Detail --"
-                                    id="menuDetail"
-                                    class="menu-detail"
-                                />                                    
-                            </div>
-                            <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary"
-                                >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary" @click="handleCloseModal">
-                                    Batal
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <!-- Placeholder untuk MenuModal component -->
+                    <Modal 
+                        id="PermissionModal"
+                        :validationErrorsFromParent="validationErrors"
+                        :title="modalTitle" 
+                        :description="modalDescription"
+                    >
+                        <template #default>
+                            <form @submit.prevent="handleSavePermission">
+                                <div class="row g-3">
+                                    <div class="col-12 mb-3">
+                                        <label for="modalPermissionName">Permission Name</label>
+                                        <input
+                                            type="text"
+                                            id="modalPermissionName"
+                                            v-model="formPermission.name"
+                                            class="form-control"
+                                            placeholder="Enter a permission name"
+                                            required
+                                        />
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label for="menuGroup">Menu Group</label>
+                                        <v-select
+                                            v-model="formPermission.menuGroupId"
+                                            :options="menuGroups"
+                                            label="name"
+                                            :reduce="group => group.id"
+                                            placeholder="-- Pilih Menu Group --"
+                                            id="menuGroup"
+                                            class="menu-group"
+                                        />                                    
+                                    </div>
+                                    <div class="col-6 mb-3">
+                                        <label for="menuDetail">Menu Detail</label>
+                                        <v-select
+                                            v-model="formPermission.menuDetailId"
+                                            :options="filteredMenuDetails"
+                                            label="name"
+                                            :reduce="detail => detail.id"
+                                            placeholder="-- Pilih Menu Detail --"
+                                            id="menuDetail"
+                                            class="menu-detail"
+                                        />                                    
+                                    </div>
+                                    <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
+                                        <button
+                                            type="submit"
+                                            class="btn btn-primary"
+                                        >
+                                            {{ isEditMode ? 'Update' : 'Simpan' }}
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" @click="handleCloseModal">
+                                            Batal
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </template>
+                    </Modal>
                 </template>
-            </Modal>
-         </div>
-         <!-- / Content -->
+            </div>
+            <!-- / Content -->
  
-         <div class="content-backdrop fade"></div>
-     </div>
-     <!-- Content wrapper -->
- </template>
+            <div class="content-backdrop fade"></div>
+        </div>
+        <!-- Content wrapper -->
+    </div>
+</template>
  
- <script setup>
+<script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
+import { storeToRefs } from 'pinia'
 import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { usePermissionsStore } from '~/stores/permissions'
+import { useLayoutStore } from '~/stores/layout'
 import vSelect from 'vue-select'
 import Swal from 'sweetalert2'
 import 'vue-select/dist/vue-select.css'
@@ -214,9 +239,10 @@ const { $api } = useNuxtApp()
 const myDataTableRef = ref(null)
 const globalFilterValue = ref('')
 const permissionsStore = usePermissionsStore()
+const layoutStore = useLayoutStore()
 const permissions = ref([])
-const loading = ref(false)
 const totalRecords = ref(0)
+const loading = ref(false)
 const lazyParams = ref({
     first: 0,
     rows: 10,
@@ -246,7 +272,7 @@ watch(globalFilterValue, (newValue) => {
     searchDebounceTimer = setTimeout(() => {
         lazyParams.value.search = newValue;
         lazyParams.value.first = 0;
-        loadLazyData();
+        fetchAllPageData();
     }, 500);
 });
 
@@ -269,13 +295,18 @@ const formPermission = ref({
     menuDetailId: null,
 })
 
-const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
+const rowsPerPageOptionsArray = ref([
+    { label: '10', value: 10 },
+    { label: '20', value: 20 },
+    { label: '50', value: 50 },
+    { label: '100', value: 100 }
+]);
 
 const modalTitle = computed(() => isEditMode.value ? 'Edit Permission' : 'Tambah Permission');
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data permission di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan permission baru.');
 
 const handleCloseModal = () => {
-    const modalEl = document.getElementById('Modal'); 
+    const modalEl = document.getElementById('PermissionModal'); 
     if (modalEl) {
         const modal = bootstrap.Modal.getInstance(modalEl);
         modal.hide();
@@ -300,46 +331,39 @@ const resetFormState = () => {
 };
 
 const loadLazyData = async () => {
-    loading.value = true;
-    lazyParams.value.draw++;
     try {
-        const token = localStorage.getItem('token');
         const params = new URLSearchParams({
-            draw: lazyParams.value.draw,
-            start: lazyParams.value.first,
-            length: lazyParams.value.rows,
-            sortField: lazyParams.value.sortField || 'id',
-            sortOrder: lazyParams.value.sortOrder || 'asc',
+            draw: lazyParams.value.draw.toString(),
+            start: lazyParams.value.first.toString(),
+            length: lazyParams.value.rows.toString(),
             search: lazyParams.value.search || '',
+            sortField: lazyParams.value.sortField || 'id',
+            sortOrder: lazyParams.value.sortOrder || 'desc',
         });
 
         const response = await fetch(`${$api.permissions()}?${params.toString()}`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            }
+             headers: {
+                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                 'Content-Type': 'application/json',
+                 'Accept': 'application/json',
+             },
+             credentials: 'include'
         });
-
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data permissions dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data permissions');
+            throw new Error('Gagal mengambil data permissions');
         }
-
         const result = await response.json();
         permissions.value = result.data || []; 
-        totalRecords.value = result.recordsTotal || result.recordsFiltered || (result.meta ? result.meta.total : 0) || 0;
+        totalRecords.value = parseInt(result.recordsFiltered ?? result.recordsTotal ?? 0, 10);
         
         if (result.draw) {
             lazyParams.value.draw = parseInt(result.draw);
         }
-
     } catch (error) {
-        console.error('Error loading lazy data for permissions:', error);
+        console.error('Gagal mengambil data permissions:', error);
         permissions.value = [];
-        Swal.fire('Error', `Tidak dapat memuat data permissions: ${error.message}`, 'error');
-    } finally {
-        loading.value = false;
+        totalRecords.value = 0;
+        throw error;
     }
 };
 
@@ -349,10 +373,9 @@ const fetchStats = async () => {
     roles: []
   };
   try {
-    const token = localStorage.getItem('token');
     const response = await fetch($api.getTotalPermission(), {
         headers: { 
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
         }
     });
@@ -379,9 +402,7 @@ const fetchStats = async () => {
 };
 
 const handleSavePermission = async () => {
-    loading.value = true;
-    validationErrors.value = []; 
-
+    layoutStore.setLoading(true);
     try {
         const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
         const csrfData = await csrfResponse.json();
@@ -401,7 +422,6 @@ const handleSavePermission = async () => {
             const permissionIdToUpdate = formPermission.value.id;
             if (!permissionIdToUpdate) {
                 Swal.fire('Error', 'ID Permission tidak ditemukan untuk update.', 'error');
-                loading.value = false;
                 return;
             }
             url = $api.permissionUpdate(permissionIdToUpdate);
@@ -430,7 +450,7 @@ const handleSavePermission = async () => {
         }
 
         if (response.ok) {
-            await loadLazyData();
+            await fetchAllPageData();
             handleCloseModal();
             permissionsStore.fetchPermissions();
             await Swal.fire(
@@ -449,31 +469,31 @@ const handleSavePermission = async () => {
     } catch (error) {
         Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
     } finally {
-        loading.value = false;
+        layoutStore.setLoading(false);
     }
 };
 
 const onPage = (event) => {
     lazyParams.value.first = event.first;
     lazyParams.value.rows = event.rows;
-    loadLazyData();
+    fetchAllPageData();
 };
 
 const handleRowsChange = () => {
     lazyParams.value.first = 0;
     lazyParams.value.rows = parseInt(lazyParams.value.rows);
-    loadLazyData();
+    fetchAllPageData();
 };
 
 const handleSearch = () => {
     lazyParams.value.first = 0;
-    loadLazyData();
+    fetchAllPageData();
 };
 
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
-    loadLazyData();
+    fetchAllPageData();
 };
 
 const exportData = (format) => {
@@ -536,18 +556,30 @@ const fetchMenuDetails = async (groupId) => {
     }
 };
 
-onMounted(async () => {
-    await loadLazyData();
-    await fetchMenuGroups();
-    await fetchStats();
+onMounted(() => {
+    fetchAllPageData();
 });
+
+const fetchAllPageData = async () => {
+    layoutStore.setLoading(true);
+    try {
+        await loadLazyData();
+        fetchStats();
+        fetchMenuGroupsAndDetails();
+    } catch (error) {
+        console.error("Gagal memuat data halaman:", error);
+        Swal.fire('Error', 'Gagal memuat data halaman.', 'error');
+    } finally {
+        layoutStore.setLoading(false);
+    }
+};
 
 function openAddPermissionModal() {
     isEditMode.value = false;
     resetFormState();
-    const modalEl = document.getElementById('Modal');
+    const modalEl = document.getElementById('PermissionModal');
     if (modalEl) {
-        const modalInstance = new bootstrap.Modal(modalEl);
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
     }
 }
@@ -570,7 +602,7 @@ async function openEditPermissionModal(permissionData) {
         formPermission.value.menuDetailId = permissionData.menuDetails && permissionData.menuDetails.length > 0 ? permissionData.menuDetails[0].id : null;
     }
 
-    const modalEl = document.getElementById('Modal');
+    const modalEl = document.getElementById('PermissionModal');
     if (modalEl) {
         const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
         modalInstance.show();
@@ -593,6 +625,7 @@ const deletePermission = async (permissionId) => {
     });
 
     if (result.isConfirmed) {
+        layoutStore.setLoading(true);
         try {
             const token = localStorage.getItem('token');
             const csrfResponse = await fetch($api.csrfToken(), {
@@ -618,7 +651,7 @@ const deletePermission = async (permissionId) => {
                 throw new Error(errorData.message || 'Gagal menghapus permission');
             }
             
-            await loadLazyData();
+            await fetchAllPageData();
 
             await Swal.fire({
                 title: 'Berhasil!',
@@ -632,6 +665,8 @@ const deletePermission = async (permissionId) => {
                 text: error.message,
                 icon: 'error'
             });
+        } finally {
+            layoutStore.setLoading(false);
         }
     }
 };
@@ -650,12 +685,19 @@ watch(() => formPermission.value.menuGroupId, (newVal, oldVal) => {
   }
 })
 
- </script>
+const fetchMenuGroupsAndDetails = async () => {
+    await Promise.all([
+        fetchMenuGroups(),
+        fetchMenuDetails()
+    ]);
+};
+
+</script>
  
- <style scoped>
+<style scoped>
     :deep(.menu-group .vs__dropdown-toggle),
     :deep(.menu-detail .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
     }
- </style>
+</style>

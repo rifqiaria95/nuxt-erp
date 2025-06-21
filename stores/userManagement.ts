@@ -280,13 +280,17 @@ export const useUserManagementStore = defineStore('user-management', {
         this.isEditMode = !!user;
         this.validationErrors = [];
         if (user) {
-            this.form = { ...user, id: user.id, full_name: user.fullName, role_ids: user.roles.map(r => r.id), password: '' };
+            this.form = { 
+              ...user,
+              full_name: user.fullName,
+              role_ids: user.roles.map(role => role.id)
+            };
         } else {
             this.form = {
                 full_name: '',
                 email: '',
                 password: '',
-isActive: true,
+                isActive: true,
                 role_ids: []
             };
         }
@@ -306,6 +310,7 @@ isActive: true,
     setSort(event: any) {
         this.params.sortField = event.sortField;
         this.params.sortOrder = event.sortOrder;
+        this.params.first = 0;
         this.fetchUsers();
     },
     setSearch(value: string) {

@@ -28,8 +28,6 @@
                     <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
                             <button
-                                :data-bs-target="modalTarget"
-                                data-bs-toggle="modal"
                                 class="btn btn-sm btn-primary mb-4 text-wrap"
                                 @click="$emit('button-click')"
                                 >

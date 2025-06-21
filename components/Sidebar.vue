@@ -62,10 +62,11 @@
                   v-for="detail in [...group.menuDetails].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
                   :key="detail.id"
                   :class="{ active: detail.route === $route.path }"
+                  @mouseenter="handlePrefetch(detail.route)"
                 >
-                  <a :href="detail.route" class="menu-link">
+                  <NuxtLink :to="detail.route" class="menu-link">
                     <div>{{ detail.name }}</div>
-                  </a>
+                  </NuxtLink>
                 </li>
               </ul>
             </transition>
@@ -78,6 +79,7 @@
   <script setup>
     import { useMenuGroupStore } from '~/stores/menu-group';
     import { useMenuDetailStore } from '~/stores/menu-detail';
+    import { useCustomerStore } from '~/stores/customer';
     import { ref, onMounted, watch } from 'vue';
     import { useRoute } from 'vue-router';
     import { useLayoutStore } from '~/stores/layout';
@@ -86,8 +88,20 @@
     const menuDetailsStore = useMenuDetailStore();
     const route = useRoute();
     const layoutStore = useLayoutStore();
+    const customerStore = useCustomerStore();
 
     const openGroupIds = ref(new Set());
+
+    const prefetchMap = {
+      '/master/customer': () => customerStore.prefetchCustomers(),
+      '/admin/menu-group': () => menuGroupsStore.prefetchMenuGroups(),
+    };
+
+    const handlePrefetch = (route) => {
+      if (prefetchMap[route]) {
+        prefetchMap[route]();
+      }
+    };
 
     const handleMouseEnter = () => {
       layoutStore.setSidebarHovered(true);

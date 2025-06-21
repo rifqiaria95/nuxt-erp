@@ -1,4 +1,5 @@
 <template>
+  <div>
     <!-- Content wrapper -->
     <div class="content-wrapper">
          <!-- Content -->
@@ -97,7 +98,7 @@
                                 >
                                 <Column field="id_pegawai" header="#" :sortable="true" style="width:5%"></Column> 
                                 <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:20%"></Column>
-                                <Column field="email" header="Email" :sortable="true" style="width:20%"></Column>
+                                <Column field="email" sortField="users.email" header="Email" :sortable="true" style="width:20%"></Column>
                                 <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:15%"></Column>
                                 <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
@@ -211,6 +212,7 @@
                                                 :options="pendidikanOptions"
                                                 label="label"
                                                 :reduce="option => Number(option.value)"
+                                                :get-option-key="option => option.value"
                                                 placeholder="-- Pilih Pendidikan --"
                                                 id="select-pendidikan"
                                                 class="select-pendidikan"
@@ -236,6 +238,7 @@
                                                 :options="jenisKelaminOptions"
                                                 label="label"
                                                 :reduce="option => option.value"
+                                                :get-option-key="option => option.value"
                                                 placeholder="-- Pilih Jenis Kelamin --"
                                                 id="select-jk"
                                                 class="select-jenis-kelamin"
@@ -300,6 +303,7 @@
                                             :options="jabatans"
                                             label="nmJabatan"
                                             :reduce="jabatan => jabatan.idJabatan"
+                                            :get-option-key="option => option.idJabatan"
                                             placeholder="-- Pilih Jabatan --"
                                             id="jabatan"
                                             class="jabatan"
@@ -311,6 +315,7 @@
                                             :options="perusahaans"
                                             label="nmPerusahaan"
                                             :reduce="perusahaan => perusahaan.id"
+                                            :get-option-key="option => option.id"
                                             placeholder="-- Pilih Perusahaan --"
                                             id="perusahaan"
                                             class="perusahaan"
@@ -323,6 +328,7 @@
                                             :options="filteredCabang"
                                             label="nmCabang"
                                             :reduce="cabang => cabang.id"
+                                            :get-option-key="option => option.id"
                                             placeholder="-- Pilih Cabang --"
                                             id="cabang"
                                             class="cabang"
@@ -334,6 +340,7 @@
                                             :options="divisis"
                                             label="nmDivisi"
                                             :reduce="divisi => divisi.id"
+                                            :get-option-key="option => option.id"
                                             placeholder="-- Pilih Divisi --"
                                             id="divisi"
                                             class="divisi"
@@ -346,6 +353,7 @@
                                             :options="filteredDepartemen"
                                             label="nmDepartemen"
                                             :reduce="departemen => departemen.id"
+                                            :get-option-key="option => option.id"
                                             placeholder="-- Pilih Departemen --"
                                             id="departemen"
                                             class="departemen"
@@ -397,6 +405,7 @@
                                                 :options="statusPegawaiOptions"
                                                 label="label"
                                                 :reduce="option => option.value"
+                                                :get-option-key="option => option.value"
                                                 placeholder="-- Pilih Status Pegawai --"
                                                 id="select-status-pegawai"
                                                 class="select-status-pegawai"
@@ -444,6 +453,7 @@
         <div class="content-backdrop fade"></div>
     </div>
      <!-- Content wrapper -->
+ </div>
  </template>
  
 <script setup>
