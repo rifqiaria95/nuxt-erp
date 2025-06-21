@@ -126,28 +126,28 @@
                 </div>
                 <div class="col-xl-4 col-lg-6 col-md-6">
                     <div class="card h-100">
-                    <div class="row h-100">
-                        <div class="col-sm-5">
-                        <div class="d-flex align-items-end h-100 justify-content-center">
-                            <img
-                            src="/img/illustrations/add-new-role-illustration.png"
-                            class="img-fluid"
-                            alt="Image"
-                            width="70" />
+                        <div class="row h-100">
+                            <div class="col-sm-5">
+                            <div class="d-flex align-items-end h-100 justify-content-center">
+                                <img
+                                src="/img/illustrations/add-new-role-illustration.png"
+                                class="img-fluid"
+                                alt="Image"
+                                width="70" />
+                            </div>
+                            </div>
+                            <div class="col-sm-7">
+                            <div class="card-body text-sm-end text-center ps-sm-0">
+                                <button
+                                @click="customerStore.openModal()"
+                                class="btn btn-primary mb-2 text-nowrap add-new-role"
+                                >
+                                Tambah Customer
+                                </button>
+                                <p class="mb-0 mt-1">Buat Customer baru</p>
+                            </div>
+                            </div>
                         </div>
-                        </div>
-                        <div class="col-sm-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
-                            @click="customerStore.openModal()"
-                            class="btn btn-primary mb-2 text-nowrap add-new-role"
-                            >
-                            Tambah Customer
-                            </button>
-                            <p class="mb-0 mt-1">Buat Customer baru</p>
-                        </div>
-                        </div>
-                    </div>
                     </div>
                 </div>
             </div>
@@ -177,7 +177,6 @@
                                 </div>
                                 <div class="input-group">
                                     <span class="p-input-icon-left">
-                                        <i class="ri-search-line"></i>
                                         <InputText
                                             v-model="globalFilterValue"
                                             placeholder="Cari customer..."

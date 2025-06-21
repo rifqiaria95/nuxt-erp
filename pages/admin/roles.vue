@@ -245,7 +245,7 @@ const selectAll = computed({
 const menuDetailsWithPermissions = computed(() => {
     const result = {};
     const masterPermissions = Array.isArray(permissions.value) ? permissions.value : [];
-    const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show'];
+    const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show', 'Approve', 'Reject'];
 
     masterPermissions.forEach(p => {
         const permParts = p.name?.split('_');
@@ -268,6 +268,8 @@ const menuDetailsWithPermissions = computed(() => {
         else if (permName.includes('update') || permName.includes('edit')) displayPermissionName = 'Edit';
         else if (permName.includes('delete')) displayPermissionName = 'Delete';
         else if (permName.includes('show')) displayPermissionName = 'Show';
+        else if (permName.includes('approve')) displayPermissionName = 'Approve';
+        else if (permName.includes('reject')) displayPermissionName = 'Reject';
 
         if (!displayPermissionName) return;
 

@@ -50,7 +50,7 @@
                                     <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                                         <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
                                             <span class="me-2">Baris:</span>
-                                            <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                            <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" optionLabel="label" optionValue="value" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                                         </div>
                                         <div class="d-flex align-items-center">
                                             <div class="btn-group me-2">
@@ -481,7 +481,6 @@ const onPage = (event) => {
 
 const handleRowsChange = () => {
     lazyParams.value.first = 0;
-    lazyParams.value.rows = parseInt(lazyParams.value.rows);
     fetchAllPageData();
 };
 

@@ -45,8 +45,10 @@ export interface PurchaseOrder {
   createdBy      : number
   approvedBy     : number | null
   receivedBy     : number | null
+  rejectedBy     : number | null
   approvedAt     : string | null
   receivedAt     : string | null
+  rejectedAt     : string | null
   vendor?        : Vendor
   perusahaan?    : Perusahaan
   cabang?        : Cabang
@@ -115,6 +117,15 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         }
 
         const url = new URL($api.purchaseOrder())
+        const params = new URLSearchParams({
+            page     : ((this.params.first / this.params.rows) + 1).toString(),
+            rows     : this.params.rows.toString(),
+            sortField: this.params.sortField || '',
+            sortOrder: this.params.sortOrder?.toString() || '',
+            draw     : this.params.draw.toString(),
+            search   : this.params.search || '',
+        });
+        url.search = params.toString();
 
         const response = await fetch(url, {
           method: 'GET',
@@ -126,14 +137,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           },
           credentials: 'include'
         })
-        const params = new URLSearchParams({
-            page     : ((this.params.first / this.params.rows) + 1).toString(),
-            rows     : this.params.rows.toString(),
-            sortField: this.params.sortField || '',
-            sortOrder: this.params.sortOrder?.toString() || '',
-            draw     : this.params.draw.toString(),
-            search   : this.params.search || '',
-        });
 
         if (!response.ok) throw new Error('Gagal mengambil data purchaseOrder')
 
@@ -179,7 +182,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             delete dataToAppend.createdByUser;
             delete dataToAppend.approvedByUser;
             delete dataToAppend.receivedByUser;
-
+            delete dataToAppend.rejectedByUser;
             Object.keys(dataToAppend).forEach(key => {
                 const value = dataToAppend[key];
                 if (value !== null && value !== undefined) {
@@ -192,6 +195,9 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 formData.append('createdBy', userStore.user.id.toString())
                 if(this.form.status === 'approved') {
                     formData.append('approvedBy', userStore.user.id.toString())
+                }
+                if(this.form.status === 'rejected') {
+                    formData.append('rejectedBy', userStore.user.id.toString())
                 }
             }
 
@@ -317,6 +323,46 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           this.loading = false;
       }
     },
+
+    async rejectPurchaseOrder(purchaseOrderId: string) {
+      this.loading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+      try {
+          const token = localStorage.getItem('token');
+          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.token;
+
+          const response = await fetch($api.rejectPurchaseOrder(purchaseOrderId), {
+              method: 'PATCH',
+              headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type' : 'application/json',
+                  'Accept'       : 'application/json',
+                  'X-CSRF-TOKEN' : csrfToken,
+              },
+              credentials: 'include',
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ message: 'Gagal mereject purchase order' }));
+              throw new Error(errorData.message || 'Gagal mereject purchase order');
+          }
+
+          await this.fetchPurchaseOrders();
+          await Swal.fire('Berhasil!', 'Purchase Order berhasil direject.', 'success');
+
+          return true;
+      } catch (error: any) {
+          console.error('Error rejecting purchase order:', error);
+          await Swal.fire('Error', error.message || 'Gagal mereject purchase order.', 'error');
+          return false;
+      } finally {
+          this.loading = false;
+      }
+    },    
 
     async updateStatusPartial(itemId: string, status: boolean, receivedQty: number) {
         this.loading = true;
@@ -483,22 +529,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       } finally {
         this.loading = false;
       }
-    },
-
-    addPurchaseOrder(purchaseOrder: PurchaseOrder) {
-        this.purchaseOrders.push(purchaseOrder) 
-    },
-    removePurchaseOrder(purchaseOrderId: string) {
-        this.purchaseOrders = this.purchaseOrders.filter(purchaseOrder => purchaseOrder.id !== purchaseOrderId)
-    },
-    updatePurchaseOrder(updatedPurchaseOrder: PurchaseOrder) {
-        const index = this.purchaseOrders.findIndex(purchaseOrder => purchaseOrder.id === updatedPurchaseOrder.id)
-        if (index !== -1) {
-            this.purchaseOrders[index] = updatedPurchaseOrder
-        }
-    },
-    getPurchaseOrderById(id: string): PurchaseOrder | undefined {
-      return this.purchaseOrders.find(purchaseOrder => purchaseOrder.id === id)
     },
   }
 })

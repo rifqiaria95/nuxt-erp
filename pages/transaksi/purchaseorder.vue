@@ -170,22 +170,27 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li v-if="(userisAdmin || userisSuperAdmin) && slotProps.data.status == 'draft'">
+                                                <li v-if="userHasPermission('approve_purchase_order') && slotProps.data.status == 'draft'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.approvePurchaseOrder(slotProps.data.id)">
                                                         <i class="ri-check-line me-2"></i> Approve
                                                     </a>
                                                 </li>
-                                                <li v-if="slotProps.data.status == 'approved'">
+                                                <li v-if="userHasPermission('reject_purchase_order') && slotProps.data.status == 'draft'">
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.rejectPurchaseOrder(slotProps.data.id)">
+                                                        <i class="ri-close-line me-2"></i> Reject
+                                                    </a>
+                                                </li>
+                                                <li v-if="userHasPermission('view_purchase_order') && slotProps.data.status == 'approved'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li>
+                                                <li v-if="userHasPermission('edit_purchase_order')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li>
+                                                <li v-if="userHasPermission('delete_purchase_order')">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="purchaseOrderStore.deletePurchaseOrder(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -363,6 +368,7 @@ import { useCabangStore } from '~/stores/cabang'
 import { useProductStore } from '~/stores/product'
 import { useWarehouseStore } from '~/stores/warehouse'
 import { useUserStore } from '~/stores/user'
+import { usePermissions } from '~/composables/usePermissions'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import vSelect from 'vue-select'
@@ -386,18 +392,14 @@ const cabangStore        = useCabangStore()
 const productStore       = useProductStore()
 const userStore          = useUserStore()
 const formatRupiah       = useFormatRupiah()
+const { userHasPermission } = usePermissions();
 
 const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(purchaseOrderStore)
 const { vendors } = storeToRefs(vendorStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
-const { cabangs } = storeToRefs(cabangStore)
-const { products } = storeToRefs(productStore)
 const { warehouses } = storeToRefs(warehouseStore)
+const { products } = storeToRefs(productStore)
 const { user } = storeToRefs(userStore)
-
-
-const userisSuperAdmin = computed(() => user.value?.roles?.some(role => role.name === 'superadmin') ?? false);
-const userisAdmin = computed(() => user.value?.roles?.some(role => role.name === 'admin') ?? false);
 
 // State
 const globalFilterValue = ref('');
@@ -474,7 +476,7 @@ watch(() => form.value.perusahaanId, (newPerusahaanId) => {
 
 const filteredCabangs = computed(() => {
     if (!form.value.perusahaanId) return [];
-    return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
+    return cabangStore.value.filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
 const debouncedSearch = useDebounceFn(() => {
