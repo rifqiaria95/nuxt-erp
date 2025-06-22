@@ -180,7 +180,7 @@
                                                         <i class="ri-close-line me-2"></i> Reject
                                                     </a>
                                                 </li>
-                                                <li v-if="userHasPermission('view_purchase_order') && slotProps.data.status == 'approved'">
+                                                <li v-if="userHasPermission('view_purchase_order') && (slotProps.data.status == 'approved' || slotProps.data.status == 'partial')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
@@ -397,6 +397,7 @@ const { userHasPermission } = usePermissions();
 const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(purchaseOrderStore)
 const { vendors } = storeToRefs(vendorStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
+const { cabangs } = storeToRefs(cabangStore)
 const { warehouses } = storeToRefs(warehouseStore)
 const { products } = storeToRefs(productStore)
 const { user } = storeToRefs(userStore)
@@ -469,14 +470,15 @@ watch(showModal, (newValue) => {
 
 watch(() => form.value.perusahaanId, (newPerusahaanId) => {
     if (newPerusahaanId) {
-        cabangStore.fetchCabangByPerusahaan(newPerusahaanId);
-        if(!isEditMode.value) form.value.cabangId = null;
+        if(!isEditMode.value) {
+            form.value.cabangId = null;
+        }
     }
 });
 
 const filteredCabangs = computed(() => {
-    if (!form.value.perusahaanId) return [];
-    return cabangStore.value.filter(c => c.perusahaanId === form.value.perusahaanId);
+    if (!form.value.perusahaanId || !cabangs.value) return [];
+    return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
 const debouncedSearch = useDebounceFn(() => {

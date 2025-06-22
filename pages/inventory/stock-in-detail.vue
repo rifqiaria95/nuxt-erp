@@ -35,7 +35,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-8   ">
+                <div class="col-8">
                     <div class="card mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
@@ -45,7 +45,7 @@
                                         Berikut adalah informasi singkat mengenai dokumen Stock In ini, termasuk nomor SI, tanggal, gudang tujuan, dan status terkini. Pastikan data sudah sesuai sebelum melakukan proses lebih lanjut.
                                     </p>
                                 </div>
-                                <NuxtLink to="/stock/stockin" class="btn btn-sm btn-primary">
+                                <NuxtLink to="/inventory/stock-in" class="btn btn-sm btn-primary">
                                     <i class="ri-arrow-left-line me-1"></i> Kembali
                                 </NuxtLink>
                             </div>

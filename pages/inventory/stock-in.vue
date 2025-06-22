@@ -124,7 +124,7 @@
                                         <span v-else>-</span>
                                     </template>
                                 </Column>
-                                <Column field="user.fullName" header="Penerima" :sortable="true"></Column>
+                                <Column field="purchaseOrder.receivedByUser.fullName" header="Penerima" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
                                         <div class="d-inline-block">
@@ -412,7 +412,7 @@ const exportData = (format) => {
 
 // View Stock In Details
 const viewStockInDetails = (stockInId) => {
-    router.push({ path: `/inventory/stockin-detail`, query: { id: stockInId } });
+    router.push({ path: `/inventory/stock-in-detail`, query: { id: stockInId } });
 };
 
 const deleteStockIn = async (id) => {
