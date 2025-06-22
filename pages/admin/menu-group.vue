@@ -161,11 +161,13 @@
                                     <v-select
                                         v-model="form.jenisMenu"
                                         :options="[
-                                            { label: 'Master', value: 1 },
-                                            { label: 'Inventory', value: 2 },
-                                            { label: 'Laporan', value: 3 },
-                                            { label: 'Admin', value: 4 },
-                                            { label: 'Transaksi', value: 5 },
+                                            { label: 'Purchasing', value: 1 },
+                                            { label: 'HRD', value: 2 },
+                                            { label: 'Accounting', value: 3 },
+                                            { label: 'Inventory', value: 4 },
+                                            { label: 'Sales', value: 5 },
+                                            { label: 'Company', value: 6 },
+                                            { label: 'Admin', value: 7 },
                                         ]"
                                         label="label"
                                         :reduce="option => option.value"
@@ -251,15 +253,19 @@ const onSort = (event) => menuGroupStore.setSort(event);
 const getStatusBadge = (jenisMenu) => {
     switch (jenisMenu) {
         case 1:
-            return { text: 'Master', class: 'badge rounded-pill bg-label-primary' };
+            return { text: 'Purchasing', class: 'badge rounded-pill bg-label-primary' };
         case 2:
-            return { text: 'Inventory', class: 'badge rounded-pill bg-label-secondary' };
+            return { text: 'HRD', class: 'badge rounded-pill bg-label-secondary' };
         case 3:
-            return { text: 'Laporan', class: 'badge rounded-pill bg-label-warning text-dark' };
+            return { text: 'Accounting', class: 'badge rounded-pill bg-label-warning text-dark' };
         case 4:
-            return { text: 'Admin', class: 'badge rounded-pill bg-label-info' };
+            return { text: 'Inventory', class: 'badge rounded-pill bg-label-info' };
         case 5:
-            return { text: 'Transaksi', class: 'badge rounded-pill bg-label-success' };
+            return { text: 'Sales', class: 'badge rounded-pill bg-label-success' };
+        case 6:
+            return { text: 'Company', class: 'badge rounded-pill bg-label-info' };
+        case 7:
+            return { text: 'Admin', class: 'badge rounded-pill bg-label-danger' };
         default:
             return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }

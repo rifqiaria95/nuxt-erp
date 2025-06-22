@@ -412,7 +412,7 @@ const exportData = (format) => {
 
 // View Stock In Details
 const viewStockInDetails = (stockInId) => {
-    router.push({ path: `/stock/stockin-detail`, query: { id: stockInId } });
+    router.push({ path: `/inventory/stockin-detail`, query: { id: stockInId } });
 };
 
 const deleteStockIn = async (id) => {

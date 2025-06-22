@@ -121,61 +121,52 @@
                             </div>
                         </div>
                         <div class="col-12">
-                            <h5 class="mb-6">Role Permissions</h5>
-
-                            <div class="table-responsive">
-                            <table class="table table-flush-spacing">
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            <p class="mb-1 fw-bold">Super Admin Access</p>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex justify-content-end flex-wrap">
-                                                <div class="form-check mb-1 me-4">
-                                                    <input class="form-check-input" type="checkbox" id="selectAll" v-model="selectAll" />
-                                                    <label class="form-check-label" for="selectAll">Select All</label>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <template v-if="menuDetailsWithPermissions.length > 0">
-                                        <tr v-for="menuDetail in menuDetailsWithPermissions" :key="menuDetail.id">
-                                        <td class="text-nowrap fw-medium">{{ menuDetail.name }}</td>
-                                        <td>
-                                            <div class="d-flex justify-content-end flex-wrap">
-                                                <div
-                                                    v-for="perm in menuDetail.permissions"
-                                                    :key="perm.id"
-                                                    class="form-check mb-1 me-4"
-                                                >
-                                                    <input
-                                                        class="form-check-input"
-                                                        type="checkbox"
-                                                        :id="`perm_${menuDetail.id}_${perm.id}`"
-                                                        :value="perm.id"
-                                                        v-model="form.permissionIds"
-                                                    />
-                                                    <label
-                                                        class="form-check-label"
-                                                        :for="`perm_${menuDetail.id}_${perm.id}`"
-                                                    >
-                                                        {{ perm.name }}
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        </tr>
-                                    </template>
-
-                                    <tr v-else>
-                                        <td colspan="2" class="text-center py-4">
-                                        <div class="text-muted">No permissions data available</div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-0">Role Permissions</h5>
+                                </div>
                             </div>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-4 mb-4">
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAll" v-model="selectAll" />
+                                        <label class="form-check-label" for="selectAll">Pilih Semua</label>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="p-input-icon-left">
+                                        <InputText v-model="permissionSearch" placeholder="Cari Menu..." />
+                                    </span>
+                                </div>
+                            </div>
+                             <DataTable :value="filteredMenuDetails" :rows="permissionTableRows" paginator
+                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} menu"
+                                responsiveLayout="scroll"
+                                :paginator="true"
+                                class="p-datatable-sm"
+                                >
+                                <Column field="name" header="Menu" :sortable="true" style="min-width: 12rem;"></Column>
+                                
+                                <Column v-for="permName in masterPermissionNames" :key="permName" style="min-width: 6rem;">
+                                    <template #header>
+                                        <div class="text-center w-100 font-weight-bold">{{ permName }}</div>
+                                    </template>
+                                    <template #body="{ data }">
+                                        <div v-if="getPermission(data, permName)" class="form-check d-flex justify-content-center">
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                :value="getPermission(data, permName).id"
+                                                v-model="form.permissionIds"
+                                            />
+                                        </div>
+                                    </template>
+                                </Column>
+                                <template #empty>
+                                    <div class="text-center p-4">Tidak ada data menu.</div>
+                                </template>
+                            </DataTable>
                         </div>
                     </div>
                     <div class="modal-footer mt-6">
@@ -207,6 +198,7 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
+import DataTable from 'primevue/datatable'
 import { useDebounceFn } from '@vueuse/core'
 
 const myDataTableRef = ref(null);
@@ -225,6 +217,10 @@ const {
 
 const globalFilterValue = ref('');
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
+const permissionSearch = ref('');
+const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show', 'Approve', 'Reject'];
+const permissionTableRows = ref(10);
+const permissionRowsOptions = ref([5, 10, 25, 50]);
 
 const selectAll = computed({
   get() {
@@ -242,10 +238,13 @@ const selectAll = computed({
   }
 });
 
+const getPermission = (menu, permName) => {
+    return menu.permissions.find(p => p.name === permName);
+};
+
 const menuDetailsWithPermissions = computed(() => {
     const result = {};
     const masterPermissions = Array.isArray(permissions.value) ? permissions.value : [];
-    const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show', 'Approve', 'Reject'];
 
     masterPermissions.forEach(p => {
         const permParts = p.name?.split('_');
@@ -293,7 +292,7 @@ const menuDetailsWithPermissions = computed(() => {
         }
     });
 
-    const sortedMenuDetails = Object.values(result).sort((a, b) => a.order - b.order);
+    const sortedMenuDetails = Object.values(result).sort((a, b) => a.name.localeCompare(b.name));
     sortedMenuDetails.forEach(md => {
         md.permissions.sort((a, b) => {
             const orderA = masterPermissionNames.indexOf(a.name);
@@ -303,6 +302,16 @@ const menuDetailsWithPermissions = computed(() => {
     });
 
     return sortedMenuDetails;
+});
+
+const filteredMenuDetails = computed(() => {
+    if (!permissionSearch.value) {
+        return menuDetailsWithPermissions.value;
+    }
+    const searchLower = permissionSearch.value.toLowerCase();
+    return menuDetailsWithPermissions.value.filter(menu => 
+        menu.name.toLowerCase().includes(searchLower)
+    );
 });
 
 const modalTitle = computed(() => isEditMode.value ? 'Edit Role' : 'Tambah Role');
@@ -343,5 +352,7 @@ const onSort = (event) => rolesStore.setSort(event);
 </script>
  
  <style>
-    
+    .p-dropdown-panel {
+        z-index: 1056 !important;
+    }
  </style>

@@ -530,7 +530,7 @@ const calculateSubtotal = (index) => {
 };
 
 const viewPurchaseOrderDetails = (purchaseOrderId) => {
-    router.push({ path: `/transaksi/purchase-detail`, query: { id: purchaseOrderId } });
+    router.push({ path: `/purchasing/purchase-order-detail`, query: { id: purchaseOrderId } });
 };
 
 const getStatusBadge = (status) => {

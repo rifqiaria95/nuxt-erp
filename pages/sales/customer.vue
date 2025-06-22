@@ -494,7 +494,7 @@ function onLogoChange(e) {
 
 // View Customer Details
 const openCustomerDetails = (customerId) => {
-    router.push({ path: `/master/customer-detail`, query: { id: customerId } });
+    router.push({ path: `/sales/customer-detail`, query: { id: customerId } });
 };
 
 </script>

@@ -12,6 +12,7 @@ export interface MenuGroup {
 
 interface MenuGroupState {
   menuGroups: MenuGroup[]
+  sidebarMenuGroups: MenuGroup[]
   loading: boolean
   error: any
   totalRecords: number
@@ -31,6 +32,7 @@ interface MenuGroupState {
 export const useMenuGroupStore = defineStore('menu-group', {
     state: (): MenuGroupState => ({
         menuGroups: [],
+        sidebarMenuGroups: [],
         loading: true,
         error: null,
         totalRecords: 0,
@@ -58,6 +60,7 @@ export const useMenuGroupStore = defineStore('menu-group', {
             sortField: this.params.sortField || 'id',
             sortOrder: (this.params.sortOrder || 1) > 0 ? 'asc' : 'desc',
             search   : this.params.search || '',
+            all      : 'true',
         });
 
         const token = localStorage.getItem('token');
@@ -117,7 +120,7 @@ export const useMenuGroupStore = defineStore('menu-group', {
         }
 
         const result = await response.json();
-        this.menuGroups = result.data || [];
+        this.sidebarMenuGroups = result.data || [];
       } catch (e: any) {
         this.error = e.message
         // Fail silently for sidebar

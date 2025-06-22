@@ -34,10 +34,10 @@
         <li class="menu-header mt-5">
           <span class="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
         </li>
-        <template v-if="menuGroupsStore.menuGroups && menuGroupsStore.menuGroups.length">
+        <template v-if="filteredAndSortedMenuGroups.length">
           <li
             class="menu-item"
-            v-for="group in [...menuGroupsStore.menuGroups].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
+            v-for="group in filteredAndSortedMenuGroups"
             :key="group.id"
             :class="{
               open: isGroupOpen(group),
@@ -80,17 +80,36 @@
     import { useMenuGroupStore } from '~/stores/menu-group';
     import { useMenuDetailStore } from '~/stores/menu-detail';
     import { useCustomerStore } from '~/stores/customer';
-    import { ref, onMounted, watch } from 'vue';
+    import { ref, onMounted, watch, computed } from 'vue';
     import { useRoute } from 'vue-router';
     import { useLayoutStore } from '~/stores/layout';
+    import { useUserStore } from '~/stores/user';
 
     const menuGroupsStore = useMenuGroupStore();
     const menuDetailsStore = useMenuDetailStore();
     const route = useRoute();
     const layoutStore = useLayoutStore();
     const customerStore = useCustomerStore();
+    const userStore = useUserStore();
 
     const openGroupIds = ref(new Set());
+
+    const isSuperAdmin = computed(() => {
+      return userStore.user?.roles.some(role => role.name === 'superadmin');
+    });
+
+    const filteredAndSortedMenuGroups = computed(() => {
+      if (!menuGroupsStore.sidebarMenuGroups) return [];
+
+      return [...menuGroupsStore.sidebarMenuGroups]
+        .filter(group => {
+          if (group.name === 'Admin' || group.jenisMenu === 7) {
+            return isSuperAdmin.value;
+          }
+          return true;
+        })
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    });
 
     const prefetchMap = {
       '/master/customer': () => customerStore.prefetchCustomers(),
@@ -133,7 +152,7 @@
     }
 
     const setActiveGroup = () => {
-      const activeGroup = menuGroupsStore.menuGroups.find(isGroupActive);
+      const activeGroup = menuGroupsStore.sidebarMenuGroups.find(isGroupActive);
       if (activeGroup) {
         if (!openGroupIds.value.has(activeGroup.id)) {
           openGroupIds.value.clear();
@@ -143,6 +162,7 @@
     };
 
     onMounted(async () => {
+      await userStore.loadUser();
       await menuGroupsStore.fetchAllMenuGroups();
       setActiveGroup();
     });

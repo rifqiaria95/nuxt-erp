@@ -50,7 +50,6 @@
                                 </div>
                                 <div class="input-group">
                                     <span class="p-input-icon-left">
-                                         <i class="ri-search-line"></i>
                                         <InputText
                                             v-model="globalFilterValue"
                                             placeholder="Cari Gudang..."
@@ -97,6 +96,7 @@
 
             <!-- Placeholder untuk WarehouseModal component -->
             <Modal 
+                id="Modal"
                 :title="modalTitle" 
                 :description="modalDescription"
                 :validation-errors-from-parent="validationErrors"

@@ -213,6 +213,7 @@ export const useWarehouseStore = defineStore('warehouse', {
           }
         },
         openModal(warehouse: Warehouse | null = null) {
+            console.log('openModal', warehouse);
             this.isEditMode = !!warehouse;
             this.validationErrors = [];
             if (warehouse) {
