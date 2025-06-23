@@ -30,6 +30,8 @@ export default defineNuxtConfig({
     '~/public/vendor/libs/select2/select2.css',
   ],
   app: {
+    baseURL: '/',
+    target: 'static',
     head: {
       title: 'Kainnova Digital Solutions',
       htmlAttrs: {
