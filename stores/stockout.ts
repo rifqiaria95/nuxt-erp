@@ -1,10 +1,6 @@
 import { defineStore } from 'pinia'
-import type { PurchaseOrder } from './purchaseOrder'
-import type { Warehouse } from './warehouse'
-import type { User } from './userManagement' // Dihapus karena 'User' tidak diekspor dari './user'
-import type { SalesOrder } from './sales-order'
-import type { Product } from './product'
-import type { StockIn, StockOut, Stock, StockInDetail, StockOutDetail, StockTransfer } from './stocks'
+import type { StockOut, StockOutDetail } from './stocks'
+import type { User } from './userManagement'
 
 interface Stats {
   total : number | undefined
@@ -13,13 +9,10 @@ interface Stats {
 }
 
 interface StockState {
-  stockIns       : StockIn[]
-  selectedStockIn: StockIn | null
-  totalRecords   : number
   stockOuts      : StockOut[]
-  stockInDetails : StockInDetail[]
+  selectedStockOut: StockOut | null
+  totalRecords   : number
   stockOutDetails: StockOutDetail[]
-  stockTransfers : StockTransfer[]
   stats          : Stats
   loading        : boolean
   error          : any
@@ -37,14 +30,11 @@ interface StockState {
   validationErrors: any[]
 }
 
-export const useStockStore = defineStore('stock', {
+export const useStockOutStore = defineStore('stockOut', {
   state: (): StockState => ({
-    stockIns: [],
     stockOuts: [],
-    stockInDetails: [],
     stockOutDetails: [],
-    stockTransfers: [],
-    selectedStockIn: null,
+    selectedStockOut: null,
     totalRecords: 0,
     stats: {
       total: undefined,
@@ -67,7 +57,7 @@ export const useStockStore = defineStore('stock', {
     validationErrors: [],
   }),
   actions: {
-    async fetchStockInsPaginated() {
+    async fetchStockOutsPaginated() {
       this.loading = true;
       try {
         const { $api } = useNuxtApp();
@@ -81,7 +71,7 @@ export const useStockStore = defineStore('stock', {
             search   : this.params.search || '',
         });
 
-        const response = await fetch(`${$api.stockIn()}?${params.toString()}`, {
+        const response = await fetch(`${$api.stockOut()}?${params.toString()}`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
@@ -90,17 +80,17 @@ export const useStockStore = defineStore('stock', {
         });
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data stock in dengan status: ' + response.status }));
-            throw new Error(errorData.message || 'Gagal memuat data stock in');
+            const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data stock out dengan status: ' + response.status }));
+            throw new Error(errorData.message || 'Gagal memuat data stock out');
         }
 
         const result = await response.json();
-        this.stockIns = result.data || []; 
+        this.stockOuts = result.data || []; 
         this.totalRecords = parseInt(result.meta.total) || 0;
         
         return result;
       } catch (error) {
-          this.stockIns = [];
+          this.stockOuts = [];
           this.totalRecords = 0;
           throw error;
       } finally {
@@ -108,7 +98,7 @@ export const useStockStore = defineStore('stock', {
       }
     },
 
-    async saveStockIn() {
+    async saveStockOut() {
       this.loading = true
       try {
         const { $api } = useNuxtApp()
@@ -120,7 +110,7 @@ export const useStockStore = defineStore('stock', {
         let url
   
         const payload: any = {
-          noSi: this.form.noSi,
+          noSo: this.form.noSo,
           date: this.form.date,
           warehouseId: this.form.warehouseId,
           status: this.form.status,
@@ -128,9 +118,9 @@ export const useStockStore = defineStore('stock', {
   
         if (this.isEditMode) {
           if (!this.form.id) {
-            throw new Error('ID Stock In tidak ditemukan untuk update.')
+            throw new Error('ID Stock Out tidak ditemukan untuk update.')
           }
-          url = `${$api.stockIn()}/${this.form.id}`
+          url = `${$api.stockOut()}/${this.form.id}`
           response = await fetch(url, {
             method: 'PUT',
             body: JSON.stringify(payload),
@@ -144,7 +134,7 @@ export const useStockStore = defineStore('stock', {
         }
         else {
           payload.status = 'draft'
-          url = $api.stockIn()
+          url = $api.stockOut()
           response = await fetch(url, {
             method: 'POST',
             body: JSON.stringify(payload),
@@ -158,7 +148,7 @@ export const useStockStore = defineStore('stock', {
         }
   
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: `Gagal ${this.isEditMode ? 'memperbarui' : 'membuat'} stock in` }))
+          const errorData = await response.json().catch(() => ({ message: `Gagal ${this.isEditMode ? 'memperbarui' : 'membuat'} stock out` }))
           throw errorData
         }
   
@@ -172,11 +162,11 @@ export const useStockStore = defineStore('stock', {
       }
     },
     // Fungsi untuk mengambil data stock in
-    async fetchStockIns() {
+    async fetchStockOuts() {
       try {
         this.loading = true;
         const { $api }     = useNuxtApp();
-        const url          = `${$api.stockIn()}`;
+        const url          = `${$api.stockOut()}`;
         const token        = localStorage.getItem('token');
 
         const response = await fetch(url, {
@@ -189,22 +179,22 @@ export const useStockStore = defineStore('stock', {
 
         if (!response.ok) {
           const errorBody = await response.text();
-          throw new Error(`Failed to fetch Stock In details! status: ${response.status}. Response: ${errorBody}`);
+          throw new Error(`Failed to fetch Stock Out details! status: ${response.status}. Response: ${errorBody}`);
         }
 
         const resData = await response.json();
-        this.stockIns = resData
+        this.stockOuts = resData
 
-        console.log('Pinia store stockIn state after refresh load:', this.stockIns);
+        console.log('Pinia store stockOut state after refresh load:', this.stockOuts);
       } catch (e) {
-        console.error('Error fetching stock in details:', e);
+        console.error('Error fetching stock out details:', e);
         this.error = e;
       } finally {
         this.loading = false;
       }
     },
     // Fungsi untuk menghapus stock in
-    async deleteStockIn(id: string) {
+    async deleteStockOut(id: string) {
       this.loading = true
       this.error = null
       try {
@@ -218,7 +208,7 @@ export const useStockStore = defineStore('stock', {
         const csrfData = await csrfResponse.json()
         const csrfToken = csrfData.token
 
-        const url = `${$api.stockIn()}/${id}`
+        const url = `${$api.stockOut()}/${id}`
 
         const response = await fetch(url, {
           method: 'DELETE',
@@ -231,22 +221,22 @@ export const useStockStore = defineStore('stock', {
         })
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Gagal menghapus stock in' }))
+          const errorData = await response.json().catch(() => ({ message: 'Gagal menghapus stock out' }))
           throw new Error(errorData.message)
         }
 
         return true
       }
       catch (e: any) {
-        console.error('Terjadi kesalahan saat menghapus stock in:', e)
+        console.error('Terjadi kesalahan saat menghapus stock out:', e)
         throw e
       }
         finally {
           this.loading = false
       }
     },
-    // Fungsi untuk memposting stock in
-    async postStockIn(id: string) {
+    // Fungsi untuk memposting stock out
+    async postStockOut(id: string) {
       try {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
@@ -258,7 +248,7 @@ export const useStockStore = defineStore('stock', {
         const csrfData = await csrfResponse.json()
         const csrfToken = csrfData.token
 
-        const url = `${$api.postStockIn(id)}`
+        const url = `${$api.postStockOut(id)}`
 
         const response = await fetch(url, {
           method: 'POST',
@@ -271,13 +261,13 @@ export const useStockStore = defineStore('stock', {
         })
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Gagal memposting stock in' }))
+          const errorData = await response.json().catch(() => ({ message: 'Gagal memposting stock out' }))
           throw new Error(errorData.message)
         }
 
         return true
       } catch (e) {
-        console.error('Error posting stock in:', e)
+        console.error('Error posting stock out:', e)
         this.error = e
         throw e
       }
@@ -285,7 +275,7 @@ export const useStockStore = defineStore('stock', {
         this.loading = false
       }
     },
-    // Fungsi untuk mengambil data statistik stock in
+    // Fungsi untuk mengambil data statistik stock out
     async fetchStats() {
       const defaultStats = {
         total: undefined,
@@ -295,7 +285,7 @@ export const useStockStore = defineStore('stock', {
       try {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
-        const response = await fetch($api.countStockIn(), {
+        const response = await fetch($api.countStockOut(), {
             headers: { 
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -324,21 +314,19 @@ export const useStockStore = defineStore('stock', {
         this.error = error;
       }
     },
-    openModal(stockInData: StockIn | null = null) {
-        this.isEditMode = !!stockInData;
+    openModal(stockOutData: StockOut | null = null) {
+        this.isEditMode = !!stockOutData;
         this.validationErrors = [];
 
-        if (stockInData) {
+        if (stockOutData) {
             this.form = {
-                ...JSON.parse(JSON.stringify(stockInData)),
-                date: stockInData.date ? new Date(stockInData.date).toISOString().slice(0, 10) : '',
-                warehouseId: stockInData.warehouse ? stockInData.warehouse.id : null,
+                ...JSON.parse(JSON.stringify(stockOutData)),
+                date: stockOutData.date ? new Date(stockOutData.date).toISOString().slice(0, 10) : '',
             };
         } else {
             this.form = {
-              noSi: '',
+              noSo: '',
               date: '',
-              warehouseId: null,
               status: '',
             };
         }
@@ -355,34 +343,34 @@ export const useStockStore = defineStore('stock', {
     setPagination(event: any) {
         this.params.first = event.first;
         this.params.rows = event.rows;
-        this.fetchStockInsPaginated();
+        this.fetchStockOutsPaginated();
     },
 
     setSort(event: any) {
         this.params.sortField = event.sortField;
         this.params.sortOrder = event.sortOrder;
-        this.fetchStockInsPaginated();
+        this.fetchStockOutsPaginated();
     },
         
     setSearch(value: string) {
         this.params.search = value;
         this.params.first = 0;
-        this.fetchStockInsPaginated();
+        this.fetchStockOutsPaginated();
     },
 
     handleRowsChange() {
         this.params.first = 0;
-        this.fetchStockInsPaginated();
+        this.fetchStockOutsPaginated();
     },
 
-    async fetchStockInById(id: string) {
+    async fetchStockOutById(id: string) {
       this.loading = true
       this.error = null
       try {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
 
-        const response = await fetch(`${$api.getStockInDetails(id)}`, {
+        const response = await fetch(`${$api.stockOutDetail()}/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -392,13 +380,13 @@ export const useStockStore = defineStore('stock', {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({
-            message: 'Gagal memuat data stock in',
+            message: 'Gagal memuat data stock out',
           }))
           throw new Error(errorData.message)
         }
 
         const result = await response.json()
-        this.selectedStockIn = result
+        this.selectedStockOut = result
       }
       catch (e) {
         this.error = e
@@ -408,8 +396,8 @@ export const useStockStore = defineStore('stock', {
         this.loading = false
       }
     },
-    resetStockIn() {
-        this.selectedStockIn = null;
+    resetStockOut() {
+        this.selectedStockOut = null;
         this.error = null;
     },
   }

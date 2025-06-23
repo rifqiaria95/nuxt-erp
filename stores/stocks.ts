@@ -150,7 +150,7 @@ export const useStocksStore = defineStore('stocks', {
     validationErrors: [],
   }),
   actions: {
-    async fetchStocksPaginated() {
+    async fetchStocksPaginated(filters: { productId?: number; warehouseId?: number } = {}) {
       this.loading = true;
       try {
         const { $api } = useNuxtApp();
@@ -163,6 +163,13 @@ export const useStocksStore = defineStore('stocks', {
             draw     : (this.params.draw || 1).toString(),
             search   : this.params.search || '',
         });
+
+        if (filters.productId) {
+          params.append('productId', filters.productId.toString())
+        }
+        if (filters.warehouseId) {
+          params.append('warehouseId', filters.warehouseId.toString())
+        }
 
         const response = await fetch(`${$api.stock()}?${params.toString()}`, {
             headers: {

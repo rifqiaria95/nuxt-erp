@@ -69,6 +69,16 @@ export default defineNuxtPlugin(() => {
     // Purchase Order Item
     purchaseOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/purchase-order-item/updateStatusPartial/${id}`,
 
+    // Sales Order
+    salesOrder          : () => `${apiBase}/sales-order`,
+    approveSalesOrder   : (id: number | string) => `${apiBase}/sales-order/approveSalesOrder/${id}`,
+    rejectSalesOrder    : (id: number | string) => `${apiBase}/sales-order/rejectSalesOrder/${id}`,
+    salesOrderUpdate    : (id: number | string) => `${apiBase}/sales-order/update/${id}`,
+    getSalesOrderDetails: (id: number | string) => `${apiBase}/sales-order/getSalesOrderDetails/${id}`,
+
+    // Sales Order Item
+    salesOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/sales-order-item/updateStatusPartial/${id}`,
+
     // Product
     product: () => `${apiBase}/product`,
 
@@ -80,6 +90,7 @@ export default defineNuxtPlugin(() => {
     postStockIn      : (id: number | string) => `${apiBase}/stock-in/postStockIn/${id}`,
     countStockIn     : () => `${apiBase}/stock-in/getTotalStockIn`,
     stockOut         : () => `${apiBase}/stock-out`,
+    postStockOut     : (id: number | string) => `${apiBase}/stock-out/postStockOut/${id}`,
     countStockOut    : () => `${apiBase}/stock-out/getTotalStockOut`,
     stockInDetail    : () => `${apiBase}/stock-in-detail`,
     stockOutDetail   : () => `${apiBase}/stock-out-detail`,

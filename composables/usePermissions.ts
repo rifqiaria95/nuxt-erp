@@ -9,18 +9,17 @@ export const usePermissions = () => {
     if (!user.value || !user.value.roles) {
       return false;
     }
-    for (const role of user.value.roles as any[]) {
-      if (role.permissions && Array.isArray(role.permissions)) {
-        if (role.permissions.some((p: any) => p.name === permissionName)) {
-          return true;
-        }
-      }
-    }
+    // Dapatkan semua nama permission dari semua role
+    const permissions = user.value.roles.flatMap(role => role.permissions?.map((p: { name: string }) => p.name) || []);
+    return permissions.includes(permissionName);
+  };
 
-    return false;
+  const userHasRole = (roleName: string): boolean => {
+    return user.value?.roles?.some(role => role.name === roleName) || false;
   };
 
   return {
     userHasPermission,
+    userHasRole,
   };
 }; 

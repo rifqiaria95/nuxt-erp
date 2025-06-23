@@ -2,11 +2,11 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Purchase Order</h4>
+            <h4 class="mb-1">List Sales Order</h4>
             <p class="mb-6">
-            List purchaseOrder yang terdaftar di sistem
+            List salesOrder yang terdaftar di sistem
             </p>
-            <!-- purchaseOrder cards -->
+            <!-- salesOrder cards -->
             <div class="row g-6 mb-6">
                 <!-- Static cards for display, can be made dynamic later -->
                 <div class="col-xl-4 col-lg-6 col-md-6">
@@ -51,10 +51,10 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="purchaseOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
-                                        Tambah Purchase Order
+                                    <button @click="salesOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                        Tambah Sales Order
                                     </button>
-                                    <p class="mb-0 mt-1">Buat Purchase Order baru</p>
+                                    <p class="mb-0 mt-1">Buat Sales Order baru</p>
                                 </div>
                             </div>
                         </div>
@@ -64,11 +64,11 @@
 
             <div class="row g-6">
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Purchase Order</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate Purchase Order.</p>
+                    <h4 class="mt-6 mb-1">Total Sales Order</h4>
+                    <p class="mb-0">Temukan semua akun administrator perusahaan Anda dan Sales Order terkait.</p>
                 </div>
                 <div class="col-12">
-                    <!-- purchaseOrder Table -->
+                    <!-- salesOrder Table -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
@@ -89,7 +89,7 @@
                                     <span class="p-input-icon-left">
                                         <InputText
                                             v-model="globalFilterValue"
-                                            placeholder="Cari Purchase Order..."
+                                            placeholder="Cari Sales Order..."
                                             class="w-full md:w-20rem"
                                         />
                                     </span>
@@ -99,7 +99,7 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
                                 ref="myDataTableRef"
-                                :data="purchaseOrders" 
+                                :data="salesOrders" 
                                 :rows="params.rows" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
@@ -116,9 +116,9 @@
                                             {{ params.first + slotProps.index + 1 }}
                                         </template>
                                     </Column>
-                                    <Column field="noPo" header="No. PO" :sortable="true"></Column>
-                                    <Column field="vendor.name" header="Nama Vendor" :sortable="true"></Column>
-                                    <Column field="status" header="Status PO" :sortable="true">
+                                    <Column field="noSo" header="No. SO" :sortable="true"></Column>
+                                    <Column field="customer.name" header="Nama Customer" :sortable="true"></Column>
+                                    <Column field="status" header="Status SO" :sortable="true">
                                         <template #body="slotProps">
                                             <span :class="getStatusBadge(slotProps.data.status).class">
                                                 {{ getStatusBadge(slotProps.data.status).text }}
@@ -140,12 +140,12 @@
                                         </template>
                                     </Column>
                                     <Column field="up" header="Untuk Perhatian" :sortable="true"></Column>
-                                    <Column field="date" header="Tanggal PO" :sortable="true">
+                                    <Column field="date" header="Tanggal SO" :sortable="true">
                                         <template #body="slotProps">
                                             {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                         </template>
                                     </Column>
-                                    <Column field="dueDate" header="Jatuh Tempo" :sortable="true">
+                                    <Column field="dueDate" header="Jatuh Tempo SO" :sortable="true">
                                         <template #body="slotProps">
                                             {{ slotProps.data.dueDate ? new Date(slotProps.data.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                         </template>
@@ -171,27 +171,27 @@
                                                 </a>
                                                 <ul class="dropdown-menu">
                                                     <li v-if="userHasPermission('approve_purchase_order') && slotProps.data.status == 'draft'">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.approvePurchaseOrder(slotProps.data.id)">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.approveSalesOrder(slotProps.data.id)">
                                                             <i class="ri-check-line me-2"></i> Approve
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || (userHasPermission('reject_sales_order') && slotProps.data.status == 'draft')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.rejectPurchaseOrder(slotProps.data.id)">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.rejectSalesOrder(slotProps.data.id)">
                                                             <i class="ri-close-line me-2"></i> Reject
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || (userHasPermission('view_sales_order') && (slotProps.data.status == 'approved' || slotProps.data.status == 'partial' || slotProps.data.status == 'partial'))">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="viewSalesOrderDetails(slotProps.data.id)">
                                                             <i class="ri-eye-line me-2"></i> Lihat Detail
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_order') && slotProps.data.status == 'draft')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.openModal(slotProps.data)">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.openModal(slotProps.data)">
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || userHasPermission('delete_sales_order')">
-                                                        <a class="dropdown-item text-danger" href="javascript:void(0)" @click="purchaseOrderStore.deletePurchaseOrder(slotProps.data.id)">
+                                                        <a class="dropdown-item text-danger" href="javascript:void(0)" @click="salesOrderStore.deleteSalesOrder(slotProps.data.id)">
                                                             <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                         </a>
                                                     </li>
@@ -202,26 +202,26 @@
                             </MyDataTable>
                         </div>
                     </div>
-                    <!--/ purchaseOrder Table -->
+                    <!--/ salesOrder Table -->
                 </div>
             </div>
-            <!--/ purchaseOrder cards -->
+            <!--/ salesOrder cards -->
 
             <Modal 
-                id="PurchaseOrderModal"
+                id="SalesOrderModal"
                 :title="modalTitle" 
                 :description="modalDescription"
                 :validation-errors-from-parent="validationErrors"
             >
                 <template #default>
-                    <form @submit.prevent="purchaseOrderStore.savePurchaseOrder()">
+                    <form @submit.prevent="salesOrderStore.saveSalesOrder()">
                          <div class="row">
                             <div class="col">
                                 <ul class="nav nav-tabs" role="tablist">
                                     <li class="nav-item">
                                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-info" role="tab" aria-selected="true" type="button">
                                             <span class="ri-user-line ri-20px d-sm-none"></span>
-                                            <span class="d-none d-sm-block">Informasi Purchase Order</span>
+                                            <span class="d-none d-sm-block">Informasi Sales Order</span>
                                         </button>
                                     </li>
                                     <li class="nav-item">
@@ -238,12 +238,12 @@
                                 <div class="row g-4">
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="text" v-model="form.noPo" class="form-control" placeholder="No PO" required disabled>
-                                            <label>No Purchase Order</label>
+                                            <input type="text" v-model="form.noSo" class="form-control" placeholder="No SO" required disabled>
+                                            <label>No Sales Order</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <v-select v-model="form.vendorId" :options="vendors" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
+                                        <v-select v-model="form.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
@@ -254,13 +254,13 @@
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="date" v-model="form.date" class="form-control" required>
-                                            <label>Tanggal PO</label>
+                                            <label>Tanggal SO</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="date" v-model="form.dueDate" class="form-control" required>
-                                            <label>Jatuh Tempo</label>
+                                            <label>Jatuh Tempo SO</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -272,71 +272,77 @@
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)">
-                                            <label>Discount (%)</label>
+                                            <label>Discount SO (%)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="number" v-model="form.taxPercent" class="form-control" placeholder="Tax (%)">
-                                            <label>Tax (%)</label>
+                                            <label>Tax SO (%)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
                                             <input type="file" @change="onFileChange" class="form-control">
-                                            <label>Attachment</label>
+                                            <label>Attachment SO</label>
                                             <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <textarea v-model="form.description" class="form-control" placeholder="Deskripsi"></textarea>
-                                            <label>Deskripsi</label>
+                                            <textarea v-model="form.description" class="form-control" placeholder="Deskripsi SO"></textarea>
+                                            <label>Deskripsi SO</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
-                                <div v-for="(item, index) in form.purchaseOrderItems" :key="index" class="repeater-item mb-4">
+                                <div v-for="(item, index) in form.salesOrderItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
                                         <div class="col-12">
-                                            <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style"/>
+                                            <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang SO" class="v-select-style" @update:modelValue="updateStockInfo(index)"/>
                                         </div>
                                         <div class="col-md-4">
-                                            <v-select v-model="item.productId" :options="products" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
+                                            <v-select v-model="item.productId" :options="customerProducts" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty">
-                                                <label>Jumlah</label>
+                                                <label>Jumlah SO</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="text" :value="formatRupiah(item.price)" class="form-control" placeholder="Harga" readonly>
-                                                <label>Harga</label>
+                                                <label>Harga SO</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="text" :value="formatRupiah(item.subtotal)" class="form-control" placeholder="Subtotal" readonly>
-                                                <label>Subtotal</label>
+                                                <label>Subtotal SO</label>
                                             </div>
                                         </div>
-                                        <div class="col-md-9">
+                                        <div class="col-md-6">
                                              <div class="form-floating form-floating-outline">
                                                 <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item">
-                                                <label>Deskripsi</label>
+                                                <label>Deskripsi SO</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" :value="item.stock.quantity !== undefined && item.stock.quantity !== null ? Math.floor(item.stock.quantity) : ''" class="form-control" placeholder="Stock" readonly>
+                                                <label>Stock</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3 d-flex align-items-center">
-                                            <button @click.prevent="purchaseOrderStore.removeItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
+                                            <button @click.prevent="salesOrderStore.removeItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
                                         </div>
                                     </div>
                                     <hr class="my-4">
                                 </div>
                                 <div class="mt-4">
-                                    <button @click.prevent="purchaseOrderStore.addItem()" class="btn btn-primary">Tambah Item</button>
+                                    <button @click.prevent="salesOrderStore.addItem()" class="btn btn-primary">Tambah Item</button>
                                 </div>
                                 <div class="d-flex justify-content-end mt-4">
                                     <span class="fw-bold fs-5">Grand Total: {{ formatRupiah(grandTotal) }}</span>
@@ -344,7 +350,7 @@
                             </div>
                         </div>
                         <div class="modal-footer mt-6">
-                             <button type="button" class="btn btn-outline-secondary" @click="purchaseOrderStore.closeModal()">Tutup</button>
+                             <button type="button" class="btn btn-outline-secondary" @click="salesOrderStore.closeModal()">Tutup</button>
                             <button type="submit" class="btn btn-primary" :disabled="loading">
                                 <span v-if="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                                 Simpan
@@ -361,12 +367,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
-import { useVendorStore } from '~/stores/vendor'
+import { useSalesOrderStore } from '~/stores/sales-order'
+import { useCustomerStore } from '~/stores/customer'
 import { usePerusahaanStore } from '~/stores/perusahaan'
 import { useCabangStore } from '~/stores/cabang'
 import { useProductStore } from '~/stores/product'
 import { useWarehouseStore } from '~/stores/warehouse'
+import { useStocksStore } from '~/stores/stocks'
 import { useUserStore } from '~/stores/user'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
@@ -385,24 +392,25 @@ const router = useRouter();
 
 // Store
 const myDataTableRef        = ref(null)
-const purchaseOrderStore    = usePurchaseOrderStore()
-const vendorStore           = useVendorStore()
+const salesOrderStore       = useSalesOrderStore()
+const customerStore         = useCustomerStore()
 const perusahaanStore       = usePerusahaanStore()
 const warehouseStore        = useWarehouseStore()
 const cabangStore           = useCabangStore()
 const productStore          = useProductStore()
+const stockStore            = useStocksStore()
 const userStore             = useUserStore()
 const formatRupiah          = useFormatRupiah()
 const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore       = usePermissionsStore()
 
-const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(purchaseOrderStore)
-const { vendors } = storeToRefs(vendorStore)
+const { salesOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, customerProducts } = storeToRefs(salesOrderStore)
+const { customers }   = storeToRefs(customerStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
-const { cabangs } = storeToRefs(cabangStore)
-const { warehouses } = storeToRefs(warehouseStore)
-const { products } = storeToRefs(productStore)
-const { user } = storeToRefs(userStore)
+const { cabangs }     = storeToRefs(cabangStore)
+const { warehouses }  = storeToRefs(warehouseStore)
+const { products }    = storeToRefs(productStore)
+const { user }        = storeToRefs(userStore)
 const { permissions } = storeToRefs(permissionStore)
 
 // State
@@ -410,14 +418,16 @@ const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
-const modalTitle = computed(() => isEditMode.value ? 'Edit Purchase Order' : 'Tambah Purchase Order');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data purchaseOrder di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan purchaseOrder baru.');
+const modalTitle = computed(() => isEditMode.value ? 'Edit Sales Order' : 'Tambah Sales Order');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data salesOrder di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan salesOrder baru.');
 
 const grandTotal = computed(() => {
-  if (!form.value || !form.value.purchaseOrderItems) return 0;
-
-  const totalItems = form.value.purchaseOrderItems.reduce((total, item) => {
-    return total + (Number(item.subtotal) || 0);
+  if (!form.value || !form.value.salesOrderItems) return 0;
+  
+  const totalItems = form.value.salesOrderItems.reduce((total, item) => {
+    const quantity = Number(item.quantity) || 0;
+    const unitPrice = Number(item.price) || 0;
+    return total + (quantity * unitPrice);
   }, 0);
 
   const discountPercent = Number(form.value.discountPercent) || 0;
@@ -440,16 +450,16 @@ const getAttachmentUrl = (attachmentPath) => {
 
 let modalInstance = null;
 onMounted(() => {
-    purchaseOrderStore.fetchPurchaseOrders();
-    vendorStore.fetchVendors();
+    salesOrderStore.fetchSalesOrders();
+    customerStore.fetchCustomers();
     perusahaanStore.fetchPerusahaans();
     cabangStore.fetchCabangs();
     productStore.fetchProducts();
     warehouseStore.fetchWarehouses();
-    userStore.loadUser();
     permissionStore.fetchPermissions();
-    
-    const modalElement = document.getElementById('PurchaseOrderModal')
+    userStore.loadUser();
+
+    const modalElement = document.getElementById('SalesOrderModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
@@ -478,22 +488,51 @@ watch(() => form.value.perusahaanId, (newPerusahaanId) => {
     }
 });
 
+watch(() => form.value.customerId, (newCustomerId, oldCustomerId) => {
+  if (newCustomerId && newCustomerId !== oldCustomerId) {
+    salesOrderStore.fetchProductsForCustomer(newCustomerId);
+    
+    if (!isEditMode.value || (isEditMode.value && newCustomerId !== salesOrderStore.originalSalesOrder?.customerId)) {
+      form.value.salesOrderItems = [];
+      salesOrderStore.addItem();
+    }
+  } else if (!newCustomerId) {
+    salesOrderStore.customerProducts = [];
+    form.value.salesOrderItems = [];
+    salesOrderStore.addItem();
+  }
+});
+
+watch(() => salesOrderStore.customerProducts, (newProducts) => {
+  if (form.value.salesOrderItems && newProducts) {
+    form.value.salesOrderItems.forEach(item => {
+      const productExists = newProducts.some(p => p.id === item.productId);
+      if (!productExists) {
+        item.productId = null;
+        item.price = 0;
+        item.quantity = 1;
+        item.subtotal = 0;
+      }
+    });
+  }
+}, { deep: true });
+
 const filteredCabangs = computed(() => {
     if (!form.value.perusahaanId || !cabangs.value) return [];
     return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
 const debouncedSearch = useDebounceFn(() => {
-    purchaseOrderStore.setSearch(globalFilterValue.value)
+    salesOrderStore.setSearch(globalFilterValue.value)
 }, 500)
 watch(globalFilterValue, debouncedSearch);
 
-const onPage = (event) => purchaseOrderStore.setPagination(event);
+const onPage = (event) => salesOrderStore.setPagination(event);
 const handleRowsChange = () => {
     params.value.first = 0;
-    purchaseOrderStore.fetchPurchaseOrders();
+    salesOrderStore.fetchSalesOrders();
 };
-const onSort = (event) => purchaseOrderStore.setSort(event);
+const onSort = (event) => salesOrderStore.setSort(event);
 
 const exportData = (format) => {
     if (format === 'csv') myDataTableRef.value.exportCSV();
@@ -511,14 +550,14 @@ function onFileChange(e) {
 }
 
 const onProductChange = (index) => {
-  const selectedProductId = form.value.purchaseOrderItems[index].productId;
-  const selectedProduct = products.value.find(p => p.id === selectedProductId);
+  const selectedProductId = form.value.salesOrderItems[index].productId;
+  const selectedProduct = customerProducts.value.find(p => p.id === selectedProductId);
 
   if (selectedProduct) {
-    const item = form.value.purchaseOrderItems[index];
-    item.unitPrice = selectedProduct.priceBuy;
-    item.price = Number(selectedProduct.priceBuy) || 0;
+    const item = form.value.salesOrderItems[index];
+    item.price = Number(selectedProduct.priceSell) || 0;
     calculateSubtotal(index);
+    updateStockInfo(index)
   }
 };
 
@@ -527,26 +566,50 @@ const onQuantityChange = (index) => {
 };
 
 const calculateSubtotal = (index) => {
-  const item = form.value.purchaseOrderItems[index];
+  const item = form.value.salesOrderItems[index];
   const quantity = Number(item.quantity) || 0;
-  const unitPrice = Number(item.unitPrice) || 0;
+  const unitPrice = Number(item.price) || 0;
   item.subtotal = quantity * unitPrice;
 };
 
-const viewPurchaseOrderDetails = (purchaseOrderId) => {
-    router.push({ path: `/purchasing/purchase-order-detail`, query: { id: purchaseOrderId } });
+const viewSalesOrderDetails = (salesOrderId) => {
+    router.push({ path: `/sales/sales-order-detail`, query: { id: salesOrderId } });
 };
 
 const getStatusBadge = (status) => {
     switch (status) {
         case 'draft': return { text: 'Draft', class: 'badge rounded-pill bg-label-secondary' };
         case 'approved': return { text: 'Approved', class: 'badge rounded-pill bg-label-primary' };
-        case 'received': return { text: 'Received', class: 'badge rounded-pill bg-label-success' };
+        case 'delivered': return { text: 'Delivered', class: 'badge rounded-pill bg-label-success' };
         case 'rejected': return { text: 'Rejected', class: 'badge rounded-pill bg-label-danger' };
         case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
         default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }
 };
+
+const updateStockInfo = async (index) => {
+    const item = form.value.salesOrderItems[index]
+    if (item.productId && item.warehouseId) {
+        try {
+            stockStore.params.search = '' // Reset search if any
+            stockStore.params.rows = 1 // We only need one record
+            const response = await stockStore.fetchStocksPaginated({
+                productId: item.productId,
+                warehouseId: item.warehouseId,
+            })
+            if (response && response.data && response.data.length > 0) {
+                item.stock = response.data[0]
+            } else {
+                item.stock = { quantity: 0 }
+            }
+        } catch (error) {
+            console.error('Failed to fetch stock info:', error)
+            item.stock = { quantity: 0 }
+        }
+    } else {
+        item.stock = { quantity: 0 }
+    }
+}
 
 </script>
 
