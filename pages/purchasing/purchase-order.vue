@@ -175,22 +175,22 @@
                                                             <i class="ri-check-line me-2"></i> Approve
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('reject_sales_order') && slotProps.data.status == 'draft')">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('reject_purchase_order') && slotProps.data.status == 'draft')">
                                                         <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.rejectPurchaseOrder(slotProps.data.id)">
                                                             <i class="ri-close-line me-2"></i> Reject
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('view_sales_order') && (slotProps.data.status == 'approved' || slotProps.data.status == 'partial' || slotProps.data.status == 'partial'))">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('view_purchase_order') && (slotProps.data.status == 'approved' || slotProps.data.status == 'partial' || slotProps.data.status == 'partial'))">
                                                         <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
                                                             <i class="ri-eye-line me-2"></i> Lihat Detail
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_order') && slotProps.data.status == 'draft')">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('edit_purchase_order') && slotProps.data.status == 'draft')">
                                                         <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.openModal(slotProps.data)">
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || userHasPermission('delete_sales_order')">
+                                                    <li v-if="userHasRole('superadmin') || userHasPermission('delete_purchase_order')">
                                                         <a class="dropdown-item text-danger" href="javascript:void(0)" @click="purchaseOrderStore.deletePurchaseOrder(slotProps.data.id)">
                                                             <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                         </a>
@@ -516,7 +516,6 @@ const onProductChange = (index) => {
 
   if (selectedProduct) {
     const item = form.value.purchaseOrderItems[index];
-    item.unitPrice = selectedProduct.priceBuy;
     item.price = Number(selectedProduct.priceBuy) || 0;
     calculateSubtotal(index);
   }
@@ -529,8 +528,8 @@ const onQuantityChange = (index) => {
 const calculateSubtotal = (index) => {
   const item = form.value.purchaseOrderItems[index];
   const quantity = Number(item.quantity) || 0;
-  const unitPrice = Number(item.unitPrice) || 0;
-  item.subtotal = quantity * unitPrice;
+  const price = Number(item.price) || 0;
+  item.subtotal = quantity * price;
 };
 
 const viewPurchaseOrderDetails = (purchaseOrderId) => {

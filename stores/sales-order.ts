@@ -3,6 +3,7 @@ import { apiFetch } from '~/utils/apiFetch'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
 import { useUserStore } from '~/stores/user'
+import { useStocksStore } from '~/stores/stocks'
 import type { Customer } from './customer'
 import type { User } from './userManagement'
 import type { Perusahaan } from './perusahaan'
@@ -44,17 +45,17 @@ export interface SalesOrder {
   updatedAt      : string
   createdBy      : number
   approvedBy     : number | null
-  receivedBy     : number | null
+  deliveredBy     : number | null
   rejectedBy     : number | null
   approvedAt     : string | null
-  receivedAt     : string | null
+  deliveredAt     : string | null
   rejectedAt     : string | null
   customer?      : Customer
   perusahaan?    : Perusahaan
   cabang?        : Cabang
   createdByUser? : User
   approvedByUser?: User
-  receivedByUser?: User
+  deliveredByUser?: User
   salesOrderItems? : SalesOrderItem[]
 }
 
@@ -102,6 +103,18 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         search: '',
     },
     form: {
+        noSo: '',
+        up: '',
+        customerId: null,
+        perusahaanId: null,
+        cabangId: null,
+        date: '',
+        dueDate: '',
+        discountPercent: 0,
+        taxPercent: 0,
+        description: '',
+        attachment: null,
+        status: 'draft',
         salesOrderItems: []
     },
     isEditMode: false,
@@ -204,6 +217,42 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         this.validationErrors = [];
         const { $api } = useNuxtApp();
         const userStore = useUserStore();
+        const stockStore = useStocksStore();
+
+        // Validasi stok sebelum mengirim dengan mengambil data terbaru
+        for (const item of this.form.salesOrderItems) {
+            if (item.productId && item.warehouseId && item.quantity > 0) {
+                try {
+                    // Selalu ambil data stok terbaru untuk validasi
+                    const response = await stockStore.fetchStocksPaginated({
+                        productId: item.productId,
+                        warehouseId: item.warehouseId,
+                    });
+
+                    const stockQuantity = (response && response.data && response.data.length > 0)
+                        ? response.data[0].quantity
+                        : 0;
+
+                    if (Number(item.quantity) > Number(stockQuantity)) {
+                        const product = this.customerProducts.find(p => p.id === item.productId);
+                        const productName = product ? product.name : `ID ${item.productId}`;
+                        this.validationErrors = [
+                          {
+                            message: `Stok untuk produk "${productName}" tidak mencukupi. Stok tersedia: ${Math.floor(Number(stockQuantity))}, kuantitas diminta: ${item.quantity}.`,
+                            field: 'quantity'
+                          }
+                        ];
+                        this.loading = false;
+                        return; // Hentikan proses
+                    }
+                } catch (error) {
+                    console.error('Gagal memvalidasi stok untuk item:', item.productId, error);
+                    Swal.fire('Error', `Tidak dapat memvalidasi stok untuk produk ID ${item.productId}.`, 'error');
+                    this.loading = false;
+                    return;
+                }
+            }
+        }
 
         try {
             // Ambil CSRF token dan token otentikasi
@@ -228,7 +277,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             delete dataToAppend.cabang;
             delete dataToAppend.createdByUser;
             delete dataToAppend.approvedByUser;
-            delete dataToAppend.receivedByUser;
+            delete dataToAppend.deliveredByUser;
             delete dataToAppend.rejectedByUser;
             Object.keys(dataToAppend).forEach(key => {
                 const value = dataToAppend[key];
@@ -308,27 +357,53 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     },
 
     async deleteSalesOrder(id: string) {
-        const { $api } = useNuxtApp();
-        const result = await Swal.fire({
-            title: 'Anda yakin?',
-            text: "Data yang dihapus tidak dapat dikembalikan!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Ya, hapus!',
-            cancelButtonText: 'Batal'
-        });
+      this.loading = true;
+      const { $api } = useNuxtApp();
 
-        if (result.isConfirmed) {
-            try {
-                await apiFetch(`${$api.salesOrder()}/${id}`, { method: 'DELETE' });
-                await this.fetchSalesOrders();
-                Swal.fire('Dihapus!', 'Sales Order berhasil dihapus.', 'success');
-            } catch (error: any) {
-                Swal.fire('Error', error.message, 'error');
-            }
-        }
+      const result = await Swal.fire({
+          title: 'Apakah Anda yakin?',
+          text: "Data yang dihapus tidak dapat dikembalikan!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#3085d6',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Ya, hapus!',
+          cancelButtonText: 'Batal'
+      });
+
+      if (!result.isConfirmed) {
+          this.loading = false;
+          return;
+      }
+
+      try {
+          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+          const csrfData = await csrfResponse.json();
+          const csrfToken = csrfData.token;
+          const token = localStorage.getItem('token');
+
+          const response = await fetch(`${$api.salesOrder()}/${id}`, {
+              method: 'DELETE',
+              headers: {
+                  'X-CSRF-TOKEN': csrfToken,
+                  'Authorization': `Bearer ${token}`,
+                  'Accept': 'application/json',
+              },
+              credentials: 'include',
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || 'Gagal menghapus Sales Order');
+          }
+
+          await this.fetchSalesOrders();
+          Swal.fire('Berhasil!', 'Sales Order berhasil dihapus.', 'success');
+      } catch (error: any) {
+          Swal.fire('Error', error.message || 'Gagal menghapus Sales Order', 'error');
+      } finally {
+          this.loading = false;
+      }
     },
     
     async approveSalesOrder(salesOrderId: string) {
@@ -465,64 +540,88 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     },
 
     async openModal(salesOrderData: SalesOrder | null = null) {
-        this.isEditMode = !!salesOrderData;
-        this.validationErrors = [];
+      this.isEditMode = !!salesOrderData;
+      this.validationErrors = [];
 
-        if (salesOrderData) {
-            this.originalSalesOrder = JSON.parse(JSON.stringify(salesOrderData));
-            const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : null;
-            
-            // Salin data dan format tanggal dengan benar
-            const formData: { [key: string]: any } = {
-                ...JSON.parse(JSON.stringify(salesOrderData)),
-                attachment: null, // Reset attachment, akan ditangani secara terpisah
-            };
+      if (salesOrderData) {
+          await this.getSalesOrderDetails(salesOrderData.id);
+          const fullData = this.salesOrder;
 
-            const dateFields = ['date', 'dueDate', 'approvedAt', 'receivedAt'];
-            dateFields.forEach(field => {
-                if (formData[field]) {
-                    formData[field] = formatDate(formData[field]);
-                }
+          if (!fullData) {
+              Swal.fire('Error', 'Tidak dapat memuat data Sales Order.', 'error');
+              return;
+          }
+          this.originalSalesOrder = JSON.parse(JSON.stringify(fullData));
+          const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : null;
+          
+          // Salin data dan format tanggal dengan benar
+          const formData: { [key: string]: any } = {
+              ...JSON.parse(JSON.stringify(fullData)),
+              attachment: null, // Reset attachment, akan ditangani secara terpisah
+          };
+
+          const dateFields = ['date', 'dueDate', 'approvedAt', 'deliveredAt'];
+          dateFields.forEach(field => {
+              if (formData[field]) {
+                  formData[field] = formatDate(formData[field]);
+              }
+          });
+
+          this.form = formData;
+
+          // Wait for products to be fetched before showing modal
+          if (this.form.customerId) {
+              await this.fetchProductsForCustomer(this.form.customerId);
+          }
+
+          // Pastikan salesOrderItems ada dan tambahkan stock jika belum ada
+          if (this.form.salesOrderItems && this.form.salesOrderItems.length > 0) {
+            this.form.salesOrderItems.forEach((item: any) => {
+              if (!item.stock) {
+                item.stock = { quantity: 0 };
+              }
             });
-
-            this.form = formData;
-            
-            if (this.form.customerId) {
-                this.fetchProductsForCustomer(this.form.customerId);
-            }
-
-            // Pastikan salesOrderItems ada
-            if (!this.form.salesOrderItems || this.form.salesOrderItems.length === 0) {
-                this.form.salesOrderItems = [];
-                this.addItem();
-            }
-        } else {
-            this.form = {
-                noSo: '', up: '', customerId: null, perusahaanId: null, cabangId: null,
-                date: new Date().toISOString().split('T')[0], 
-                dueDate: new Date().toISOString().split('T')[0], 
-                discountPercent: 0, 
-                taxPercent: 0, 
-                description: '',
-                attachment: null, 
-                status: 'draft', 
-                salesOrderItems: [],
-            };
-            this.customerProducts = []
-            this.addItem(); // Tambahkan satu item default untuk SO baru
-        }
-        this.showModal = true;
+          } else {
+            this.form.salesOrderItems = [];
+            this.addItem();
+          }
+      } else {
+          this.resetForm();
+          this.addItem(); // Tambahkan satu item default untuk SO baru
+      }
+      this.showModal = true;
     },
 
     closeModal() {
-        this.showModal = false;
-        this.isEditMode = false;
-        this.form = { salesOrderItems: [] };
-        this.validationErrors = [];
-        this.originalSalesOrder = null;
+      this.showModal = false;
+      this.isEditMode = false;
+      this.originalSalesOrder = null;
+      this.resetForm();
+      this.validationErrors = [];
+    },
+    
+    resetForm() {
+      this.form = {
+        noSo: '',
+        up: '',
+        customerId: null,
+        perusahaanId: null,
+        cabangId: null,
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date().toISOString().split('T')[0],
+        discountPercent: 0,
+        taxPercent: 0,
+        description: '',
+        attachment: null,
+        status: 'draft',
+        salesOrderItems: [],
+      };
     },
 
     addItem() {
+        if (!this.form.salesOrderItems) {
+            this.form.salesOrderItems = [];
+        }
         this.form.salesOrderItems.push({
             productId: null,
             warehouseId: null,

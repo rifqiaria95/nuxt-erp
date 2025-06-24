@@ -261,28 +261,54 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },
 
     async deletePurchaseOrder(id: string) {
+        this.loading = true;
         const { $api } = useNuxtApp();
+  
         const result = await Swal.fire({
-            title: 'Anda yakin?',
+            title: 'Apakah Anda yakin?',
             text: "Data yang dihapus tidak dapat dikembalikan!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
             confirmButtonText: 'Ya, hapus!',
             cancelButtonText: 'Batal'
         });
-
-        if (result.isConfirmed) {
-            try {
-                await apiFetch(`${$api.purchaseOrder()}/${id}`, { method: 'DELETE' });
-                await this.fetchPurchaseOrders();
-                Swal.fire('Dihapus!', 'Purchase Order berhasil dihapus.', 'success');
-            } catch (error: any) {
-                Swal.fire('Error', error.message, 'error');
-            }
+  
+        if (!result.isConfirmed) {
+            this.loading = false;
+            return;
         }
-    },
+  
+        try {
+            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
+            const csrfData = await csrfResponse.json();
+            const csrfToken = csrfData.token;
+            const token = localStorage.getItem('token');
+  
+            const response = await fetch(`${$api.purchaseOrder()}/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                },
+                credentials: 'include',
+            });
+  
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Gagal menghapus Sales Order');
+            }
+  
+            await this.fetchPurchaseOrders();
+            Swal.fire('Berhasil!', 'Purchase Order berhasil dihapus.', 'success');
+        } catch (error: any) {
+            Swal.fire('Error', error.message || 'Gagal menghapus Purchase Order', 'error');
+        } finally {
+            this.loading = false;
+        }
+      },
     
     async approvePurchaseOrder(purchaseOrderId: string) {
       this.loading = true;
@@ -470,7 +496,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
 
     addItem() {
         this.form.purchaseOrderItems.push({
-            productId: null, warehouseId: null, quantity: 1, unitPrice: 0, price: 0,
+            productId: null, warehouseId: null, quantity: 1, price: 0,
             description: '', subtotal: 0,
         });
     },

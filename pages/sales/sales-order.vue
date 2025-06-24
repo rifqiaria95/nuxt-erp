@@ -468,10 +468,21 @@ onMounted(() => {
 watch(showModal, (newValue) => {
     if (newValue) {
         modalInstance?.show()
-        if (isEditMode.value && form.value.attachment_url) {
-            attachmentPreview.value = form.value.attachment_url
-        } else if (isEditMode.value && form.value.attachment) {
-            attachmentPreview.value = getAttachmentUrl(form.value.attachment)
+        if (isEditMode.value) {
+            if (form.value.attachment_url) {
+                attachmentPreview.value = form.value.attachment_url
+            } else if (form.value.attachment) {
+                attachmentPreview.value = getAttachmentUrl(form.value.attachment)
+            } else {
+                attachmentPreview.value = null
+            }
+            
+            // Fetch stock for existing items
+            if (form.value.salesOrderItems && form.value.salesOrderItems.length > 0) {
+                form.value.salesOrderItems.forEach((item, index) => {
+                    updateStockInfo(index);
+                });
+            }
         } else {
             attachmentPreview.value = null
         }
@@ -489,13 +500,13 @@ watch(() => form.value.perusahaanId, (newPerusahaanId) => {
 });
 
 watch(() => form.value.customerId, (newCustomerId, oldCustomerId) => {
-  if (newCustomerId && newCustomerId !== oldCustomerId) {
+  if (newCustomerId && oldCustomerId && newCustomerId !== oldCustomerId) {
     salesOrderStore.fetchProductsForCustomer(newCustomerId);
     
-    if (!isEditMode.value || (isEditMode.value && newCustomerId !== salesOrderStore.originalSalesOrder?.customerId)) {
-      form.value.salesOrderItems = [];
-      salesOrderStore.addItem();
-    }
+    form.value.salesOrderItems = [];
+    salesOrderStore.addItem();
+  } else if (newCustomerId && !oldCustomerId) {
+    salesOrderStore.fetchProductsForCustomer(newCustomerId);
   } else if (!newCustomerId) {
     salesOrderStore.customerProducts = [];
     form.value.salesOrderItems = [];
