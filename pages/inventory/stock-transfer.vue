@@ -131,11 +131,11 @@
                                             <ul class="dropdown-menu">
                                                 <li v-if="userisAdmin || userisSuperAdmin && slotProps.data.status == 'draft'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="approveStockTransfer(slotProps.data.id)">
-                                                        <i class="ri-upload-2-line me-2"></i> Approve
+                                                        <i class="ri-check-line me-2"></i> Approve
                                                     </a>
                                                 </li>
                                                 <li v-if="slotProps.data.status == 'approved'">
-                                                    <a class="dropdown-item" href="javascript:void(0)" @click="viewStockInDetails(slotProps.data.id)">
+                                                    <a class="dropdown-item" href="javascript:void(0)" @click="viewStockTransferDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
@@ -144,8 +144,8 @@
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'Received')">
-                                                    <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteStockIn(slotProps.data.id)">
+                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'draft')">
+                                                    <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteStockTransfer(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
                                                 </li>
@@ -171,7 +171,7 @@
                 :selectedStockTransfer="selectedStockTransfer"
             >
                 <template #default>
-                    <form @submit.prevent="handleSaveStockIn">
+                    <form @submit.prevent="handleSaveStockTransfer">
                         <div class="row g-6">
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
@@ -180,10 +180,10 @@
                                         class="form-control" 
                                         id="name" 
                                         v-model="form.noTransfer" 
-                                        placeholder="Masukkan no Stock Transfer"
-                                        required
+                                        placeholder="Masukkan No. Stock Transfer"
+                                        disabled
                                     >
-                                    <label for="name">No Stock Transfer</label>
+                                    <label for="name">No. Stock Transfer</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -242,11 +242,10 @@
                                     <div class="mb-6 col-lg-6 col-xl-6 col-12 mb-0">
                                         <div class="form-floating form-floating-outline">
                                             <v-select
-                                                v-model="item.stockTransferItemId"
-                                                :options="stockTransferItems"
-                                                :get-option-label="stockTransferItem => `${stockTransferItem.product.name}`"
-                                                :reduce="stockTransferItem => stockTransferItem.id"
-                                                placeholder="-- Pilih Stock Transfer Item --"
+                                                v-model="item.stock"
+                                                :options="productsInWarehouse"
+                                                :get-option-label="option => option.product.name"
+                                                placeholder="-- Pilih Produk --"
                                                 class="stock-transfer-item-select"
                                             />
                                         </div>
@@ -283,7 +282,6 @@
                                 <button
                                     type="submit"
                                     class="btn btn-primary me-2"
-                                    @click="handleSaveStockIn"
                                 >
                                     {{ isEditMode ? 'Update' : 'Simpan' }}
                                 </button>
@@ -324,8 +322,8 @@ const myDataTableRef            = ref(null)
 const userStore                 = useUserStore()
 const stockTransferStore        = useStockTransferStore()
 const warehouseStore            = useWarehouseStore()
-const { stockTransfers, totalRecords, stats, params, form, isEditMode, showModal, validationErrors } = storeToRefs(stockTransferStore)
-const { warehouse: warehouses } = storeToRefs(warehouseStore)
+const { stockTransfers, totalRecords, stats, params, form, isEditMode, showModal, validationErrors, productsInWarehouse } = storeToRefs(stockTransferStore)
+const { warehouseList: warehouses } = storeToRefs(warehouseStore)
 const selectedStockTransfer = ref(null);
 const loading               = ref(false);
 const globalFilterValue     = ref('');
@@ -379,9 +377,28 @@ onBeforeUnmount(() => {
     }
 });
 
-const handleSaveStockIn = async () => {
-    if (!form.value.noSi) {
-        return Swal.fire('Validasi', 'No SI wajib diisi.', 'warning');
+watch(() => form.value.fromWarehouseId, (newWarehouseId, oldWarehouseId) => {
+    if (newWarehouseId) {
+        stockTransferStore.fetchProductsByWarehouse(newWarehouseId);
+        // Hanya reset item jika gudang benar-benar diubah dari pilihan sebelumnya
+        // Ini mencegah item terhapus saat form edit pertama kali dimuat
+        if (oldWarehouseId && newWarehouseId !== oldWarehouseId) {
+            form.value.stockTransferItems = [];
+            stockTransferStore.addItem();
+        }
+    } else {
+        // Jika gudang dikosongkan, kosongkan juga daftar produk dan item
+        stockTransferStore.productsInWarehouse = [];
+        if (form.value.stockTransferItems) {
+            form.value.stockTransferItems = [];
+            stockTransferStore.addItem();
+        }
+    }
+}, { immediate: false });
+
+const handleSaveStockTransfer = async () => {
+    if (!form.value.date) {
+        return Swal.fire('Validasi', 'Tanggal wajib diisi.', 'warning');
     }
 
     try {
@@ -454,7 +471,7 @@ const loadLazyData = async () => {
 onMounted(() => {
     loadLazyData();
     stockTransferStore.fetchStats();
-    warehouseStore.fetchWarehouses();
+    warehouseStore.fetchAllWarehouses();
 });
 
 const exportData = (format) => {
@@ -466,11 +483,11 @@ const exportData = (format) => {
 };
 
 // View Stock Transfer Details
-const viewStockInDetails = (stockInId) => {
-    router.push({ path: `/inventory/stock-in-detail`, query: { id: stockInId } });
+const viewStockTransferDetails = (stockTransferId) => {
+    router.push({ path: `/inventory/stock-transfer-detail`, query: { id: stockTransferId } });
 };
 
-const deleteStockIn = async (id) => {
+const deleteStockTransfer = async (id) => {
     if (!id) return;
 
     const result = await Swal.fire({

@@ -17,6 +17,7 @@ interface Stats {
 
 interface WarehouseState {
   warehouses: Warehouse[]
+  warehouseList: Warehouse[]
   loading: boolean
   error: any
   stats: Stats
@@ -37,6 +38,7 @@ interface WarehouseState {
 export const useWarehouseStore = defineStore('warehouse', {
     state: (): WarehouseState => ({
         warehouses: [],
+        warehouseList: [],
         loading: false,
         error: null,
         stats: {
@@ -85,6 +87,27 @@ export const useWarehouseStore = defineStore('warehouse', {
           } finally {
             this.loading = false
           }
+        },
+        async fetchAllWarehouses() {
+            this.loading = true;
+            const { $api } = useNuxtApp();
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${$api.warehouse()}?all=true`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                this.warehouseList = result.data;
+            } catch (error) {
+                console.error('Failed to fetch all warehouses:', error);
+                Swal.fire('Error', 'Gagal memuat semua data gudang', 'error');
+            } finally {
+                this.loading = false;
+            }
         },
         async fetchStats() {
             const { $api } = useNuxtApp();

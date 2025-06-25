@@ -97,6 +97,7 @@ export default defineNuxtPlugin(() => {
     stockTransfer          : () => `${apiBase}/stock-transfer`,
     countStockTransfer     : () => `${apiBase}/stock-transfer/getTotalStockTransfer`,
     getStockTransferDetails: (id: number | string) => `${apiBase}/stock-transfer/getStockTransferDetails/${id}`,
+    cetakStockTransfer     : (id: number | string) => `${apiBase}/stock-transfer/getStockTransferDetails/${id}`,
     postStockTransfer      : (id: number | string) => `${apiBase}/stock-transfer/postStockTransfer/${id}`,
     approveStockTransfer   : (id: number | string) => `${apiBase}/stock-transfer/approveStockTransfer/${id}`,
     rejectStockTransfer    : (id: number | string) => `${apiBase}/stock-transfer/rejectStockTransfer/${id}`,

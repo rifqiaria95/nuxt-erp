@@ -249,7 +249,7 @@ export const useCustomerStore = defineStore('customer', {
         }
 
         const result = await response.json();
-        this.selectedCustomer = result;
+        this.selectedCustomer = result.data;
 
       } catch (e: any) {
         this.error = e.message;
@@ -274,7 +274,8 @@ export const useCustomerStore = defineStore('customer', {
                     credentials: 'include'
                 });
                 if (!response.ok) throw new Error('Gagal mengambil detail data pelanggan.');
-                const data = await response.json();
+                const result = await response.json();
+                const data = result.data;
                 this.form = { 
                     ...data,
                     customerProducts: data.customerProducts && data.customerProducts.length > 0 ? data.customerProducts: [{ productId: null, priceSell: 0 }]

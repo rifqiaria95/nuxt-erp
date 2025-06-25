@@ -1,21 +1,39 @@
 import { defineStore } from 'pinia'
-import type { StockTransfer } from './stocks'
+import type { Warehouse } from './warehouse'
+import type { Product } from './product'
 import Swal from 'sweetalert2'
 
+export interface StockTransfer {
+  id                 : string
+  noTransfer         : string
+  date               : string
+  fromWarehouseId    : string
+  toWarehouseId      : string
+  status             : string
+  fromWarehouse?     : Warehouse
+  toWarehouse?       : Warehouse
+  stockTransferDetails?: any[]
+  stockTransferItems?: any[]
+  createdAt          : string
+  updatedAt          : string
+  product?           : Product
+}
+
 interface Stats {
-  total : number | undefined
-  draft : number | undefined
+  total   : number | undefined
+  draft   : number | undefined
   approved: number | undefined
   rejected: number | undefined
 }
 
 interface StockTransferState {
-  totalRecords   : number
-  stockTransfers : StockTransfer[]
+  totalRecords         : number
+  stockTransfers       : StockTransfer[]
   selectedStockTransfer: StockTransfer | null
-  stats          : Stats
-  loading        : boolean
-  error          : any
+  stats                : Stats
+  loading              : boolean
+  error                : any
+  productsInWarehouse: any[]
   params: {
     first: number
     rows: number
@@ -43,6 +61,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
     },
     loading       : false,
     error         : null,
+    productsInWarehouse: [],
     params: {
         first: 0,
         rows: 10,
@@ -51,7 +70,14 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         draw: 1,
         search: '',
     },
-    form: {},
+    form: {
+      noTransfer: '',
+      date: '',
+      fromWarehouseId: null,
+      toWarehouseId: null,
+      status: '',
+      stockTransferItems: [],
+    },
     isEditMode: false,
     showModal: false,
     validationErrors: [],
@@ -110,11 +136,15 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         let url
   
         const payload: any = {
-          noTransfer: this.form.noTransfer,
-          date: this.form.date,
+          date           : this.form.date,
           fromWarehouseId: this.form.fromWarehouseId,
-          toWarehouseId: this.form.toWarehouseId,
-          status: this.form.status,
+          toWarehouseId  : this.form.toWarehouseId,
+          description    : this.form.description,
+          stockTransferDetails: this.form.stockTransferItems?.map((item: any) => ({
+            productId  : item.stock?.product?.id,
+            quantity   : Number(item.quantity) || 0,
+            description: item.description || ''
+          })).filter((item: any) => item.productId) || []
         }
   
         if (this.isEditMode) {
@@ -316,32 +346,56 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         this.error = error;
       }
     },
-    openModal(stockTransferData: StockTransfer | null = null) {
-        this.isEditMode = !!stockTransferData;
-        this.validationErrors = [];
+    async openModal(stockTransferData: StockTransfer | null = null) {
+      this.isEditMode = !!stockTransferData;
+      this.validationErrors = [];
 
-        if (stockTransferData) {
+      if (stockTransferData && stockTransferData.id) {
+          // Ambil detail lengkap dari server
+          await this.fetchStockTransferById(stockTransferData.id);
+          const detailedData = this.selectedStockTransfer;
+
+          if (!detailedData) {
+              console.error("Gagal memuat detail stock transfer.");
+              this.closeModal();
+              return;
+          }
+
+          if (detailedData.fromWarehouseId) {
+            await this.fetchProductsByWarehouse(detailedData.fromWarehouseId);
+          }
+
+          const items = (detailedData.stockTransferDetails || []).map((detail: any) => {
+            const matchingStock = this.productsInWarehouse.find(p => p.product.id === detail.productId);
+            return {
+              stock: matchingStock,
+              productId: detail.productId,
+              quantity: detail.quantity,
+              description: detail.description,
+            };
+          });
+
           this.form = {
-            id: (stockTransferData as any).id,
-            noTransfer: (stockTransferData as any).noTransfer || '',
-            date: (stockTransferData as any).date
-              ? new Date((stockTransferData as any).date).toISOString().slice(0, 10)
-              : '',
-            fromWarehouseId: (stockTransferData as any).fromWarehouseId ?? null,
-            toWarehouseId: (stockTransferData as any).toWarehouseId ?? null,
-            status: (stockTransferData as any).status ?? '',
+            ...JSON.parse(JSON.stringify(detailedData)),
+            date: detailedData.date ? new Date(detailedData.date).toISOString().slice(0, 10) : '',
+            stockTransferItems: items,
           };
-        } else {
+
+          if (this.form.stockTransferItems.length === 0) {
+            this.addItem();
+          }
+      } else {
           this.form = {
-            id: null,
             noTransfer: '',
             date: '',
             fromWarehouseId: null,
             toWarehouseId: null,
             status: '',
+            stockTransferItems: [],
           };
-        }
-        this.showModal = true;
+          this.addItem();
+      }
+      this.showModal = true;
     },
 
     closeModal() {
@@ -349,6 +403,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         this.isEditMode = false;
         this.form = {};
         this.validationErrors = [];
+        this.productsInWarehouse = [];
     },
 
     setPagination(event: any) {
@@ -416,7 +471,8 @@ export const useStockTransferStore = defineStore('stockTransfer', {
           this.form.stockTransferItems = [];
       }
       this.form.stockTransferItems.push({
-          stockTransferItemId: null,
+          stock: null,
+          productId: null,
           quantity: 0
       });
     },
@@ -424,6 +480,37 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         if (this.form.stockTransferItems) {
             this.form.stockTransferItems.splice(index, 1);
         }
-    }
+    },
+    async fetchProductsByWarehouse(warehouseId: string) {
+      if (!warehouseId) {
+        this.productsInWarehouse = [];
+        return;
+      }
+      this.loading = true;
+      try {
+        const { $api } = useNuxtApp();
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${$api.stock()}?warehouseId=${warehouseId}&all=true`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Gagal memuat data produk dari gudang.');
+        }
+
+        const result = await response.json();
+        this.productsInWarehouse = result.data;
+
+      } catch (error) {
+        this.productsInWarehouse = [];
+        console.error(error);
+        Swal.fire('Error', 'Gagal memuat daftar produk.', 'error');
+      } finally {
+        this.loading = false;
+      }
+    },
   }
 })

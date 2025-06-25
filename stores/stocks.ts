@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import type { PurchaseOrder } from './purchaseOrder'
 import type { Warehouse } from './warehouse'
-import type { User } from './user'
+import type { User } from './userManagement'
 import type { SalesOrder } from './sales-order'
 import type { Product } from './product'
 
