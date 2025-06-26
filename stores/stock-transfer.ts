@@ -6,6 +6,8 @@ import Swal from 'sweetalert2'
 export interface StockTransfer {
   id                 : string
   noTransfer         : string
+  perusahaanId       : number
+  cabangId           : number
   date               : string
   fromWarehouseId    : string
   toWarehouseId      : string
@@ -71,6 +73,8 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         search: '',
     },
     form: {
+      perusahaanId: null,
+      cabangId: null,
       noTransfer: '',
       date: '',
       fromWarehouseId: null,
@@ -136,6 +140,8 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         let url
   
         const payload: any = {
+          perusahaanId   : this.form.perusahaanId,
+          cabangId       : this.form.cabangId,
           date           : this.form.date,
           fromWarehouseId: this.form.fromWarehouseId,
           toWarehouseId  : this.form.toWarehouseId,
@@ -180,7 +186,13 @@ export const useStockTransferStore = defineStore('stockTransfer', {
   
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: `Gagal ${this.isEditMode ? 'memperbarui' : 'membuat'} stock transfer` }))
-          throw errorData
+          if(response.status === 422) {
+            this.validationErrors = errorData.errors;
+          } else if (errorData.message) {
+            // Menangkap error custom dari backend (misal: stok tidak cukup)
+            this.validationErrors = [{ message: errorData.message }];
+          }
+          throw new Error(errorData.message || 'Terjadi kesalahan');
         }
   
         return await response.json()

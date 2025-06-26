@@ -221,17 +221,17 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li>
+                                                <li v-if="userHasPermission('show_customer')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="openCustomerDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li>
+                                                <li v-if="userHasPermission('edit_customer')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="customerStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li>
+                                                <li v-if="userHasPermission('delete_customer')">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="customerStore.deleteCustomer(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -409,17 +409,24 @@ import 'vue-select/dist/vue-select.css'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
 import { useFormatRupiah } from '~/composables/formatRupiah';
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
+import { useUserStore } from '~/stores/user'
 
 const config   = useRuntimeConfig();
 const router = useRouter()
 const formatRupiah = useFormatRupiah()
 
-const myDataTableRef    = ref(null)
-const customerStore     = useCustomerStore()
-const productStore      = useProductStore()
+const myDataTableRef                     = ref(null)
+const customerStore                      = useCustomerStore()
+const productStore                       = useProductStore()
+const { userHasPermission, userHasRole } = usePermissions();
+const permissionStore                    = usePermissionsStore()
+const userStore                          = useUserStore()
 
 const { customers, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(customerStore)
 const { products } = storeToRefs(productStore)
+const { permissions } = storeToRefs(permissionStore)
 
 const globalFilterValue = ref('')
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
@@ -444,6 +451,8 @@ const getLogoUrl = (logoPath) => {
 
 let modalInstance = null
 onMounted(() => {
+    permissionStore.fetchPermissions();
+    userStore.loadUser();
     if (customerStore.customers.length === 0) {
       customerStore.fetchCustomers();
     }

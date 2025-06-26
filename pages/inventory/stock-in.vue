@@ -103,27 +103,6 @@
                                     </template>
                                 </Column>
                                 <Column field="warehouse.name" header="Gudang" :sortable="true"></Column>
-                                <Column header="Produk Diterima" style="min-width:10rem">
-                                    <template #body="slotProps">
-                                        <div v-if="slotProps.data.purchaseOrder && slotProps.data.purchaseOrder.purchaseOrderItems && slotProps.data.purchaseOrder.purchaseOrderItems.length">
-                                            <ul class="list-unstyled mb-0">
-                                                <li v-for="item in slotProps.data.purchaseOrder.purchaseOrderItems" :key="item.id">
-                                                    <span class="fw-bold">{{ item.product?.name || 'N/A' }}:</span>
-                                                    {{
-                                                        (item.receivedQty !== undefined && item.receivedQty !== null)
-                                                        ? String(item.receivedQty).replace(/\.00$/, '')
-                                                        : 0
-                                                    }} / {{
-                                                        (item.quantity !== undefined && item.quantity !== null)
-                                                        ? String(item.quantity).replace(/\.00$/, '')
-                                                        : 0
-                                                    }}
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <span v-else>-</span>
-                                    </template>
-                                </Column>
                                 <Column field="purchaseOrder.receivedByUser.fullName" header="Penerima" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">

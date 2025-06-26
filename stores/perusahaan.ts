@@ -8,6 +8,8 @@ export interface Perusahaan {
   nmPerusahaan: string
   npwpPerusahaan: string
   alamatPerusahaan: string
+  tlpPerusahaan: string
+  emailPerusahaan: string
   logoPerusahaan: string
   createdAt: string
   updatedAt: string
@@ -96,7 +98,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
 
             const formData = new FormData();
             Object.keys(this.form).forEach(key => {
-                if (key === 'logo_perusahaan' && this.form[key] instanceof File) {
+                if (key === 'logoPerusahaan' && this.form[key] instanceof File) {
                     formData.append(key, this.form[key]);
                 } else if (this.form[key] !== null && this.form[key] !== undefined) {
                     formData.append(key, this.form[key]);
@@ -196,11 +198,13 @@ export const usePerusahaanStore = defineStore('perusahaan', {
             this.form = { ...perusahaan };
         } else {
             this.form = {
-                kode_perusahaan: '',
-                nm_perusahaan: '',
-                npwp_perusahaan: '',
-                alamat_perusahaan: '',
-                logo_perusahaan: null,
+                kodePerusahaan: '',
+                nmPerusahaan: '',
+                npwpPerusahaan: '',
+                alamatPerusahaan: '',
+                tlpPerusahaan: '',
+                emailPerusahaan: '',
+                logoPerusahaan: null,
             };
         }
         this.showModal = true;
@@ -228,7 +232,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
         this.fetchPerusahaans();
     },
     setLogo(file: File) {
-        this.form.logo_perusahaan = file;
+        this.form.logoPerusahaan = file;
     }
   },
 })

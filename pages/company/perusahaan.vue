@@ -213,6 +213,8 @@
                                 </Column>
                                 <Column field="nmPerusahaan" header="Nama Perusahaan" :sortable="true"></Column>
                                 <Column field="alamatPerusahaan" header="Alamat Perusahaan" :sortable="true"></Column>
+                                <Column field="tlpPerusahaan" header="No. Telp Perusahaan" :sortable="true"></Column>
+                                <Column field="emailPerusahaan" header="Email Perusahaan" :sortable="true"></Column>
                                 <Column field="npwpPerusahaan" header="NPWP Perusahaan" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
@@ -258,7 +260,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="kodePerusahaan" 
-                                        v-model="form.kode_perusahaan" 
+                                        v-model="form.kodePerusahaan" 
                                         placeholder="Masukkan kode perusahaan"
                                         required
                                     >
@@ -271,7 +273,7 @@
                                         type="text" 
                                         class="form-control" 
                                         id="nmPerusahaan" 
-                                        v-model="form.nm_perusahaan" 
+                                        v-model="form.nmPerusahaan" 
                                         placeholder="Masukkan nama perusahaan"
                                         required
                                     >
@@ -281,14 +283,37 @@
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="tlpPerusahaan" 
+                                        v-model="form.tlpPerusahaan" 
+                                        placeholder="Masukkan no telp perusahaan"
+                                        required
+                                    >
+                                    <label for="tlpPerusahaan">No. Telp Perusahaan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="emailPerusahaan" 
+                                    v-model="form.emailPerusahaan" 
+                                    placeholder="Masukkan email perusahaan"
+                                    required
+                                    >
+                                    <label for="emailPerusahaan">Email Perusahaan</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
                                     type="text" 
                                     class="form-control" 
                                     id="npwpPerusahaan" 
-                                    v-model="form.npwp_perusahaan" 
+                                    v-model="form.npwpPerusahaan" 
                                     placeholder="Masukkan npwp perusahaan"
-                                    @input="form.npwp_perusahaan = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
                                     required
                                     >
                                     <label for="npwpPerusahaan">NPWP Perusahaan</label>
@@ -298,11 +323,11 @@
                                 <div class="form-floating form-floating-outline">
                                     <textarea
                                         class="form-control h-px-100"
-                                        id="alamat_perusahaan"
+                                        id="alamatPerusahaan"
                                         placeholder="Alamat Perusahaan"
-                                        v-model="form.alamat_perusahaan">
+                                        v-model="form.alamatPerusahaan">
                                     </textarea>
-                                    <label for="alamat_perusahaan">Alamat Perusahaan</label>
+                                    <label for="alamatPerusahaan">Alamat Perusahaan</label>
                                 </div>
                             </div>
                             <div class="modal-footer mt-6">

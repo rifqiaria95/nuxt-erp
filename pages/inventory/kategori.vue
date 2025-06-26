@@ -113,7 +113,7 @@
                 <template #default>
                     <form @submit.prevent="kategoriStore.saveKategori()">
                         <div class="row g-4">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
@@ -125,7 +125,7 @@
                                     <label>Nama Category</label>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 

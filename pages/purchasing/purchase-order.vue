@@ -236,10 +236,9 @@
                         <div class="tab-content pt-6">
                             <div class="tab-pane fade active show" id="form-tabs-info" role="tabpanel">
                                 <div class="row g-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="text" v-model="form.noPo" class="form-control" placeholder="No PO" required disabled>
-                                            <label>No Purchase Order</label>
+                                            <input type="hidden" v-model="form.noPo" class="form-control" placeholder="No PO" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -281,7 +280,7 @@
                                             <label>Tax (%)</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="file" @change="onFileChange" class="form-control">
                                             <label>Attachment</label>

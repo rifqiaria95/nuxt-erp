@@ -46,7 +46,7 @@
                                     </p>
                                 </div>
                                 <NuxtLink to="/inventory/stock-in" class="btn btn-sm btn-primary">
-                                    <i class="ri-arrow-left-line me-1"></i> Kembali
+                                    <i class="ri-arrow-left-line me-1"></i>
                                 </NuxtLink>
                             </div>
                              <div class="row mt-4">

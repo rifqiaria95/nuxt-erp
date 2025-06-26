@@ -106,6 +106,16 @@
                                         {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString() : '-' }}
                                     </template>
                                 </Column>
+                                <Column field="perusahaan.nmPerusahaan" header="Perusahaan" :sortable="true" class="text-nowrap">
+                                    <template #body="slotProps">
+                                        {{ slotProps.data.perusahaan?.nmPerusahaan || '-' }}
+                                    </template>
+                                </Column>
+                                <Column field="cabang.nmCabang" header="Cabang" :sortable="true" class="text-nowrap">
+                                    <template #body="slotProps">
+                                        {{ slotProps.data.cabang?.nmCabang || '-' }}
+                                    </template>
+                                </Column>
                                 <Column field="fromWarehouse.name" header="Gudang Asal" :sortable="true" class="text-nowrap">
                                     <template #body="slotProps">
                                         {{ slotProps.data.fromWarehouse?.name || '-' }}
@@ -129,22 +139,22 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li v-if="userisAdmin || userisSuperAdmin && slotProps.data.status == 'draft'">
+                                                <li v-if="userHasPermission('approve_stock_transfer') && slotProps.data.status == 'draft'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="approveStockTransfer(slotProps.data.id)">
                                                         <i class="ri-check-line me-2"></i> Approve
                                                     </a>
                                                 </li>
-                                                <li v-if="slotProps.data.status == 'approved'">
+                                                <li v-if="userHasPermission('show_stock_transfer') && slotProps.data.status == 'approved'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewStockTransferDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'draft')">
+                                                <li v-if="userHasPermission('edit_stock_transfer') && slotProps.data.status == 'draft'">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="stockTransferStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'draft')">
+                                                <li v-if="userHasRole('superadmin') || userHasPermission('delete_stock_transfer') && slotProps.data.status == 'draft'">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteStockTransfer(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -173,30 +183,39 @@
                 <template #default>
                     <form @submit.prevent="handleSaveStockTransfer">
                         <div class="row g-6">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-floating form-floating-outline">
                                     <input 
-                                        type="text" 
+                                        type="hidden" 
                                         class="form-control" 
                                         id="name" 
                                         v-model="form.noTransfer" 
                                         placeholder="Masukkan No. Stock Transfer"
-                                        disabled
                                     >
-                                    <label for="name">No. Stock Transfer</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="date" 
-                                        class="form-control" 
-                                        id="date" 
-                                        v-model="form.date" 
-                                        placeholder="Masukkan tanggal"
-                                        required
-                                    >
-                                    <label for="name">Tanggal</label>
+                                    <v-select
+                                        v-model="form.perusahaanId"
+                                        :options="perusahaans"
+                                        label="nmPerusahaan"
+                                        :reduce="p => p.id"
+                                        placeholder="-- Pilih Perusahaan --"
+                                        class="perusahaan-select"
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <v-select
+                                        v-model="form.cabangId"
+                                        :options="filteredCabangs"
+                                        label="nmCabang"
+                                        :reduce="c => c.id" 
+                                        placeholder="-- Pilih Cabang --"
+                                        class="cabang-select"
+                                    />
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -223,7 +242,20 @@
                                     />
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="date" 
+                                        class="form-control" 
+                                        id="date" 
+                                        v-model="form.date" 
+                                        placeholder="Masukkan tanggal"
+                                        required
+                                    >
+                                    <label for="name">Tanggal</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
@@ -239,15 +271,21 @@
                             <hr class="mt-7 w-70 justify-content-center" />
                             <div v-for="(item, index) in form.stockTransferItems" :key="index" class="repeater-item">
                                 <div class="row">
-                                    <div class="mb-6 col-lg-6 col-xl-6 col-12 mb-0">
-                                        <div class="form-floating form-floating-outline">
+                                    <div class="mb-4 col-lg-4 col-xl-4 col-12 mb-0">
+                                        <div class="form-floating form-floating-outline stock-transfer-item-select">
                                             <v-select
                                                 v-model="item.stock"
                                                 :options="productsInWarehouse"
-                                                :get-option-label="option => option.product.name"
+                                                :get-option-label="option => `${option.product.name} (${option.product.unit?.name})`"
                                                 placeholder="-- Pilih Produk --"
-                                                class="stock-transfer-item-select"
+                                              
                                             />
+                                        </div>
+                                    </div>
+                                    <div class="mb-4 col-lg-2 col-xl-2 col-2 mb-0">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" :value="item.stock ? Math.floor(item.stock.quantity) : ''" class="form-control" placeholder="Stock" readonly>
+                                            <label>Stock</label>
                                         </div>
                                     </div>
                                     <div class="mb-3 col-lg-4 col-xl-3 col-12 mb-0">
@@ -265,10 +303,8 @@
                                             <label>Jumlah</label>
                                         </div>
                                     </div>
-                                    <div class="mb-3 col-lg-2 col-xl-3 col-12 mb-0">
-                                        <button type="button" class="btn btn-sm btn-secondary" @click.prevent="stockTransferStore.removeItem(index)" style="width: 100%;">
-                                            <span class="tf-icons ri-delete-bin-7-line ri-16px me-2"></span> Hapus
-                                        </button>
+                                    <div class="col-lg-2 col-xl-3 col-12 mt-1">
+                                        <button @click.prevent="stockTransferStore.removeItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
                                     </div>
                                 </div>
                             </div>
@@ -306,6 +342,8 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '~/stores/user'
 import { useStockTransferStore } from '~/stores/stock-transfer'
 import { useWarehouseStore } from '~/stores/warehouse'
+import { usePerusahaanStore } from '~/stores/perusahaan'
+import { useCabangStore } from '~/stores/cabang'
 import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
@@ -315,27 +353,27 @@ import InputText from 'primevue/inputtext'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
 
 const { $api } = useNuxtApp()
 
-const myDataTableRef            = ref(null)
-const userStore                 = useUserStore()
-const stockTransferStore        = useStockTransferStore()
-const warehouseStore            = useWarehouseStore()
+const myDataTableRef        = ref(null)
+const userStore             = useUserStore()
+const stockTransferStore    = useStockTransferStore()
+const warehouseStore        = useWarehouseStore()
+const permissionStore       = usePermissionsStore()
+const perusahaanStore       = usePerusahaanStore()
+const cabangStore           = useCabangStore()
+const { userHasPermission, userHasRole } = usePermissions();
 const { stockTransfers, totalRecords, stats, params, form, isEditMode, showModal, validationErrors, productsInWarehouse } = storeToRefs(stockTransferStore)
 const { warehouseList: warehouses } = storeToRefs(warehouseStore)
+const { perusahaans }       = storeToRefs(perusahaanStore)
+const { cabangs }           = storeToRefs(cabangStore)
 const selectedStockTransfer = ref(null);
 const loading               = ref(false);
 const globalFilterValue     = ref('');
 const router                = useRouter()
-
-const userisSuperAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
-});
-
-const userisAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'admin') ?? false;
-});
 
 const status       = ref([
     { label: 'Draft', value: 'draft' },
@@ -377,17 +415,27 @@ onBeforeUnmount(() => {
     }
 });
 
+watch(() => form.value.perusahaanId, (newPerusahaanId) => {
+    if (newPerusahaanId) {
+        if(!isEditMode.value) {
+            form.value.cabangId = null;
+        }
+    }
+});
+
+const filteredCabangs = computed(() => {
+    if (!form.value.perusahaanId || !cabangs.value) return [];
+    return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
+});
+
 watch(() => form.value.fromWarehouseId, (newWarehouseId, oldWarehouseId) => {
     if (newWarehouseId) {
         stockTransferStore.fetchProductsByWarehouse(newWarehouseId);
-        // Hanya reset item jika gudang benar-benar diubah dari pilihan sebelumnya
-        // Ini mencegah item terhapus saat form edit pertama kali dimuat
         if (oldWarehouseId && newWarehouseId !== oldWarehouseId) {
             form.value.stockTransferItems = [];
             stockTransferStore.addItem();
         }
     } else {
-        // Jika gudang dikosongkan, kosongkan juga daftar produk dan item
         stockTransferStore.productsInWarehouse = [];
         if (form.value.stockTransferItems) {
             form.value.stockTransferItems = [];
@@ -417,8 +465,10 @@ const handleSaveStockTransfer = async () => {
                 ? errorData.errors
                 : Object.values(errorData.errors).flat();
             Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+        } else if(errorData.status === 422) {
+            stockTransferStore.validationErrors = errorData.errors;
         } else {
-            Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} Stock Transfer`, 'error');
+            errorData.errors
         }
     }
 };
@@ -427,11 +477,6 @@ const approveStockTransfer = async (id) => {
     try {
         await stockTransferStore.approveStockTransfer(id);
         await stockTransferStore.fetchStockTransfersPaginated();
-        await Swal.fire(
-            'Berhasil!',
-            `Stock Transfer berhasil disetujui.`,
-            'success'
-        );
     } catch (error) {
         let errorMessage = 'Gagal menyetujui Stock Transfer';
         if (error instanceof Error) {
@@ -469,9 +514,13 @@ const loadLazyData = async () => {
 };
 
 onMounted(() => {
+    permissionStore.fetchPermissions();
+    userStore.loadUser();
     loadLazyData();
     stockTransferStore.fetchStats();
     warehouseStore.fetchAllWarehouses();
+    perusahaanStore.fetchPerusahaans();
+    cabangStore.fetchCabangs();
 });
 
 const exportData = (format) => {
@@ -532,6 +581,8 @@ const getStatusBadge = (status) => {
 </script>
 
 <style scoped>
+    :deep(.perusahaan-select .vs__dropdown-toggle),
+    :deep(.cabang-select .vs__dropdown-toggle),
     :deep(.stock-transfer-item-select .vs__dropdown-toggle),
     :deep(.status-select .vs__dropdown-toggle) ,
     :deep(.warehouse-select .vs__dropdown-toggle) {

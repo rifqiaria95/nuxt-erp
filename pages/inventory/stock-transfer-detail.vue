@@ -23,10 +23,12 @@
                                 </div>
                             </div>
                              <div class="row mt-4">
-                                <div class="col-md-6">
+                                <div class="col-12">
                                     <ul class="list-unstyled">
+                                        <li class="mb-2"><strong>Perusahaan:</strong> {{ stockTransfer.perusahaan?.nmPerusahaan }}</li>
+                                        <li class="mb-2"><strong>Cabang:</strong> {{ stockTransfer.cabang?.nmCabang }}</li>
                                         <li class="mb-2"><strong>Tanggal:</strong> {{ new Date(stockTransfer.date).toLocaleDateString() }}</li>
-                                        <li class="mb-2"><strong>Gudang:</strong> {{ stockTransfer.fromWarehouse?.name }}</li>
+                                        <li class="mb-2"><strong>Gudang Asal:</strong> {{ stockTransfer.fromWarehouse?.name }}</li>
                                         <li class="mb-2"><strong>Gudang Tujuan:</strong> {{ stockTransfer.toWarehouse?.name }}</li>
                                         <li class="mb-2"><strong>Status:</strong> <span :class="['badge', getStatusClass(stockTransfer.status)]">{{ stockTransfer.status }}</span></li>
                                     </ul>
@@ -40,7 +42,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h4 class="mb-1">Nomor Stock Transfer: {{ stockTransfer.noTransfer }}</h4>
+                                    <h5 class="mb-1">Nomor Stock Transfer: {{ stockTransfer.noTransfer }}</h5>
                                     <p class="text-muted mb-0" style="font-size: 0.95em;">
                                         Berikut adalah informasi singkat mengenai dokumen Stock Transfer ini, termasuk nomor ST, tanggal, gudang asal, gudang tujuan, dan status terkini. Pastikan data sudah sesuai sebelum melakukan proses lebih lanjut.
                                     </p>
@@ -134,7 +136,7 @@ const getStatusClass = (status) => {
 const cetakStockTransfer = (stockTransferId) => {
     if (stockTransferId) {
         const baseUrl = window.location.origin;
-        const url = `${baseUrl}/inventory/cetak-stock-transfer/${stockTransferId}`;
+        const url = `${baseUrl}/inventory/cetak-stock-transfer?id=${stockTransferId}`;
         window.open(url, '_blank');
     } else {
         Swal.fire('Error', 'ID Stock Transfer tidak ditemukan.', 'error');

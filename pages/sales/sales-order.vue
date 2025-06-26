@@ -236,10 +236,9 @@
                         <div class="tab-content pt-6">
                             <div class="tab-pane fade active show" id="form-tabs-info" role="tabpanel">
                                 <div class="row g-4">
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="text" v-model="form.noSo" class="form-control" placeholder="No SO" required disabled>
-                                            <label>No Sales Order</label>
+                                            <input type="hidden" v-model="form.noSo" class="form-control" placeholder="No SO" required>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -281,7 +280,7 @@
                                             <label>Tax SO (%)</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="file" @change="onFileChange" class="form-control">
                                             <label>Attachment SO</label>
@@ -300,7 +299,8 @@
                                 <div v-for="(item, index) in form.salesOrderItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
                                         <div class="col-12">
-                                            <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang SO" class="v-select-style" @update:modelValue="updateStockInfo(index)"/>
+                                            <v-select v-model="item.warehouseId" :options="warehouses"
+                                            :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang SO" class="v-select-style" @update:modelValue="updateStockInfo(index)"/>
                                         </div>
                                         <div class="col-md-4">
                                             <v-select v-model="item.productId" :options="customerProducts" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
