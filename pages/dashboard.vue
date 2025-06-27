@@ -65,10 +65,11 @@
           <div class="row row-bordered g-0 h-100">
             <div class="col-md-7 col-12 order-2 order-md-0">
               <div class="card-header">
-                <h5 class="mb-0">Total Transactions</h5>
+                <h5 class="mb-0">FP Growth</h5>
               </div>
               <div class="card-body">
-                <div id="totalTransactionChart"></div> </div>
+                <Chart type="bar" :data="chartData" :options="chartOptions" />
+              </div>
             </div>
             <div class="col-md-5 col-12">
               <div class="card-header">
@@ -736,9 +737,95 @@ definePageMeta({
 
 const userStore = useUserStore()
 
-onMounted(() => {
+const { $api } = useNuxtApp()
+
+import { ref, onMounted } from 'vue'
+
+// Ubah supports menjadi null secara default, dan handle jika data belum ada
+const supports = ref(null)
+
+const chartData = ref({
+  labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+  datasets: [
+    {
+      label: 'My First dataset',
+      backgroundColor: '#42A5F5',
+      borderColor: '#1E88E5',
+      data: [65, 59, 80, 81, 56, 55, 40]
+    }
+  ]
+})
+
+const chartOptions = ref({
+  indexAxis: 'x',
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false
+    },
+    tooltip: {
+      callbacks: {
+        // ctx = tooltip context
+        label: ctx => {
+          const confidenceValue = ctx.raw
+          const dataIndex = ctx.dataIndex
+          // Cek jika supports sudah terdefinisi dan array, jika tidak tampilkan '-'
+          let supportValue = '-'
+          if (Array.isArray(supports.value) && typeof supports.value[dataIndex] !== 'undefined') {
+            supportValue = supports.value[dataIndex]
+          }
+          return [
+            `Confidence: ${(confidenceValue * 100).toFixed(1)}%`,
+            `Support: ${supportValue}`
+          ]
+        }
+      }
+    }
+  },
+  scales: {
+    x: {
+      beginAtZero: true,
+      max: 1
+    }
+  }
+})
+
+onMounted(async () => {
   userStore.loadUser();
-});
+
+  const token = localStorage.getItem('token');
+
+  const { data } = await useFetch($api.associations(), {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    credentials: 'include'
+  })
+
+  console.log(data.value)
+
+  const labels = data.value.map(rule =>
+    `${rule.antecedent.join(', ')} → ${rule.consequent.join(', ')}`
+  )
+  const confidences = data.value.map(rule => rule.confidence)
+  // Set supports hanya jika data tersedia, jika tidak set null
+  supports.value = Array.isArray(data.value) ? data.value.map(rule => rule.support) : null
+
+  chartData.value = {
+    labels,
+    datasets: [
+      {
+        label: 'Confidence',
+        backgroundColor: '#42A5F5',
+        data: confidences
+      }
+    ]
+  }
+})
+
+
 </script>
 
 <style scoped>
