@@ -84,6 +84,7 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/vendor/css/pages/cards-statistics.css' },
         { rel: 'stylesheet', href: '/vendor/css/pages/cards-analytics.css' },
         { rel: 'stylesheet', href: '/vendor/css/pages/page-auth.css' },
+        { rel: 'stylesheet', href: '/vendor/css/pos.css' }
       ],
       script: [
         // Helpers & Config (biasanya dimuat di head)

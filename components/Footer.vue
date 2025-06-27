@@ -4,7 +4,7 @@
         <div class="footer-container d-flex align-items-center justify-content-between py-4 flex-md-row flex-column">
           <div class="text-body mb-2 mb-md-0">
             © {{ new Date().getFullYear() }}, made with <span class="text-danger"><i class="tf-icons ri-heart-fill"></i></span> by
-            <a href="https://pixinvent.com" target="_blank" class="footer-link">Pixinvent</a>
+            <a href="#" target="_blank" class="footer-link">Kainnova Digital Solutions</a>
           </div>
           <div class="d-none d-lg-inline-block">
             <a href="https://themeforest.net/licenses/standard" class="footer-link me-4" target="_blank">License</a>

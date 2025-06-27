@@ -115,6 +115,11 @@
                                                 {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
                                             </template>
                                         </Column>
+                                        <Column field="priceSell" header="Harga Jual" :sortable="true">
+                                            <template #body="slotProps">
+                                                {{ slotProps.data.priceSell ? formatRupiah(slotProps.data.priceSell) : '-' }}
+                                            </template>
+                                        </Column>
                                         <Column field="isService" header="Service" :sortable="true">
                                             <template #body="slotProps">
                                                 <span :class="getStatusBadge(slotProps.data.isService).class">
@@ -217,7 +222,7 @@
                                     />
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                     type="text" 
@@ -227,6 +232,18 @@
                                     required
                                     >
                                     <label>Harga Beli Product</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    v-model="formattedPriceSell" 
+                                    placeholder="Masukkan harga jual product"
+                                    required
+                                    >
+                                    <label>Harga Jual Product</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -318,6 +335,15 @@ const formattedPriceBuy = computed({
     },
     set(value) {
         form.value.priceBuy = value.replace(/[^0-9]/g, '');
+    }
+});
+
+const formattedPriceSell = computed({
+    get() {
+        return form.value.priceSell ? formatRupiah(form.value.priceSell) : '';
+    },
+    set(value) {
+        form.value.priceSell = value.replace(/[^0-9]/g, '');
     }
 });
 

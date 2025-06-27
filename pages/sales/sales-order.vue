@@ -118,6 +118,13 @@
                                     </Column>
                                     <Column field="noSo" header="No. SO" :sortable="true"></Column>
                                     <Column field="customer.name" header="Nama Customer" :sortable="true"></Column>
+                                    <Column field="paymentMethod" header="Metode Pembayaran" :sortable="true">
+                                        <template #body="slotProps">
+                                            <span>
+                                                {{ slotProps.data.paymentMethod || '-' }}
+                                            </span>
+                                        </template>
+                                    </Column>
                                     <Column field="status" header="Status SO" :sortable="true">
                                         <template #body="slotProps">
                                             <span :class="getStatusBadge(slotProps.data.status).class">
@@ -268,6 +275,20 @@
                                     <div class="col-md-6">
                                         <v-select v-model="form.cabangId" :options="filteredCabangs" label="nmCabang" :reduce="c => c.id" placeholder="Pilih Cabang" class="v-select-style"/>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <v-select
+                                                v-model="form.paymentMethod"
+                                                :options="paymentMethodOptions"
+                                                label="label"
+                                                :reduce="option => option.value"
+                                                :get-option-key="option => option.value"
+                                                placeholder="-- Pilih Metode Pembayaran --"
+                                                id="select-payment-method"
+                                                class="select-payment-method"
+                                            />
+                                        </div>
+                                    </div>
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)">
@@ -287,7 +308,7 @@
                                             <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <textarea v-model="form.description" class="form-control" placeholder="Deskripsi SO"></textarea>
                                             <label>Deskripsi SO</label>
@@ -447,6 +468,10 @@ const getAttachmentUrl = (attachmentPath) => {
     return `${baseUrl}/${attachmentPath}`;
 };
 
+const paymentMethodOptions = [
+    { label: 'Cash', value: 'cash' }, { label: 'Transfer', value: 'transfer' },
+    { label: 'QRIS', value: 'qris' }, { label: 'Card', value: 'card' }
+];
 
 let modalInstance = null;
 onMounted(() => {
@@ -635,7 +660,8 @@ const updateStockInfo = async (index) => {
     :deep(.status .vs__dropdown-toggle),
     :deep(.vendor .vs__dropdown-toggle),
     :deep(.product-select .vs__dropdown-toggle),
-    :deep(.cabang .vs__dropdown-toggle) {
+    :deep(.cabang .vs__dropdown-toggle),
+    :deep(.select-payment-method .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
     }

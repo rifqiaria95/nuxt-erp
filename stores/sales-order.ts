@@ -36,6 +36,7 @@ export interface SalesOrder {
   date           : string
   dueDate        : string
   status         : string
+  paymentMethod  : string
   total          : string
   discountPercent: string
   taxPercent     : string
@@ -108,13 +109,14 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         customerId: null,
         perusahaanId: null,
         cabangId: null,
-        date: '',
-        dueDate: '',
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date().toISOString().split('T')[0],
         discountPercent: 0,
         taxPercent: 0,
         description: '',
         attachment: null,
         status: 'draft',
+        paymentMethod: null,
         salesOrderItems: []
     },
     isEditMode: false,
@@ -128,9 +130,9 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       const { $api } = useNuxtApp()
       try {
         const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-        const token = localStorage.getItem('token');
+        const csrfData     = await csrfResponse.json();
+        const csrfToken    = csrfData.token;
+        const token        = localStorage.getItem('token');
 
 
         if (!csrfToken) {
@@ -294,6 +296,9 @@ export const useSalesOrderStore = defineStore('salesOrder', {
                 }
                 if(this.form.status === 'rejected') {
                     formData.append('rejectedBy', userStore.user.id.toString())
+                }
+                if(this.form.status === 'delivered') {
+                    formData.append('deliveredBy', userStore.user.id.toString())
                 }
             }
 
@@ -614,6 +619,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         description: '',
         attachment: null,
         status: 'draft',
+        paymentMethod: null,
         salesOrderItems: [],
       };
     },

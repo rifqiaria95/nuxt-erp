@@ -5,6 +5,15 @@ import type { Category } from './kategori'
 import type { Customer } from './customer'
 import type { Unit } from './unit'
 
+export interface Stock {
+  id: string
+  productId: number
+  warehouseId: number
+  quantity: number
+  createdAt: string
+  updatedAt: string
+}
+
 export interface ProductCustomer {
   id: number
   productId: number
@@ -31,6 +40,7 @@ export interface Product {
   unit?: Unit
   customer?: Customer
   productCustomer?: ProductCustomer
+  stocks?: Stock[]
 }
 
 interface ProductState {
@@ -44,6 +54,7 @@ interface ProductState {
     sortField: string | null
     sortOrder: number | null
     search: string
+    warehouseId?: number | null
   }
   form: Partial<Product>
   isEditMode: boolean
@@ -63,6 +74,7 @@ export const useProductStore = defineStore('product', {
       sortField: 'id',
       sortOrder: 1,
       search: '',
+      warehouseId: null,
     },
     form: {
       name: '',
@@ -70,6 +82,7 @@ export const useProductStore = defineStore('product', {
       unitId: undefined,
       stockMin: 0,
       priceBuy: 0,
+      priceSell: 0,
       isService: false,
       image: '',
       categoryId: undefined,
@@ -92,6 +105,10 @@ export const useProductStore = defineStore('product', {
             sortOrder: this.params.sortOrder === -1 ? 'desc' : 'asc',
             search: this.params.search || '',
         });
+
+        if (this.params.warehouseId) {
+          params.append('warehouseId', this.params.warehouseId.toString());
+        }
 
         const response = await fetch(`${$api.product()}?${params.toString()}`, {
             headers: {
@@ -255,6 +272,7 @@ export const useProductStore = defineStore('product', {
                 unitId: undefined,
                 stockMin: 0,
                 priceBuy: 0,
+                priceSell: 0,
                 isService: false,
                 image: '',
                 categoryId: undefined,
@@ -279,14 +297,19 @@ export const useProductStore = defineStore('product', {
     setSort(event: any) {
         this.params.sortField = event.sortField;
         this.params.sortOrder = event.sortOrder;
-        this.params.first = 0; // Reset to first page
         this.fetchProducts();
     },
         
     setSearch(value: string) {
         this.params.search = value;
-        this.params.first = 0; // Reset to first page
+        this.params.first = 0;
         this.fetchProducts();
+    },
+
+    setWarehouseFilter(warehouseId: number | null) {
+      this.params.warehouseId = warehouseId;
+      this.params.first = 0;
+      this.fetchProducts();
     },
 
     handleImageChange(file: File) {
