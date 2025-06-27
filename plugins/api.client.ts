@@ -21,6 +21,9 @@ export default defineNuxtPlugin(() => {
     me          : () => `${authBase}/me`,
     refreshToken: () => `${authBase}/refresh-token`,
 
+    // Dashboard
+    associations: () => `${apiBase}/associations`,
+
     // Roles & Permissions
     roles             : () => `${apiBase}/roles`,
     roleStore         : () => `${apiBase}/roles/store`,
