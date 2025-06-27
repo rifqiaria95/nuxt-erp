@@ -2,22 +2,32 @@
   <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
       <Sidebar />
+      <div class="layout-overlay layout-menu-toggle"></div>
 
       <div class="layout-page">
         <Navbar />
         <div class="content-wrapper">
-          <slot />
+          <div class="container-xxl flex-grow-1 container-p-y">
+            <slot />
+          </div>
           <Footer />
+          <div class="content-backdrop fade"></div>
         </div>
       </div>
-
-      <div class="layout-overlay layout-menu-toggle"></div>
-      <div class="drag-target"></div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useLayoutStore } from '~/stores/layout';
+import { onMounted } from 'vue';
+
+const layoutStore = useLayoutStore();
+
+onMounted(() => {
+    layoutStore.initializeLayout();
+});
+
 // Import your components
 import Sidebar from '~/components/Sidebar.vue';
 import Navbar from '~/components/Navbar.vue';

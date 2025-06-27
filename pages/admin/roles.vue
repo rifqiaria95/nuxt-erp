@@ -1,475 +1,184 @@
 <template>
+  <div>
     <!-- Content wrapper -->
     <div class="content-wrapper">
         <!-- Content -->
-
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">Roles List</h4>
-            <p class="mb-6">
-            A role provided access to predefined menus and features so that depending on assigned role an
-            administrator can have access to what user needs.
-            </p>
-            <!-- Role cards -->
-            <div class="row g-6">
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 4 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Vinnie Mostowy"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/5.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Allen Rieske"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Julee Rossignol"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="role-heading">
-                            <h5 class="mb-1">Administrator</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#RoleModal"
-                            class="role-edit-modal">
-                            <p class="mb-0">Edit Role</p>
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                    </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 7 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Jimmy Ressula"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/4.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="John Doe"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/1.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kristi Lawker"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/2.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="role-heading">
-                            <h5 class="mb-1">Editor</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#RoleModal"
-                            class="role-edit-modal">
-                            <p class="mb-0">Edit Role</p>
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 5 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Andrew Tye"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/6.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Rishi Swaat"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Rossie Kim"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/12.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="role-heading">
-                            <h5 class="mb-1">Users</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#RoleModal"
-                            class="role-edit-modal">
-                            <p class="mb-0">Edit Role</p>
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 3 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kim Karlos"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/3.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Katy Turner"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/9.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Peter Adward"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="role-heading">
-                            <h5 class="mb-1">Support</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#RoleModal"
-                            class="role-edit-modal">
-                            <p class="mb-0">Edit Role</p>
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                        <p class="mb-0">Total 2 users</p>
-                        <ul class="list-unstyled d-flex align-items-center avatar-group mb-0">
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Kim Merchent"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/10.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Sam D'souza"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/13.png" alt="Avatar" />
-                            </li>
-                            <li
-                            data-bs-toggle="tooltip"
-                            data-popup="tooltip-custom"
-                            data-bs-placement="top"
-                            title="Nurvi Karlos"
-                            class="avatar pull-up">
-                            <img class="rounded-circle" src="/img/avatars/15.png" alt="Avatar" />
-                            </li>
-                            <li class="avatar">
-                            <span
-                                class="avatar-initial rounded-circle pull-up bg-lighter text-body"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="bottom"
-                                title="3 more"
-                                >+3</span
-                            >
-                            </li>
-                        </ul>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                        <div class="role-heading">
-                            <h5 class="mb-1">Restricted User</h5>
-                            <a
-                            href="javascript:;"
-                            data-bs-toggle="modal"
-                            data-bs-target="#RoleModal"
-                            class="role-edit-modal">
-                            <p class="mb-0">Edit Role</p>
-                            </a>
-                        </div>
-                        <a href="javascript:void(0);" class="text-secondary"
-                            ><i class="ri-file-copy-line ri-22px"></i
-                        ></a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card h-100">
-                    <div class="row h-100">
-                        <div class="col-5">
-                        <div class="d-flex align-items-end h-100 justify-content-center">
-                            <img
-                            src="/img/illustrations/add-new-role-illustration.png"
-                            class="img-fluid"
-                            alt="Image"
-                            width="68" />
-                        </div>
-                        </div>
-                        <div class="col-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
-                            data-bs-target="#RoleModal"
-                            data-bs-toggle="modal"
-                            class="btn btn-sm btn-primary mb-4 text-nowrap add-new-role"
-                            @click="openAddRoleModal"
-                            >
-                            Add Role
-                            </button>
-                            <p class="mb-0">
-                            Add new role,<br />
-                            if it doesn't exist
-                            </p>
-                        </div>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-
-                <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total users with their roles</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate roles.</p>
-                </div>
-                <div class="col-12">
-                    <!-- Role Table -->
-                    <div class="card">
-                        <div class="card-datatable table-responsive py-5 px-3">
-                            <table id="table-roles" class="table">
-                            <thead>
-                                <tr>
-                                <th>#</th>
-                                <th>Name</th>
-                                <th>Actions</th>
-                                </tr>
-                            </thead>
-                            </table>
-                        </div>
-                    </div>
-                    <!--/ Role Table -->
+            <div v-if="loading" class="text-center">
+                <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
                 </div>
             </div>
-            <!--/ Role cards -->
+            <div v-else>
+                <h4 class="mb-1">Roles List</h4>
+                <p class="mb-6">
+                A role provided access to predefined menus and features so that depending on assigned role an
+                administrator can have access to what user needs.
+                </p>
+                <!-- Role cards -->
+                <div class="row g-6 mb-6">
+                    <div class="col-xl-4 col-lg-6 col-md-6">
+                        <div class="card h-100">
+                        <div class="row h-100">
+                            <div class="col-sm-5">
+                            <div class="d-flex align-items-end h-100 justify-content-center">
+                                <img
+                                src="/img/illustrations/add-new-role-illustration.png"
+                                class="img-fluid"
+                                alt="Image"
+                                width="70" />
+                            </div>
+                            </div>
+                            <div class="col-sm-7">
+                            <div class="card-body text-sm-end text-center ps-sm-0">
+                                <button
+                                @click="rolesStore.openModal()"
+                                class="btn btn-primary mb-2 text-nowrap add-new-role">
+                                Tambah Role
+                                </button>
+                                <p class="mb-0 mt-1">Buat role baru beserta hak aksesnya</p>
+                            </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row g-6">
+                    <div class="col-12">
+                        <h4 class="mt-6 mb-1">Total users with their roles</h4>
+                        <p class="mb-0">Find all of your company's administrator accounts and their associate roles.</p>
+                    </div>
+                    <div class="col-12">
+                        <!-- Role Table -->
+                        <div class="card">
+                             <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                                <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
+                                    <span class="me-2">Baris:</span>
+                                    <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="p-input-icon-left">
+                                        <InputText v-model="globalFilterValue" placeholder="Cari Role..." class="w-full md:w-20rem" />
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-datatable table-responsive py-3 px-3">
+                                 <MyDataTable 
+                                    ref="myDataTableRef"
+                                    :data="roles" 
+                                    :rows="params.rows" 
+                                    :loading="loading"
+                                    :totalRecords="totalRecords"
+                                    :lazy="true"
+                                    @page="onPage($event)"
+                                    @sort="onSort($event)"
+                                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                    currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
+                                    >
+                                        <Column field="id" header="#" :sortable="true"></Column> 
+                                        <Column field="name" header="Nama Role" :sortable="true"></Column>
+                                        <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                            <template #body="slotProps">
+                                                <div class="d-flex align-items-center">
+                                                    <button @click="rolesStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
+                                                    <button @click="rolesStore.deleteRole(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
+                                                </div>
+                                            </template>
+                                        </Column>
+                                </MyDataTable>
+                            </div>
+                        </div>
+                        <!--/ Role Table -->
+                    </div>
+                </div>
+                <!--/ Role cards -->
+            </div>
 
             <!-- Add Role Modal -->
-            <div class="modal fade" id="RoleModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-simple modal-dialog-centered modal-add-new-role">
-                    <div class="modal-content">
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        <div class="modal-body p-0">
-                            <div class="text-center mb-6">
-                            <h4 class="role-title mb-2 pb-0">Add New Role</h4>
-                            <p>Set role permissions</p>
+            <Modal 
+                id="RolesModal"
+                :title="modalTitle" 
+                :description="modalDescription"
+                :validation-errors-from-parent="validationErrors"
+            >
+              <template #default>
+                <form @submit.prevent="rolesStore.saveRole()">
+                    <div class="row g-3 p-3">
+                        <div class="col-12 mb-3">
+                            <div class="form-floating form-floating-outline">
+                            <input
+                                type="text"
+                                id="modalRoleName"
+                                name="modalRoleName"
+                                class="form-control"
+                                placeholder="Enter a role name"
+                                tabindex="-1"
+                                v-model="form.name"
+                                required
+                                />
+                            <label for="modalRoleName">Role Name</label>
                             </div>
-                            <div v-if="validationErrors.length" class="alert alert-danger">
-                                <ul>
-                                    <li v-for="err in validationErrors" :key="err.message || err">
-                                    {{ typeof err === 'string' ? err : err.message }}
-                                    </li>
-                                </ul>
+                        </div>
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="mb-0">Role Permissions</h5>
+                                </div>
                             </div>
-                            <!-- Add role form -->
-                            <form id="addRoleForm" class="row g-3" onsubmit="return false">
-                                <div class="col-12 mb-3">
-                                    <div class="form-floating form-floating-outline">
-                                    <input
-                                        type="text"
-                                        id="modalRoleName"
-                                        name="modalRoleName"
-                                        class="form-control"
-                                        placeholder="Enter a role name"
-                                        tabindex="-1" />
-                                    <label for="modalRoleName">Role Name</label>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-4 mb-4">
+                                <div class="d-flex align-items-center gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAll" v-model="selectAll" />
+                                        <label class="form-check-label" for="selectAll">Pilih Semua</label>
                                     </div>
                                 </div>
-                                <div class="col-12">
-                                    <h5 class="mb-6">Role Permissions</h5>
-
-                                    <div class="table-responsive">
-                                    <table class="table table-flush-spacing">
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <p class="mb-1 fw-bold">Super Admin Access</p>
-                                                </td>
-                                                <td>
-                                                    <div class="d-flex justify-content-end flex-wrap">
-                                                        <div class="form-check mb-1 me-4">
-                                                            <input class="form-check-input" type="checkbox" id="selectAll" v-model="selectAll" />
-                                                            <label class="form-check-label" for="selectAll">Select All</label>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <template v-if="menuDetailsWithPermissions.length > 0">
-                                                <tr v-for="menuDetail in menuDetailsWithPermissions" :key="menuDetail.id">
-                                                <td class="text-nowrap fw-medium">{{ menuDetail.name }}</td>
-                                                <td>
-                                                    <div class="d-flex justify-content-end flex-wrap">
-                                                        <div
-                                                            v-for="perm in menuDetail.permissions"
-                                                            :key="perm.id"
-                                                            class="form-check mb-1 me-4"
-                                                        >
-                                                            <input
-                                                                class="form-check-input"
-                                                                type="checkbox"
-                                                                :id="`perm_${menuDetail.id}_${perm.id}`"
-                                                                :value="perm.id"
-                                                                v-model="selectedPermissions"
-                                                                :checked="selectedPermissions.includes(perm.id)"
-                                                            />
-                                                            <label
-                                                                class="form-check-label"
-                                                                :for="`perm_${menuDetail.id}_${perm.id}`"
-                                                            >
-                                                                {{ perm.name }}
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                </tr>
-                                            </template>
-
-                                            <tr v-else>
-                                                <td colspan="2" class="text-center py-4">
-                                                <div class="text-muted">No permissions data available</div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="p-input-icon-left">
+                                        <InputText v-model="permissionSearch" placeholder="Cari Menu..." />
+                                    </span>
                                 </div>
-                                <div class="col-12 d-flex flex-wrap justify-content-center gap-4 row-gap-4">
-                                    <button class="btn btn-primary"
-                                        @click="selectedRole && selectedRole.id ? submitUpdatedPermissions() : submitNewRole()">
-                                        Submit
-                                    </button>
-                                    <button
-                                    type="reset"
-                                    class="btn btn-outline-secondary"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close">
-                                    Cancel
-                                    </button>
-                                </div>
-                            </form>
-                            <!--/ Add role form -->
+                            </div>
+                             <DataTable :value="filteredMenuDetails" :rows="permissionTableRows" paginator
+                                paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                                currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} menu"
+                                responsiveLayout="scroll"
+                                :paginator="true"
+                                class="p-datatable-sm"
+                                >
+                                <Column field="name" header="Menu" :sortable="true" style="min-width: 12rem;"></Column>
+                                
+                                <Column v-for="permName in masterPermissionNames" :key="permName" style="min-width: 6rem;">
+                                    <template #header>
+                                        <div class="text-center w-100 font-weight-bold">{{ permName }}</div>
+                                    </template>
+                                    <template #body="{ data }">
+                                        <div v-if="getPermission(data, permName)" class="form-check d-flex justify-content-center">
+                                            <input
+                                                class="form-check-input"
+                                                type="checkbox"
+                                                :value="getPermission(data, permName).id"
+                                                v-model="form.permissionIds"
+                                            />
+                                        </div>
+                                    </template>
+                                </Column>
+                                <template #empty>
+                                    <div class="text-center p-4">Tidak ada data menu.</div>
+                                </template>
+                            </DataTable>
                         </div>
                     </div>
-                </div>
-            </div>
+                    <div class="modal-footer mt-6">
+                        <button type="button" class="btn btn-outline-secondary" @click="rolesStore.closeModal()">Tutup</button>
+                        <button type="submit" class="btn btn-primary" :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+               </template>
+            </Modal>
             <!--/ Add Role Modal -->
         </div>
         <!-- / Content -->
@@ -477,48 +186,65 @@
         <div class="content-backdrop fade"></div>
     </div>
      <!-- Content wrapper -->
+    </div>
  </template>
  
- <script setup>
-import { ref, computed, onMounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRolesStore } from '~/stores/roles'
-import Swal from 'sweetalert2'
+import Modal from '~/components/modal/Modal.vue'
+import MyDataTable from '~/components/table/MyDataTable.vue'
+import Dropdown from 'primevue/dropdown'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
+import DataTable from 'primevue/datatable'
+import { useDebounceFn } from '@vueuse/core'
 
-const { $api } = useNuxtApp()
+const myDataTableRef = ref(null);
+const rolesStore = useRolesStore();
+const { 
+    roles, 
+    permissions,
+    loading, 
+    totalRecords, 
+    params, 
+    form, 
+    isEditMode, 
+    showModal, 
+    validationErrors 
+} = storeToRefs(rolesStore);
 
-const permissions         = ref([])
-const selectedRole        = ref(null)
-const selectedPermissions = ref([])
-const validationErrors    = ref([])
+const globalFilterValue = ref('');
+const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
+const permissionSearch = ref('');
+const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show', 'Approve', 'Reject'];
+const permissionTableRows = ref(10);
+const permissionRowsOptions = ref([5, 10, 25, 50]);
 
 const selectAll = computed({
   get() {
     if (!permissions.value || permissions.value.length === 0) {
       return false;
     }
-    return selectedPermissions.value.length === permissions.value.length;
+    return form.value.permissionIds.length === permissions.value.length;
   },
   set(value) {
     if (value) {
-      selectedPermissions.value = permissions.value.map(p => p.id);
+      form.value.permissionIds = permissions.value.map(p => p.id);
     } else {
-      selectedPermissions.value = [];
+      form.value.permissionIds = [];
     }
   }
 });
 
-const validSelectedPermissions = computed(() =>
-    selectedPermissions.value
-        .map(p => typeof p === 'number' ? p : parseInt(p))
-        .filter(p => typeof p === 'number' && !isNaN(p) && p > 0)
-);
-
-const rolesStore = useRolesStore()
+const getPermission = (menu, permName) => {
+    return menu.permissions.find(p => p.name === permName);
+};
 
 const menuDetailsWithPermissions = computed(() => {
     const result = {};
     const masterPermissions = Array.isArray(permissions.value) ? permissions.value : [];
-    const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show'];
 
     masterPermissions.forEach(p => {
         const permParts = p.name?.split('_');
@@ -529,7 +255,6 @@ const menuDetailsWithPermissions = computed(() => {
             menuKey = 'general';
         }
 
-        // Standarisasi menuKey ke bentuk singular (hapus trailing 's' jika ada)
         if (menuKey.endsWith('s')) {
             menuKey = menuKey.slice(0, -1);
         }
@@ -542,6 +267,8 @@ const menuDetailsWithPermissions = computed(() => {
         else if (permName.includes('update') || permName.includes('edit')) displayPermissionName = 'Edit';
         else if (permName.includes('delete')) displayPermissionName = 'Delete';
         else if (permName.includes('show')) displayPermissionName = 'Show';
+        else if (permName.includes('approve')) displayPermissionName = 'Approve';
+        else if (permName.includes('reject')) displayPermissionName = 'Reject';
 
         if (!displayPermissionName) return;
 
@@ -565,7 +292,7 @@ const menuDetailsWithPermissions = computed(() => {
         }
     });
 
-    const sortedMenuDetails = Object.values(result).sort((a, b) => a.order - b.order);
+    const sortedMenuDetails = Object.values(result).sort((a, b) => a.name.localeCompare(b.name));
     sortedMenuDetails.forEach(md => {
         md.permissions.sort((a, b) => {
             const orderA = masterPermissionNames.indexOf(a.name);
@@ -577,462 +304,55 @@ const menuDetailsWithPermissions = computed(() => {
     return sortedMenuDetails;
 });
 
-// Di bagian onMounted, ganti event handler untuk tombol edit dengan ini:
-onMounted(async () => {
-    await fetchPermissions();
-
-    // Hapus event handler lama sebelum DataTable diinisialisasi
-    $(document).off('click', '.edit-role-btn');
-    $(document).off('click', '.delete-record');
-
-    // Inisialisasi DataTable hanya sekali
-    const dataTable = $('#table-roles').DataTable({
-        serverSide: true,
-        processing: true,
-        responsive: true,
-        autoWidth: true,
-        order: [[0, 'desc']],
-        ajax: {
-            url: $api.roles(),
-            type: 'GET',
-            dataSrc: function(json) {
-                return json.data || json;
-            },
-            beforeSend: function (xhr) {
-                const token = localStorage.getItem('token')
-                if (token) {
-                    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-                }
-            },
-            xhrFields: {
-                withCredentials: true
-            }
-        },
-        columns: [
-            { data: null, render: (data, type, row, meta) => meta.row + 1 + '.' },
-            { data: 'name', defaultContent: '-' },
-            { 
-                data: null, 
-                render: function(data, type, row) {
-                    return `
-                        <div class="d-flex align-items-center">
-                            <span class="text-nowrap">
-                                <button 
-                                        class="btn btn-icon btn-text-secondary rounded-pill edit-role-btn" 
-                                        data-id="${row.id}" 
-                                        aria-label="Edit Role"
-                                        data-bs-toggle="tooltip"
-                                        data-bs-placement="top"
-                                        title="Edit Role"
-                                    >
-                                        <i class="icon-base ri ri-edit-box-line icon-20px"></i>
-                                    </button>
-                                    <button
-                                    class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-record text-body waves-effect me-1" data-id="${row.id}"
-                                    aria-label="Delete Role"
-                                    data-bs-toggle="tooltip"
-                                    data-bs-placement="top"
-                                    title="Delete Role"
-                                    >
-                                        <i class="icon-base ri ri-delete-bin-7-line icon-20px"></i>
-                                    </button>
-                            </span>
-                        </div>
-                    `;
-                }
-            }
-        ]
-    });
-
-    // Event delegation untuk tombol edit
-    $('#table-roles tbody').off('click', '.edit-role-btn').on('click', '.edit-role-btn', async function () {
-        const roleId = $(this).data('id');
-        try {
-            const response = await fetch($api.roleShow(roleId), {
-                headers: { 
-                    Authorization: `Bearer ${localStorage.getItem('token')}` 
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error('Gagal mengambil data role');
-            }
-            
-            const roleData = await response.json();
-            await openEditRoleModal(roleData);
-            
-            // Pastikan modal sudah diinisialisasi
-            if (window.roleModal) {
-                window.roleModal.show();
-            } else {
-                const modalEl = document.getElementById('RoleModal');
-                window.roleModal = new bootstrap.Modal(modalEl);
-                window.roleModal.show();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Gagal memuat data role: ' + error.message);
-        }
-    });
-
-    // Event delegation untuk tombol delete
-    $('#table-roles tbody').off('click', '.delete-record').on('click', '.delete-record', async function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const roleId = $(this).data('id');
-        await deleteRole(roleId);
-    });
-
-    rolesStore.fetchRoles();
+const filteredMenuDetails = computed(() => {
+    if (!permissionSearch.value) {
+        return menuDetailsWithPermissions.value;
+    }
+    const searchLower = permissionSearch.value.toLowerCase();
+    return menuDetailsWithPermissions.value.filter(menu => 
+        menu.name.toLowerCase().includes(searchLower)
+    );
 });
 
-function openAddRoleModal() {
-    selectedRole.value = null;
-    document.getElementById('modalRoleName').value = '';
-    selectedPermissions.value = [];
-    if (window.roleModal) {
-        window.roleModal.show();
+const modalTitle = computed(() => isEditMode.value ? 'Edit Role' : 'Tambah Role');
+const modalDescription = computed(() => isEditMode.value ? 'Ubah detail role.' : 'Isi untuk menambah role baru.');
+
+let modalInstance = null;
+onMounted(() => {
+    rolesStore.fetchRoles();
+    rolesStore.fetchPermissions();
+    const modalElement = document.getElementById('RolesModal');
+    if (modalElement) {
+        modalInstance = new bootstrap.Modal(modalElement);
+    }
+});
+
+watch(showModal, (newValue) => {
+    if (newValue) {
+        modalInstance?.show();
     } else {
-        const modalEl = document.getElementById('RoleModal');
-        window.roleModal = new bootstrap.Modal(modalEl);
-        window.roleModal.show();
+        modalInstance?.hide();
     }
-    // Bersihkan backdrop jika ada setelah modal ditutup
-    const modalEl = document.getElementById('RoleModal');
-    if (modalEl) {
-        modalEl.addEventListener('hidden.bs.modal', () => {
-            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-            document.body.style.overflow = '';
-        }, { once: true });
-    }
-}
+});
 
-async function openEditRoleModal(role) {
-    try {
-        if (!role || !role.id) {
-            throw new Error('Role tidak valid');
-        }
+const debouncedSearch = useDebounceFn(() => {
+    rolesStore.setSearch(globalFilterValue.value);
+}, 500);
+watch(globalFilterValue, debouncedSearch);
 
-        // Debug: log role data yang diterima
-        console.log('Role data loaded (openEditRoleModal):', role);
+const onPage = (event) => rolesStore.setPagination(event);
 
-        // Simpan role yang dipilih
-        selectedRole.value = role;
-
-        // Set nilai input
-        const modalRoleName = document.getElementById('modalRoleName');
-        if (modalRoleName) {
-            modalRoleName.value = role.name || '';
-        }
-
-        // Set permissions yang dipilih, pastikan selalu array baru
-        selectedPermissions.value = [];
-        
-        // Handle both response formats (API might return permissions as array of objects or just IDs)
-        if (role.permissions && Array.isArray(role.permissions)) {
-            if (role.permissions.length > 0) {
-                if (typeof role.permissions[0] === 'object') {
-                    // Format: [{id: 1, name: 'view_user'}, ...]
-                    selectedPermissions.value = role.permissions
-                        .map(p => p.id)
-                        .filter(id => id && id > 0);
-                } else {
-                    // Format: [1, 2, 3]
-                    selectedPermissions.value = role.permissions
-                        .filter(id => id && id > 0);
-                }
-            }
-        }
-
-        // Debug: log selectedPermissions after set
-        console.log('selectedPermissions after openEditRoleModal:', selectedPermissions.value);
-
-        // Tampilkan modal
-        if (window.roleModal) {
-            window.roleModal.show();
-        } else {
-            const modalEl = document.getElementById('RoleModal');
-            window.roleModal = new bootstrap.Modal(modalEl);
-            window.roleModal.show();
-        }
-        
-        // Bersihkan backdrop jika ada setelah modal ditutup
-        const modalEl = document.getElementById('RoleModal');
-        if (modalEl) {
-            modalEl.addEventListener('hidden.bs.modal', () => {
-                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                document.body.style.overflow = '';
-            }, { once: true });
-        }
-
-    } catch (error) {
-        console.error('Error in openEditRoleModal:', error);
-        alert('Error: ' + error.message);
-    }
-}
-
-const fetchPermissions = async () => {
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch($api.getPermissions(), {
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: 'include'
-        });
-
-        if (!res.ok) {
-            console.error('HTTP Error fetching all permissions:', res.status, res.statusText);
-            permissions.value = [];
-            return;
-        }
-
-        const apiResponse = await res.json();
-        permissions.value = apiResponse.data || apiResponse;
-
-        console.log('Actual API Response for /api/getPermissions:', permissions.value);
-        
-        if (permissions.value && permissions.value.length > 0) {
-            console.log('Permissions data successfully loaded. First item:', permissions.value[0]);
-        } else {
-            console.warn('Permissions data is empty or invalid after fetch.');
-        }
-
-    } catch (error) {
-        console.error('Network or JSON parsing error fetching all permissions:', error);
-        permissions.value = [];
-    }
-}
-
-const submitNewRole = async () => {
-    console.log('Fungsi: submitNewRole dipanggil');
-    try {
-        // First get the CSRF token if needed
-        const csrfResponse = await fetch($api.csrfToken(), {
-            credentials: 'include'
-        });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
-
-        const token = localStorage.getItem('token');
-        const url = $api.roleStore();
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'X-CSRF-TOKEN': csrfToken || ''
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                name: document.getElementById('modalRoleName').value,
-                permissionIds: validSelectedPermissions.value
-            })
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            $('#table-roles').DataTable().ajax.reload(null, false);
-            
-            // Tutup modal dengan benar
-            const modalEl = document.getElementById('RoleModal');
-            if (modalEl) {
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
-                
-                // Bersihkan backdrop setelah modal tertutup
-                modalEl.addEventListener('hidden.bs.modal', () => {
-                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                    document.body.style.overflow = '';
-                }, { once: true });
-            }
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Role berhasil dibuat.',
-                icon: 'success'
-            });
-        } else {
-            const errorData = await response.json();
-            if (errorData.errors) {
-            // Jika errors adalah object, flatten ke array
-            validationErrors.value = Array.isArray(errorData.errors)
-                ? errorData.errors
-                : Object.values(errorData.errors).flat();
-            } else {
-                alert(errorData.message || 'Gagal membuat role');
-            }  
-        }
-    } catch (error) {
-        console.error('Create error:', error);
-        alert(error.message);
-    }
+const handleRowsChange = () => {
+    params.value.first = 0; // Reset to first page
+    rolesStore.fetchRoles();
 };
 
-const submitUpdatedPermissions = async () => {
-    try {
-        if (!selectedRole.value || !selectedRole.value.id) {
-            console.error('selectedRole atau ID-nya tidak ada saat update.');
-            throw new Error('Role yang dipilih tidak memiliki ID. Tidak dapat memperbarui.');
-        }
+const onSort = (event) => rolesStore.setSort(event);
 
-        const roleIdToUpdate = selectedRole.value.id;
-        console.log('ID Role yang akan diupdate:', roleIdToUpdate);
-
-        const csrfResponse = await fetch($api.csrfToken(), {
-            credentials: 'include'
-        });
-
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-        const token = localStorage.getItem('token');
-        const url = $api.roleUpdate(roleIdToUpdate);
-        console.log('URL yang akan dituju:', url);
-
-        const permissionsToSend = selectedPermissions.value
-        .filter(p => typeof p === 'number' && p > 0);
-
-        console.log('Permissions yang akan dikirim (FINAL):', permissionsToSend);
-
-        const payload = {
-            name: document.getElementById('modalRoleName').value,
-            permissionIds: permissionsToSend
-        };
-        console.log('Payload yang akan dikirim (FINAL):', payload);
-
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(payload),
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            $('#table-roles').DataTable().ajax.reload(null, false);
-
-            // Reset selectedRole and selectedPermissions after update
-            selectedRole.value = null;
-            selectedPermissions.value = [];
-            // Optionally clear the modal input
-            const modalRoleName = document.getElementById('modalRoleName');
-            if (modalRoleName) modalRoleName.value = '';
-
-            // Refresh rolesStore data
-            rolesStore.fetchRoles();
-
-            // Tutup modal dengan benar
-            const modalEl = document.getElementById('RoleModal');
-            if (modalEl) {
-                const modal = bootstrap.Modal.getInstance(modalEl);
-                modal.hide();
-
-                // Bersihkan backdrop setelah modal tertutup
-                modalEl.addEventListener('hidden.bs.modal', () => {
-                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-                    document.body.style.overflow = '';
-                }, { once: true });
-            }
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Role berhasil diperbarui.',
-                icon: 'success'
-            });
-        } else {
-            const errorData = await response.json();
-            if (errorData.errors) {
-            // Jika errors adalah object, flatten ke array
-            validationErrors.value = Array.isArray(errorData.errors)
-                ? errorData.errors
-                : Object.values(errorData.errors).flat();
-            } else {
-                alert(errorData.message || 'Gagal membuat role');
-            }  
-        }
-
-    } catch (error) {
-        console.error('Update error (frontend catch):', error);
-        alert(error.message);
-    }
-};
-
-
-const deleteRole = async (roleId) => {
-    if (!roleId) return;
-
-    const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'This action cannot be undone!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#666CFF',
-        cancelButtonColor: '#A7A9B3',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
-    });
-
-    if (result.isConfirmed) {
-        try {
-            // Validasi ID role yang akan dihapus
-            if (!roleId) {
-                console.error('ID role tidak ditemukan untuk proses hapus.');
-                throw new Error('Role yang dipilih tidak memiliki ID. Tidak dapat menghapus.');
-            }
-
-            // Ambil token dari localStorage
-            const token = localStorage.getItem('token');
-
-            // Ambil CSRF token
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
-
-            // Endpoint hapus role
-            const url = $api.roleDelete(roleId);
-            console.log('URL hapus role:', url);
-
-            // Request hapus role
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Gagal menghapus role');
-            }
-
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Role berhasil dihapus.',
-                icon: 'success'
-            });
-
-            // Reload tabel
-            $('#table-roles').DataTable().ajax.reload(null, false);
-            
-
-        } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
-        }
-    }
-};
-
- </script>
+</script>
  
  <style>
-    
+    .p-dropdown-panel {
+        z-index: 1056 !important;
+    }
  </style>

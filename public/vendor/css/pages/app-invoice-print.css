@@ -3,9 +3,9 @@ body {
   background: #fff !important;
 }
 
-body > :not(.invoice-print) {
+/* body > :not(.invoice-print) {
   display: none !important;
-}
+} */
 
 .invoice-print {
   min-width: 768px !important;

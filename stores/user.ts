@@ -1,21 +1,47 @@
 import { defineStore } from 'pinia'
+import type { User } from './userManagement'
+import { useNuxtApp } from '#app'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    user: null as null | { id: number, email: string, fullName: string, isActive: boolean, role?: string }
+    user: null as null | User,
+    loading: false,
   }),
   actions: {
     setUser(user: any) {
       this.user = user
-      localStorage.setItem('user', JSON.stringify(user))
     },
     clearUser() {
       this.user = null
+      localStorage.removeItem('token')
       localStorage.removeItem('user')
     },
-    loadUser() {
-      const userStr = localStorage.getItem('user')
-      this.user = userStr ? JSON.parse(userStr) : null
-    }
-  }
+    async loadUser() {
+      const token = localStorage.getItem('token')
+      if (!token || this.user) return
+
+      this.loading = true
+      const { $api } = useNuxtApp()
+
+      try {
+        const response = await fetch($api.me(), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        })
+        if (!response.ok) {
+          throw new Error('Gagal memuat data pengguna')
+        }
+        const userData = await response.json()
+        this.setUser(userData)
+      } catch (error) {
+        console.error(error)
+        this.clearUser()
+      } finally {
+        this.loading = false
+      }
+    },
+  },
 })

@@ -1,5 +1,5 @@
 <template>
-    <div class="col-xl-4 col-lg-6 col-md-6">
+    <div :class="columnClass">
         <div class="card h-100">
             <div class="card-body">
                 <div v-if="!isAddButtonCard" class="d-flex justify-content-between align-items-center mb-4">
@@ -28,8 +28,6 @@
                     <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
                             <button
-                                :data-bs-target="modalTarget"
-                                data-bs-toggle="modal"
                                 class="btn btn-sm btn-primary mb-4 text-wrap"
                                 @click="$emit('button-click')"
                                 >
@@ -54,6 +52,10 @@
         isAddButtonCard: {
             type: Boolean,
             default: false
+        },
+        columnClass: {
+            type: String,
+            default: 'col-xl-4 col-lg-6 col-md-6'
         }
     })
     defineEmits(['button-click']);

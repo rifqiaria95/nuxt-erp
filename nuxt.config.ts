@@ -1,7 +1,13 @@
 // nuxt.config.ts
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
   devtools: {
     enabled: true
+  },
+  ssr: false,
+  routeRules: {
+    '/inventory/cetak-stock-transfer/**': { ssr: false },
   },
   modules: [
     '@pinia/nuxt',
@@ -14,6 +20,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
       authBase: process.env.NUXT_PUBLIC_AUTH_BASE,
+      storageBase: process.env.NUXT_PUBLIC_STORAGE_BASE,
     }
   },
   imports: {
@@ -28,6 +35,8 @@ export default defineNuxtConfig({
     '~/public/vendor/libs/select2/select2.css',
   ],
   app: {
+    baseURL: '/',
+    target: 'static',
     head: {
       title: 'Kainnova Digital Solutions',
       htmlAttrs: {
@@ -75,6 +84,7 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/vendor/css/pages/cards-statistics.css' },
         { rel: 'stylesheet', href: '/vendor/css/pages/cards-analytics.css' },
         { rel: 'stylesheet', href: '/vendor/css/pages/page-auth.css' },
+        { rel: 'stylesheet', href: '/vendor/css/pos.css' }
       ],
       script: [
         // Helpers & Config (biasanya dimuat di head)

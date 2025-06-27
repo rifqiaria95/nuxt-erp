@@ -1,5 +1,5 @@
   <template>
-    <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
+    <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme" @mouseenter="handleMouseEnter" @mouseleave="handleMouseLeave">
       <div class="app-brand demo">
         <a href="index.html" class="app-brand-link">
           <span class="app-brand-logo demo">
@@ -34,23 +34,42 @@
         <li class="menu-header mt-5">
           <span class="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
         </li>
-        <template v-if="menuGroupsStore.menuGroups && menuGroupsStore.menuGroups.length">
-          <li class="menu-item" :class="{
-              open: group.menuDetails && group.menuDetails.some(detail => detail.route === $route.path),
-              active: group.menuDetails && group.menuDetails.some(detail => detail.route === $route.path)
-            }" v-for="group in menuGroupsStore.menuGroups" :key="group.id">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <template v-if="filteredAndSortedMenuGroups.length">
+          <li
+            class="menu-item"
+            v-for="group in filteredAndSortedMenuGroups"
+            :key="group.id"
+            :class="{
+              open: isGroupOpen(group),
+              active: isGroupActive(group)
+            }"
+          >
+            <a href="javascript:void(0);" class="menu-link menu-toggle" @click="toggleGroup(group.id)">
               <i :class="['menu-icon', 'tf-icons', group.icon]"></i>
               <div>{{ group.name }}</div>
             </a>
-            <ul class="menu-sub" v-if="group.menuDetails && group.menuDetails.length">
-              <li class="menu-item" v-for="detail in group.menuDetails" :key="detail.id"
-                :class="{ active: detail.route === $route.path }">
-                <a :href="detail.route" class="menu-link">
-                  <div>{{ detail.name }}</div>
-                </a>
-              </li>
-            </ul>
+            <transition
+              name="menu-expand"
+              @before-enter="beforeEnter"
+              @enter="enter"
+              @after-enter="afterEnter"
+              @before-leave="beforeLeave"
+              @leave="leave"
+            >
+              <ul class="menu-sub" v-show="isGroupOpen(group)" v-if="group.menuDetails && group.menuDetails.length">
+                <li
+                  class="menu-item"
+                  v-for="detail in [...group.menuDetails].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))"
+                  :key="detail.id"
+                  :class="{ active: detail.route === $route.path }"
+                  @mouseenter="handlePrefetch(detail.route)"
+                >
+                  <NuxtLink :to="detail.route" class="menu-link">
+                    <div>{{ detail.name }}</div>
+                  </NuxtLink>
+                </li>
+              </ul>
+            </transition>
           </li>
         </template>
       </ul>
@@ -58,31 +77,155 @@
   </template>
 
   <script setup>
-    import {
-      useMenuGroupsStore
-    } from '~/stores/menu-group';
-    import {
-      useMenuDetailsStore
-    } from '~/stores/menu-detail';
-    import {
-      onMounted
-    } from 'vue';
+    import { useMenuGroupStore } from '~/stores/menu-group';
+    import { useMenuDetailStore } from '~/stores/menu-detail';
+    import { useCustomerStore } from '~/stores/customer';
+    import { ref, onMounted, watch, computed } from 'vue';
+    import { useRoute } from 'vue-router';
+    import { useLayoutStore } from '~/stores/layout';
+    import { useUserStore } from '~/stores/user';
 
-    const menuGroupsStore = useMenuGroupsStore();
-    const menuDetailsStore = useMenuDetailsStore();
+    const menuGroupsStore = useMenuGroupStore();
+    const menuDetailsStore = useMenuDetailStore();
+    const route = useRoute();
+    const layoutStore = useLayoutStore();
+    const customerStore = useCustomerStore();
+    const userStore = useUserStore();
+
+    const openGroupIds = ref(new Set());
+
+    const isSuperAdmin = computed(() => {
+      return userStore.user?.roles.some(role => role.name === 'superadmin');
+    });
+
+    const filteredAndSortedMenuGroups = computed(() => {
+      if (!menuGroupsStore.sidebarMenuGroups) return [];
+
+      return [...menuGroupsStore.sidebarMenuGroups]
+        .filter(group => {
+          if (group.name === 'Admin' || group.jenisMenu === 7) {
+            return isSuperAdmin.value;
+          }
+          return true;
+        })
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    });
+
+    const prefetchMap = {
+      '/master/customer': () => customerStore.prefetchCustomers(),
+      '/admin/menu-group': () => menuGroupsStore.prefetchMenuGroups(),
+    };
+
+    const handlePrefetch = (route) => {
+      if (prefetchMap[route]) {
+        prefetchMap[route]();
+      }
+    };
+
+    const handleMouseEnter = () => {
+      layoutStore.setSidebarHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+      layoutStore.setSidebarHovered(false);
+    };
+
+    const toggleGroup = (groupId) => {
+      if (openGroupIds.value.has(groupId)) {
+        openGroupIds.value.delete(groupId);
+      } else {
+        openGroupIds.value.clear();
+        openGroupIds.value.add(groupId);
+      }
+    };
+
+    const isGroupActive = (group) => {
+      return group.menuDetails?.some(detail => detail.route === route.path);
+    };
+
+    const isGroupOpen = (group) => {
+      return openGroupIds.value.has(group.id);
+    };
 
     function toggleSidebar() {
-      document.body.classList.toggle('layout-menu-expanded');
+      layoutStore.toggleSidebar();
     }
 
-    onMounted(() => {
-      menuGroupsStore.fetchMenuGroups();
-      menuDetailsStore.fetchMenuDetails();
+    const setActiveGroup = () => {
+      const activeGroup = menuGroupsStore.sidebarMenuGroups.find(isGroupActive);
+      if (activeGroup) {
+        if (!openGroupIds.value.has(activeGroup.id)) {
+          openGroupIds.value.clear();
+          openGroupIds.value.add(activeGroup.id);
+        }
+      }
+    };
+
+    onMounted(async () => {
+      await userStore.loadUser();
+      await menuGroupsStore.fetchAllMenuGroups();
+      setActiveGroup();
     });
+
+    watch(() => route.path, () => {
+      setActiveGroup();
+    });
+
+    // --- Transition Hooks for smooth animation ---
+    const beforeEnter = (el) => {
+      el.style.height = '0';
+      el.style.overflow = 'hidden';
+    };
+
+    const enter = (el, done) => {
+      el.style.height = el.scrollHeight + 'px';
+      el.addEventListener('transitionend', done, { once: true });
+    };
+
+    const afterEnter = (el) => {
+      el.style.height = 'auto';
+    };
+
+    const beforeLeave = (el) => {
+      el.style.height = el.scrollHeight + 'px';
+      el.style.overflow = 'hidden';
+    };
+
+    const leave = (el, done) => {
+      // Force repaint before starting the transition
+      getComputedStyle(el).height;
+      requestAnimationFrame(() => {
+          el.style.height = '0';
+      });
+      el.addEventListener('transitionend', done, { once: true });
+    };
   </script>
 
   <style>
+    .layout-menu {
+      transition: width 0.25s ease-in-out;
+    }
+
+    html:not(.layout-menu-collapsed) .layout-menu {
+        width: 260px;
+    }
+
+    html.layout-menu-collapsed .layout-menu {
+        width: 82px;
+    }
+
+    html.layout-menu-collapsed.layout-menu-hover .layout-menu {
+        width: 260px;
+    }
+
     #layout-menu {
       padding-top: 1rem;
+    }
+    .menu-sub {
+      transition: height 0.3s ease-in-out;
+      overflow: hidden;
+    }
+    .menu-inner {
+      overflow-y: auto;
     }
   </style>
