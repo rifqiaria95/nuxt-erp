@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="salesOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                    <button @click="salesOrderStore.openModal(null, 'admin')" class="btn btn-primary mb-2 text-wrap add-new-role">
                                         Tambah Sales Order
                                     </button>
                                     <p class="mb-0 mt-1">Buat Sales Order baru</p>
@@ -64,8 +64,25 @@
 
             <div class="row g-6">
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Sales Order</h4>
+                    <h4 class="mt-6 mb-1">Total & Filter Sales Order</h4>
                     <p class="mb-0">Temukan semua akun administrator perusahaan Anda dan Sales Order terkait.</p>
+                </div>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <v-select v-model="filters.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <v-select v-model="filters.source" :options="sourceOptions" label="label" :reduce="option => option.value" placeholder="Pilih Source" class="v-select-style"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12">
                     <!-- salesOrder Table -->
@@ -116,12 +133,32 @@
                                             {{ params.first + slotProps.index + 1 }}
                                         </template>
                                     </Column>
-                                    <Column field="noSo" header="No. SO" :sortable="true"></Column>
+                                    <Column field="noSo" header="No. SO" :sortable="true">
+                                        <template #body="slotProps">
+                                            <span>
+                                                {{ slotProps.data.noSo || '-' }}
+                                            </span>
+                                        </template>
+                                    </Column>
+                                    <Column field="noPo" header="No. PO" :sortable="true">
+                                        <template #body="slotProps">
+                                            <span>
+                                                {{ slotProps.data.noPo || '-' }}
+                                            </span>
+                                        </template>
+                                    </Column>
                                     <Column field="customer.name" header="Nama Customer" :sortable="true"></Column>
                                     <Column field="paymentMethod" header="Metode Pembayaran" :sortable="true">
                                         <template #body="slotProps">
+                                            <span :class="getPaymentMethodBadge(slotProps.data.paymentMethod).class">
+                                                {{ getPaymentMethodBadge(slotProps.data.paymentMethod).text }}
+                                            </span>
+                                        </template>
+                                    </Column>
+                                    <Column field="source" header="Source" :sortable="true">
+                                        <template #body="slotProps">
                                             <span>
-                                                {{ slotProps.data.paymentMethod || '-' }}
+                                                {{ slotProps.data.source || '-' }}
                                             </span>
                                         </template>
                                     </Column>
@@ -193,7 +230,7 @@
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_order') && slotProps.data.status == 'draft')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.openModal(slotProps.data)">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.openModal(slotProps.data, 'admin')">
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>
                                                     </li>
@@ -246,6 +283,12 @@
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
                                             <input type="hidden" v-model="form.noSo" class="form-control" placeholder="No SO" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" v-model="form.noPo" class="form-control" placeholder="No. PO" required>
+                                            <label>No. PO</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -435,6 +478,11 @@ const { user }        = storeToRefs(userStore)
 const { permissions } = storeToRefs(permissionStore)
 
 // State
+const filters = ref({
+  customerId: null,
+  source: null,
+  status: null,
+});
 const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
 
@@ -472,6 +520,19 @@ const paymentMethodOptions = [
     { label: 'Cash', value: 'cash' }, { label: 'Transfer', value: 'transfer' },
     { label: 'QRIS', value: 'qris' }, { label: 'Card', value: 'card' }
 ];
+
+const sourceOptions = ref([
+    { label: 'POS', value: 'pos' },
+    { label: 'Admin', value: 'admin' },
+]);
+
+const statusOptions = ref([
+    { label: 'Draft', value: 'draft' },
+    { label: 'Approved', value: 'approved' },
+    { label: 'Delivered', value: 'delivered' },
+    { label: 'Rejected', value: 'rejected' },
+    { label: 'Partial', value: 'partial' },
+]);
 
 let modalInstance = null;
 onMounted(() => {
@@ -558,10 +619,9 @@ const filteredCabangs = computed(() => {
     return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
-const debouncedSearch = useDebounceFn(() => {
-    salesOrderStore.setSearch(globalFilterValue.value)
-}, 500)
-watch(globalFilterValue, debouncedSearch);
+watch(filters, useDebounceFn(() => {
+    salesOrderStore.setFilters(filters.value);
+}, 500), { deep: true });
 
 const onPage = (event) => salesOrderStore.setPagination(event);
 const handleRowsChange = () => {
@@ -619,6 +679,16 @@ const getStatusBadge = (status) => {
         case 'delivered': return { text: 'Delivered', class: 'badge rounded-pill bg-label-success' };
         case 'rejected': return { text: 'Rejected', class: 'badge rounded-pill bg-label-danger' };
         case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
+        default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    }
+};
+
+const getPaymentMethodBadge = (paymentMethod) => {
+    switch (paymentMethod) {
+        case 'cash': return { text: 'Cash', class: 'badge rounded-pill bg-label-success' };
+        case 'transfer': return { text: 'Transfer', class: 'badge rounded-pill bg-label-primary' };
+        case 'qris': return { text: 'QRIS', class: 'badge rounded-pill bg-label-danger' };
+        case 'card': return { text: 'Card', class: 'badge rounded-pill bg-label-secondary' };
         default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }
 };

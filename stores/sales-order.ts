@@ -11,53 +11,55 @@ import type { Cabang } from './cabang'
 import type { Product } from './product'
 
 export interface SalesOrderItem {
-  id             : string
-  salesOrderId   : string
-  productId      : number
-  quantity       : number
-  price          : number
-  description    : string
-  subtotal       : number
-  statusPartial : boolean
-  deliveredQty   : number
-  createdAt      : string
-  updatedAt      : string
-  product?       : Product
+  id           : string
+  salesOrderId : string
+  productId    : number
+  quantity     : number
+  price        : number
+  description  : string
+  subtotal     : number
+  statusPartial: boolean
+  deliveredQty : number
+  createdAt    : string
+  updatedAt    : string
+  product?     : Product
 }
 
 export interface SalesOrder {
-  id             : string
-  name?          : string
-  noSo           : string
-  up             : string
-  customerId     : number
-  perusahaanId   : number
-  cabangId       : number
-  date           : string
-  dueDate        : string
-  status         : string
-  paymentMethod  : string
-  total          : string
-  discountPercent: string
-  taxPercent     : string
-  description    : string
-  attachment?    : string
-  createdAt      : string
-  updatedAt      : string
-  createdBy      : number
-  approvedBy     : number | null
+  id              : string
+  name?           : string
+  noSo            : string
+  noPo            : string
+  up              : string
+  customerId      : number
+  perusahaanId    : number
+  cabangId        : number
+  date            : string
+  dueDate         : string
+  status          : string
+  paymentMethod   : string
+  source          : string
+  total           : string
+  discountPercent : string
+  taxPercent      : string
+  description     : string
+  attachment?     : string
+  createdAt       : string
+  updatedAt       : string
+  createdBy       : number
+  approvedBy      : number | null
   deliveredBy     : number | null
-  rejectedBy     : number | null
-  approvedAt     : string | null
+  rejectedBy      : number | null
+  approvedAt      : string | null
   deliveredAt     : string | null
-  rejectedAt     : string | null
-  customer?      : Customer
-  perusahaan?    : Perusahaan
-  cabang?        : Cabang
-  createdByUser? : User
-  approvedByUser?: User
+  rejectedAt      : string | null
+  customer?       : Customer
+  perusahaan?     : Perusahaan
+  cabang?         : Cabang
+  createdByUser?  : User
+  approvedByUser? : User
   deliveredByUser?: User
-  salesOrderItems? : SalesOrderItem[]
+  salesOrderItems?: SalesOrderItem[]
 }
 
 export interface CustomerProduct extends Product {
@@ -65,62 +67,70 @@ export interface CustomerProduct extends Product {
 }
 
 interface SalesOrderState {
-  salesOrders: SalesOrder[]
-  salesOrder: SalesOrder | null
+  salesOrders       : SalesOrder[]
+  salesOrder        : SalesOrder | null
   originalSalesOrder: SalesOrder | null
-  customerProducts: CustomerProduct[]
-  loading: boolean
-  error: any
-  totalRecords: number
+  customerProducts  : CustomerProduct[]
+  loading           : boolean
+  error             : any
+  totalRecords      : number
   params: {
-    first: number
-    rows: number
-    sortField: string | null
-    sortOrder: number | null
-    draw: number
-    search: string
+    first      : number
+    rows       : number
+    sortField  : string | null
+    sortOrder  : number | null
+    draw       : number
+    search     : string
+    customerId?: number | null
+    source?    : string | null
+    status?    : string | null
   }
-  form: any,
-  isEditMode: boolean
-  showModal: boolean
+  form            : any,
+  isEditMode      : boolean
+  showModal       : boolean
   validationErrors: any[]
 }
 
 export const useSalesOrderStore = defineStore('salesOrder', {
   state: (): SalesOrderState => ({
-    salesOrders: [],
-    salesOrder : null,
+    salesOrders       : [],
+    salesOrder        : null,
     originalSalesOrder: null,
-    customerProducts: [],
-    loading       : true,
-    error         : null,
-    totalRecords: 0,
+    customerProducts  : [],
+    loading           : true,
+    error             : null,
+    totalRecords      : 0,
     params: {
-        first: 0,
-        rows: 10,
-        sortField: 'id',
-        sortOrder: 1,
-        draw: 1,
-        search: '',
+        first     : 0,
+        rows      : 10,
+        sortField : 'id',
+        sortOrder : -1,
+        draw      : 1,
+        search    : '',
+        customerId: null,
+        source    : null,
+        status    : null,
     },
     form: {
-        noSo: '',
-        up: '',
-        customerId: null,
-        perusahaanId: null,
-        cabangId: null,
-        date: new Date().toISOString().split('T')[0],
-        dueDate: new Date().toISOString().split('T')[0],
+        noSo           : '',
+        noPo           : '',
+        up             : '',
+        customerId     : null,
+        perusahaanId   : null,
+        cabangId       : null,
+        date           : new Date().toISOString().split('T')[0],
+        dueDate        : new Date().toISOString().split('T')[0],
         discountPercent: 0,
-        taxPercent: 0,
-        description: '',
-        attachment: null,
-        status: 'draft',
-        paymentMethod: null,
+        taxPercent     : 0,
+        description    : '',
+        attachment     : null,
+        status         : 'draft',
+        paymentMethod  : null,
+        source         : null,
         salesOrderItems: []
     },
-    isEditMode: false,
-    showModal: false,
+    isEditMode      : false,
+    showModal       : false,
     validationErrors: [],
   }),
   actions: {
@@ -148,15 +158,26 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             draw     : this.params.draw.toString(),
             search   : this.params.search || '',
         });
+
+        if (this.params.customerId) {
+          params.append('customerId', this.params.customerId.toString());
+        }
+        if (this.params.source) {
+          params.append('source', this.params.source);
+        }
+        if (this.params.status) {
+          params.append('status', this.params.status);
+        }
+          
         url.search = params.toString();
 
         const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'X-CSRF-TOKEN' : csrfToken,
+            'Accept'       : 'application/json',
+            'Content-Type' : 'application/json'
           },
           credentials: 'include'
         })
@@ -544,7 +565,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         }
     },
 
-    async openModal(salesOrderData: SalesOrder | null = null) {
+    async openModal(salesOrderData: SalesOrder | null = null, source: 'admin' | 'pos' | null = null) {
       this.isEditMode = !!salesOrderData;
       this.validationErrors = [];
 
@@ -573,6 +594,9 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           });
 
           this.form = formData;
+          if (source) {
+            this.form.source = source;
+          }
 
           // Wait for products to be fetched before showing modal
           if (this.form.customerId) {
@@ -591,7 +615,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             this.addItem();
           }
       } else {
-          this.resetForm();
+          this.resetForm(source);
           this.addItem(); // Tambahkan satu item default untuk SO baru
       }
       this.showModal = true;
@@ -605,9 +629,10 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       this.validationErrors = [];
     },
     
-    resetForm() {
+    resetForm(source: 'admin' | 'pos' | null = null) {
       this.form = {
         noSo: '',
+        noPo: '',
         up: '',
         customerId: null,
         perusahaanId: null,
@@ -620,6 +645,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         attachment: null,
         status: 'draft',
         paymentMethod: null,
+        source: source,
         salesOrderItems: [],
       };
     },
@@ -658,6 +684,14 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     setSearch(value: string) {
         this.params.search = value;
         this.params.first = 0;
+        this.fetchSalesOrders();
+    },
+
+    setFilters(filters: { customerId?: number | null, source?: string | null, status?: string | null }) {
+        this.params.customerId = filters.customerId;
+        this.params.source = filters.source;
+        this.params.status = filters.status;
+        this.params.first = 0; // reset pagination
         this.fetchSalesOrders();
     },
 

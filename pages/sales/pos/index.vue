@@ -112,9 +112,12 @@
                                             <article class="product-card col-6 col-sm-4 col-lg-3 col-md-3 mb-5" v-for="product in products" :key="product.id">
                                                 <div class="card-custom" @click="toggleProductInOrder(product)" :class="{ 'selected': isProductInOrder(product.id) }" style="margin-bottom: 0;">
                                                     <div class="img-wrapper">
-                                                        <img :src="product.image ? `${config.public.baseURL}/${product.image}` : '/img/branding/logo.png'"
-                                                            :alt="product.name" 
-                                                            @error="event => event.target.src = '/img/branding/logo.png'"/>
+                                                        <img 
+                                                            :src="getProductImage(product.image) || '/img/branding/logo.png'" 
+                                                            alt="Product Image" 
+                                                            style="height: 120px; max-width: 120px; object-fit: contain;" 
+                                                            @error="event => event.target.src = '/img/branding/logo.png'"
+                                                        />
                                                     </div>
                                                     <h6>{{ product.name }}</h6>
                                                     <p class="kategori">{{ product.category.name }}</p>
@@ -274,6 +277,21 @@
     const globalFilterValue = ref('');
     const attachmentPreview = ref(null);
 
+    const getProductImage = (imagePath) => {
+        if (!imagePath || typeof imagePath !== 'string') {
+            return null;
+        }
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+        if (!config.public.apiBase) {
+            return imagePath;
+        }
+        const origin = new URL(config.public.apiBase).origin;
+        const imageUrl = `${origin}/${imagePath}`;
+        return imageUrl;
+    };
+
     const isProductInOrder = (productId) => {
         return form.value.salesOrderItems && form.value.salesOrderItems.some(item => item.productId === productId);
     };
@@ -425,6 +443,7 @@
 
     let modalInstance = null;
     onMounted(() => {
+        salesOrderStore.resetForm('pos');
         const today = new Date().toISOString().split('T')[0];
         form.value.date = today;
         form.value.dueDate = today;
