@@ -34,6 +34,7 @@ export interface Product {
   isService: boolean
   categoryId: number
   image: string | File
+  kondisi: string
   createdAt: string
   updatedAt: string
   category?: Category
@@ -86,6 +87,7 @@ export const useProductStore = defineStore('product', {
       isService: false,
       image: '',
       categoryId: undefined,
+      kondisi: 'baru',
     },
     isEditMode: false,
     showModal: false,
@@ -276,6 +278,7 @@ export const useProductStore = defineStore('product', {
                 isService: false,
                 image: '',
                 categoryId: undefined,
+                kondisi: 'baru',
             };
         }
         this.showModal = true;

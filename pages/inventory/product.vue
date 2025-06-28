@@ -260,13 +260,16 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="file" 
-                                        class="form-control"
-                                        @change="onImageChange"
-                                        placeholder="Masukkan image product"
-                                    >
-                                    <label>Gambar Product</label>
+                                    <v-select
+                                        v-model="form.kondisi"
+                                        :options="kondisiOptions"
+                                        label="label"
+                                        :reduce="option => option.value"
+                                        :get-option-key="option => option.value"
+                                        placeholder="-- Pilih Kondisi --"
+                                        id="select-kondisi"
+                                        class="select-kondisi"
+                                    />
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -275,6 +278,17 @@
                                     <label class="form-check-label mb-0">
                                         Service Product
                                     </label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="file" 
+                                        class="form-control"
+                                        @change="onImageChange"
+                                        placeholder="Masukkan image product"
+                                    >
+                                    <label>Gambar Product</label>
                                 </div>
                             </div>
                         </div>
@@ -346,6 +360,11 @@ const formattedPriceSell = computed({
         form.value.priceSell = value.replace(/[^0-9]/g, '');
     }
 });
+
+const kondisiOptions = [
+    { label: 'Baru', value: 'baru' }, { label: 'Bekas', value: 'bekas' },
+    { label: 'Rusak', value: 'rusak' }, { label: 'Servis', value: 'servis' }
+];
 
 const getLogoUrl = (imagePath) => {
     if (!imagePath || typeof imagePath !== 'string') {
@@ -427,7 +446,8 @@ const getStatusBadge = (status) => {
 
 <style scoped>
     :deep(.unit .vs__dropdown-toggle),
-    :deep(.kategori .vs__dropdown-toggle) {
+    :deep(.kategori .vs__dropdown-toggle),
+    :deep(.select-kondisi .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
     }

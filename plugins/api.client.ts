@@ -88,6 +88,7 @@ export default defineNuxtPlugin(() => {
     // Stock In & Stock Out
     stockIn                : () => `${apiBase}/stock-in`,
     stock                  : () => `${apiBase}/stock`,
+    validateStockBatch     : () => `${apiBase}/stock/validate-batch`,
     getTotalStock          : () => `${apiBase}/stock/getTotalStock`,
     getStockInDetails      : (id: number | string) => `${apiBase}/stock-in/getStockInDetails/${id}`,
     postStockIn            : (id: number | string) => `${apiBase}/stock-in/postStockIn/${id}`,

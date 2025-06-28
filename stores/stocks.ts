@@ -150,6 +150,33 @@ export const useStocksStore = defineStore('stocks', {
     validationErrors: [],
   }),
   actions: {
+    async validateStockBatch(items: { productId: number, warehouseId: number, quantity: number }[]) {
+        const { $api } = useNuxtApp();
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(`${$api.validateStockBatch()}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ items }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Gagal memvalidasi stok dengan status: ' + response.status }));
+                throw new Error(errorData.message || 'Gagal memvalidasi stok');
+            }
+
+            const result = await response.json();
+            return result.data || [];
+        } catch (error) {
+            console.error('Error in validateStockBatch:', error);
+            throw error;
+        }
+    },
+
     async fetchStocksPaginated(filters: { productId?: number; warehouseId?: number } = {}) {
       this.loading = true;
       try {

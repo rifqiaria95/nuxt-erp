@@ -482,6 +482,7 @@ const filters = ref({
   customerId: null,
   source: null,
   status: null,
+  search: '',
 });
 const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
@@ -619,16 +620,33 @@ const filteredCabangs = computed(() => {
     return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
-watch(filters, useDebounceFn(() => {
-    salesOrderStore.setFilters(filters.value);
-}, 500), { deep: true });
+watch(globalFilterValue, useDebounceFn((newValue) => {
+    filters.value.search = newValue;
+}, 500));
 
-const onPage = (event) => salesOrderStore.setPagination(event);
-const handleRowsChange = () => {
-    params.value.first = 0;
-    salesOrderStore.fetchSalesOrders();
+watch(filters, () => {
+    salesOrderStore.fetchSalesOrders({
+        page: 1, // Reset to page 1 on filter change
+        rows: params.value.rows,
+        ...filters.value
+    });
+}, { deep: true });
+
+const onPage = (event) => {
+    params.value.page = event.page + 1;
+    params.value.first = event.first;
+    salesOrderStore.fetchSalesOrders({ ...params.value, ...filters.value });
 };
-const onSort = (event) => salesOrderStore.setSort(event);
+const handleRowsChange = () => {
+    params.value.page = 1;
+    params.value.first = 0;
+    salesOrderStore.fetchSalesOrders({ ...params.value, ...filters.value });
+};
+const onSort = (event) => {
+    params.value.sortField = event.sortField;
+    params.value.sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
+    salesOrderStore.fetchSalesOrders({ ...params.value, ...filters.value });
+};
 
 const exportData = (format) => {
     if (format === 'csv') myDataTableRef.value.exportCSV();

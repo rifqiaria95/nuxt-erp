@@ -1,9 +1,10 @@
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { apiFetch } from '~/utils/apiFetch'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
 import { useUserStore } from '~/stores/user'
 import { useStocksStore } from '~/stores/stocks'
+import { useProductStore } from '~/stores/product'
 import type { Customer } from './customer'
 import type { User } from './userManagement'
 import type { Perusahaan } from './perusahaan'
@@ -103,7 +104,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     params: {
         first     : 0,
         rows      : 10,
-        sortField : 'id',
+        sortField : 'createdAt',
         sortOrder : -1,
         draw      : 1,
         search    : '',
@@ -133,6 +134,22 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     showModal       : false,
     validationErrors: [],
   }),
+  getters: {
+    // Getter to combine products from different sources
+    allAvailableProducts(state) {
+      const productStore = useProductStore()
+      // Safely access products from the product store
+      const generalProducts = productStore.products || []
+      const customerSpecificProducts = state.customerProducts || []
+      
+      // Combine and deduplicate products based on ID
+      const allProductsMap = new Map()
+      generalProducts.forEach(p => allProductsMap.set(p.id, p))
+      customerSpecificProducts.forEach(p => allProductsMap.set(p.id, p))
+      
+      return Array.from(allProductsMap.values())
+    }
+  },
   actions: {
     async fetchSalesOrders() {
       this.loading = true
@@ -241,39 +258,43 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         const { $api } = useNuxtApp();
         const userStore = useUserStore();
         const stockStore = useStocksStore();
+        const productStore = useProductStore();
 
-        // Validasi stok sebelum mengirim dengan mengambil data terbaru
-        for (const item of this.form.salesOrderItems) {
-            if (item.productId && item.warehouseId && item.quantity > 0) {
-                try {
-                    // Selalu ambil data stok terbaru untuk validasi
-                    const response = await stockStore.fetchStocksPaginated({
-                        productId: item.productId,
-                        warehouseId: item.warehouseId,
-                    });
+        // Kumpulkan semua item yang perlu divalidasi
+        const itemsToValidate = this.form.salesOrderItems
+            .filter((item: any) => item.productId && item.warehouseId && item.quantity > 0)
+            .map((item: any) => ({
+                productId: item.productId,
+                warehouseId: item.warehouseId,
+                quantity: item.quantity,
+            }));
 
-                    const stockQuantity = (response && response.data && response.data.length > 0)
-                        ? response.data[0].quantity
-                        : 0;
+        if (itemsToValidate.length > 0) {
+            try {
+                const validationResults = await stockStore.validateStockBatch(itemsToValidate);
 
-                    if (Number(item.quantity) > Number(stockQuantity)) {
-                        const product = this.customerProducts.find(p => p.id === item.productId);
-                        const productName = product ? product.name : `ID ${item.productId}`;
-                        this.validationErrors = [
-                          {
-                            message: `Stok untuk produk "${productName}" tidak mencukupi. Stok tersedia: ${Math.floor(Number(stockQuantity))}, kuantitas diminta: ${item.quantity}.`,
-                            field: 'quantity'
-                          }
-                        ];
-                        this.loading = false;
-                        return; // Hentikan proses
-                    }
-                } catch (error) {
-                    console.error('Gagal memvalidasi stok untuk item:', item.productId, error);
-                    Swal.fire('Error', `Tidak dapat memvalidasi stok untuk produk ID ${item.productId}.`, 'error');
+                const invalidItem = validationResults.find((result: any) => !result.hasEnoughStock);
+
+                if (invalidItem) {
+                    // Buat daftar produk gabungan yang aman secara lokal
+                    const generalProducts = productStore.products || [];
+                    const customerSpecificProducts = this.customerProducts || [];
+                    const allProducts = [...generalProducts, ...customerSpecificProducts];
+
+                    const product = allProducts.find(p => p && p.id === invalidItem.productId);
+                    const productName = product ? product.name : `ID ${invalidItem.productId}`;
+                    const errorMessage = `Stok untuk produk "${productName}" tidak mencukupi. Stok tersedia: ${Math.floor(Number(invalidItem.availableStock))}, kuantitas diminta: ${invalidItem.requestedQuantity}.`;
+                    
+                    this.validationErrors = [{ message: errorMessage, field: 'quantity' }];
+                    Swal.fire('Stok Tidak Cukup', errorMessage, 'error');
                     this.loading = false;
-                    return;
+                    return; // Hentikan proses
                 }
+            } catch (error) {
+                console.error('Gagal memvalidasi stok:', error);
+                Swal.fire('Error', 'Tidak dapat memvalidasi stok untuk produk.', 'error');
+                this.loading = false;
+                return;
             }
         }
 
