@@ -4,7 +4,7 @@ import Swal from 'sweetalert2'
 
 export interface Divisi {
   id: number
-  nm_divisi: string
+  nmDivisi: string
 }
 
 interface DivisiState {
@@ -72,7 +72,7 @@ export const useDivisiStore = defineStore('divisi', {
         const result = await response.json();
         this.divisis = result.data.map((divisi: any) => ({
             id: divisi.id,
-            nm_divisi: divisi.nmDivisi,
+            nmDivisi: divisi.nmDivisi,
         })) || [];
         this.totalRecords = result.meta?.total || 0;
 
@@ -103,7 +103,7 @@ export const useDivisiStore = defineStore('divisi', {
         let method = 'POST';
         
         const body = JSON.stringify({
-            nm_divisi: this.form.nm_divisi,
+            nmDivisi: this.form.nmDivisi,
         });
 
         if (this.isEditMode && this.form.id) {
@@ -207,7 +207,7 @@ export const useDivisiStore = defineStore('divisi', {
             this.form = { ...divisi };
         } else {
             this.form = {
-                nm_divisi: '',
+                nmDivisi: '',
             };
         }
         this.showModal = true;

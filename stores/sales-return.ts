@@ -5,98 +5,82 @@ import { useNuxtApp } from '#app'
 import { useUserStore } from '~/stores/user'
 import { useStocksStore } from '~/stores/stocks'
 import { useProductStore } from '~/stores/product'
+import { useSalesOrderStore } from '~/stores/sales-order'
 import type { Customer } from './customer'
 import type { User } from './userManagement'
 import type { Perusahaan } from './perusahaan'
 import type { Cabang } from './cabang'
 import type { Product } from './product'
+import type { SalesOrder } from './sales-order'
 
-interface SalesReturnInfo {
-  id: string;
-  status: string;
+export interface SalesReturnItem {
+  id               : string
+  salesReturnId    : string
+  salesOrderItemId? : string
+  productId        : number
+  quantity         : number
+  price            : number
+  description      : string
+  totalReturnAmount: number
+  createdAt        : string
+  updatedAt        : string
+  product?         : Product
 }
 
-interface SalesReturnItemInfo {
-  id: string;
-  salesReturn: SalesReturnInfo;
+export interface SalesReturn {
+  id               : string
+  name?            : string
+  noSo             : string
+  noSr             : string
+  up               : string
+  reason           : string
+  customerId       : number
+  perusahaanId     : number
+  cabangId         : number
+  returnDate       : string
+  status           : string
+  totalReturnAmount: string
+  discountPercent  : string
+  taxPercent       : string
+  description      : string
+  attachment?      : string
+  createdAt        : string
+  updatedAt        : string
+  createdBy        : number
+  approvedBy       : number | null
+  deliveredBy      : number | null
+  rejectedBy       : number | null
+  approvedAt       : string | null
+  deliveredAt      : string | null
+  rejectedAt       : string | null
+  customer?        : Customer
+  perusahaan?      : Perusahaan
+  cabang?          : Cabang
+  createdByUser?   : User
+  approvedByUser?  : User
+  deliveredByUser? : User
+  salesReturnItems?: SalesReturnItem[]
+  salesOrder?      : SalesOrder
 }
 
-export interface SalesOrderItem {
-  id           : string
-  salesOrderId : string
-  productId    : number
-  warehouseId  : number
-  quantity     : number
-  price        : number
-  description  : string
-  subtotal     : number
-  statusPartial: boolean
-  deliveredQty : number
-  createdAt    : string
-  updatedAt    : string
-  product?     : Product
-  salesReturnItems?: SalesReturnItemInfo[]
-}
-
-export interface SalesOrder {
-  id              : string
-  name?           : string
-  noSo            : string
-  noPo            : string
-  up              : string
-  customerId      : number
-  perusahaanId    : number
-  cabangId        : number
-  date            : string
-  dueDate         : string
-  status          : string
-  paymentMethod   : string
-  source          : string
-  total           : string
-  discountPercent : string
-  taxPercent      : string
-  description     : string
-  attachment?     : string
-  createdAt       : string
-  updatedAt       : string
-  createdBy       : number
-  approvedBy      : number | null
-  deliveredBy     : number | null
-  rejectedBy      : number | null
-  approvedAt      : string | null
-  deliveredAt     : string | null
-  rejectedAt      : string | null
-  customer?       : Customer
-  perusahaan?     : Perusahaan
-  cabang?         : Cabang
-  createdByUser?  : User
-  approvedByUser? : User
-  deliveredByUser?: User
-  salesOrderItems?: SalesOrderItem[]
-}
-
-export interface CustomerProduct extends Product {
-  priceSell: number;
-}
-
-interface SalesOrderState {
-  salesOrders       : SalesOrder[]
-  salesOrder        : SalesOrder | null
-  originalSalesOrder: SalesOrder | null
-  customerProducts  : CustomerProduct[]
+interface SalesReturnState {
+  salesReturns       : SalesReturn[]
+  salesReturn        : SalesReturn | null
+  originalSalesReturn: SalesReturn | null
+  salesOrders        : SalesOrder[]
   loading           : boolean
   error             : any
   totalRecords      : number
   params: {
-    first      : number
-    rows       : number
-    sortField  : string | null
-    sortOrder  : number | null
-    draw       : number
-    search     : string
-    customerId?: number | null
-    source?    : string | null
-    status?    : string | null
+    first        : number
+    rows         : number
+    sortField    : string | null
+    sortOrder    : number | null
+    draw         : number
+    search       : string
+    customerId?  : number | null
+    perusahaanId?: number | null
+    status?      : string | null
   }
   form            : any,
   isEditMode      : boolean
@@ -104,12 +88,12 @@ interface SalesOrderState {
   validationErrors: any[]
 }
 
-export const useSalesOrderStore = defineStore('salesOrder', {
-  state: (): SalesOrderState => ({
-    salesOrders       : [],
-    salesOrder        : null,
-    originalSalesOrder: null,
-    customerProducts  : [],
+export const useSalesReturnStore = defineStore('salesReturn', {
+  state: (): SalesReturnState => ({
+    salesReturns       : [],
+    salesReturn        : null,
+    originalSalesReturn: null,
+    salesOrders        : [],
     loading           : true,
     error             : null,
     totalRecords      : 0,
@@ -121,26 +105,24 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         draw      : 1,
         search    : '',
         customerId: null,
-        source    : null,
+        perusahaanId: null,
         status    : null,
     },
     form: {
         noSo           : '',
-        noPo           : '',
+        noSr           : '',
         up             : '',
         customerId     : null,
         perusahaanId   : null,
         cabangId       : null,
-        date           : new Date().toISOString().split('T')[0],
-        dueDate        : new Date().toISOString().split('T')[0],
-        discountPercent: 0,
-        taxPercent     : 0,
+        salesOrderId   : null,
+        reason         : '',
+        returnDate     : new Date().toISOString().split('T')[0],
         description    : '',
         attachment     : null,
         status         : 'draft',
-        paymentMethod  : null,
-        source         : null,
-        salesOrderItems: []
+        totalReturnAmount          : 0,
+        salesReturnItems: []
     },
     isEditMode      : false,
     showModal       : false,
@@ -152,7 +134,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       const productStore = useProductStore()
       // Safely access products from the product store
       const generalProducts = productStore.products || []
-      const customerSpecificProducts = state.customerProducts || []
+      const customerSpecificProducts = state.salesOrders || []
       
       // Combine and deduplicate products based on ID
       const allProductsMap = new Map()
@@ -163,7 +145,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     }
   },
   actions: {
-    async fetchSalesOrders() {
+    async fetchSalesReturns() {
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -178,7 +160,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           throw new Error('CSRF token not found. Cannot proceed with request.');
         }
 
-        const url = new URL($api.salesOrder())
+        const url = new URL($api.salesReturn())
         const params = new URLSearchParams({
             page     : ((this.params.first / this.params.rows) + 1).toString(),
             rows     : this.params.rows.toString(),
@@ -191,13 +173,12 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         if (this.params.customerId) {
           params.append('customerId', this.params.customerId.toString());
         }
-        if (this.params.source) {
-          params.append('source', this.params.source);
-        }
         if (this.params.status) {
           params.append('status', this.params.status);
         }
-          
+        if (this.params.perusahaanId) {
+          params.append('perusahaanId', this.params.perusahaanId.toString());
+        }
         url.search = params.toString();
 
         const response = await fetch(url, {
@@ -211,26 +192,26 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           credentials: 'include'
         })
 
-        if (!response.ok) throw new Error('Gagal mengambil data salesOrder')
+        if (!response.ok) throw new Error('Gagal mengambil data salesReturn')
 
         const result = await response.json()
-        this.salesOrders = result.data
+        this.salesReturns = result.data
         this.totalRecords = result.meta.total
       } catch (e: any) {
-        console.error('Gagal mengambil data salesOrder:', e)
+        console.error('Gagal mengambil data salesReturn:', e)
         this.error = e
-        Swal.fire('Error', `Tidak dapat memuat data Sales Order: ${e.message}`, 'error');
+        Swal.fire('Error', `Tidak dapat memuat data Sales Return: ${e.message}`, 'error');
       } finally {
         this.loading = false
       }
     },
 
-    async fetchProductsForCustomer(customerId: number) {
+    async fetchSalesOrdersByCustomer(customerId: number) {
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
       if (!customerId) {
-        this.customerProducts = []
+        this.salesOrders = []
         return
       }
       try {
@@ -243,7 +224,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         if (!csrfToken) {
           throw new Error('CSRF token not found. Cannot proceed with request.');
         }
-        const response = await fetch($api.customer() + '/' + customerId, {
+        const response = await fetch($api.getSalesOrderForSalesReturn(customerId), {
           headers: {
             'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
@@ -251,20 +232,45 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           },
           credentials: 'include',
         })
-        if (!response.ok) throw new Error('Gagal mengambil data produk untuk customer')
+        if (!response.ok) throw new Error('Gagal mengambil data sales order untuk customer')
         const result = await response.json()
-        this.customerProducts = result.data.customerProducts || []
+        this.salesOrders = result.data || []
       } catch (error) {
-        console.error('Error fetching products for customer:', error)
-        // Jangan hapus produk yang ada jika fetch gagal
-        // this.customerProducts = [] 
-        Swal.fire('Error', 'Gagal memuat produk untuk customer yang dipilih.', 'error')
+        console.error('Error fetching sales order for customer:', error)
+        this.salesOrders = [] 
+        Swal.fire('Error', 'Gagal memuat sales order untuk customer yang dipilih.', 'error')
       } finally {
         this.loading = false
       }
     },
 
-    async saveSalesOrder() {
+    populateFormFromSalesOrder(salesOrderId: string) {
+      const selectedSO = this.salesOrders.find(so => so.id === salesOrderId);
+      if (selectedSO) {
+        this.form.salesOrderId      = selectedSO.id;
+        this.form.noSo              = selectedSO.noSo;
+        this.form.customerId        = selectedSO.customerId;
+        this.form.perusahaanId      = selectedSO.perusahaanId;
+        this.form.cabangId          = selectedSO.cabangId;
+        this.form.up                = selectedSO.up;
+        this.form.totalReturnAmount = selectedSO.total;
+        this.form.status            = 'draft';
+
+        // Populate items
+        this.form.salesReturnItems = selectedSO.salesOrderItems?.map(item => ({
+          salesOrderItemId: item.id,
+          productId  : item.productId,
+          warehouseId: item.warehouseId,
+          quantity   : item.quantity,
+          price      : item.price,
+          description: item.description,
+          subtotal   : item.subtotal,
+          stock      : { quantity: 0 },
+        })) || [];
+      }
+    },
+
+    async saveSalesReturn() {
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -273,7 +279,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         const productStore = useProductStore();
 
         // Kumpulkan semua item yang perlu divalidasi
-        const itemsToValidate = this.form.salesOrderItems
+        const itemsToValidate = this.form.salesReturnItems
             .filter((item: any) => item.productId && item.warehouseId && item.quantity > 0)
             .map((item: any) => ({
                 productId: item.productId,
@@ -290,7 +296,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
                 if (invalidItem) {
                     // Buat daftar produk gabungan yang aman secara lokal
                     const generalProducts = productStore.products || [];
-                    const customerSpecificProducts = this.customerProducts || [];
+                    const customerSpecificProducts = this.salesOrders || [];
                     const allProducts = [...generalProducts, ...customerSpecificProducts];
 
                     const product = allProducts.find(p => p && p.id === invalidItem.productId);
@@ -326,7 +332,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             // Append main form data
             const dataToAppend = { ...this.form };
             // Hapus data relasi dan data yang tidak perlu dikirim
-            delete dataToAppend.salesOrderItems;
+            delete dataToAppend.salesReturnItems;
             delete dataToAppend.attachment;
             delete dataToAppend.customer;
             delete dataToAppend.perusahaan;
@@ -362,19 +368,19 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             }
 
             // Append sales order items using camelCase keys
-            this.form.salesOrderItems.forEach((item: any, i: number) => {
+            this.form.salesReturnItems.forEach((item: any, i: number) => {
                 if (item.productId && item.quantity > 0) {
                     Object.keys(item).forEach(itemKey => {
                         const value = item[itemKey];
                         if (value !== null && value !== undefined) {
-                           formData.append(`salesOrderItems[${i}][${itemKey}]`, value);
+                           formData.append(`salesReturnItems[${i}][${itemKey}]`, value);
                         }
                     });
                 }
             });
 
             const method = this.isEditMode ? 'POST' : 'POST';
-            const url = this.isEditMode ? `${$api.salesOrder()}/${this.form.id}` : $api.salesOrder();
+            const url = this.isEditMode ? `${$api.salesReturn()}/${this.form.id}` : $api.salesReturn();
             if (this.isEditMode) {
                 formData.append('_method', 'PUT');
             }
@@ -395,14 +401,14 @@ export const useSalesOrderStore = defineStore('salesOrder', {
                 const errorData = await response.json();
                 if (response.status === 422) {
                     this.validationErrors = errorData.errors;
-                     Swal.fire('Gagal Validasi', errorData.errors.map((e: any) => e.message).join('<br>'), 'error');
+                    Swal.fire('Gagal Validasi', errorData.message || 'Terdapat kesalahan validasi data', 'error');
                 } else {
-                    throw new Error(errorData.message || 'Gagal menyimpan data salesOrder');
+                    throw new Error(errorData.message || 'Gagal menyimpan data salesReturn');
                 }
             } else {
                 this.closeModal();
-                await this.fetchSalesOrders();
-                Swal.fire('Berhasil!', `Sales Order berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`, 'success');
+                await this.fetchSalesReturns();
+                Swal.fire('Berhasil!', `Sales Return berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`, 'success');
             }
 
 
@@ -415,19 +421,19 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         }
     },
 
-    async deleteSalesOrder(id: string) {
+    async deleteSalesReturn(id: string) {
       this.loading = true;
       const { $api } = useNuxtApp();
 
       const result = await Swal.fire({
-          title: 'Apakah Anda yakin?',
-          text: "Data yang dihapus tidak dapat dikembalikan!",
-          icon: 'warning',
-          showCancelButton: true,
+          title             : 'Apakah Anda yakin?',
+          text              : "Data yang dihapus tidak dapat dikembalikan!",
+          icon              : 'warning',
+          showCancelButton  : true,
           confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Ya, hapus!',
-          cancelButtonText: 'Batal'
+          cancelButtonColor : '#d33',
+          confirmButtonText : 'Ya, hapus!',
+          cancelButtonText  : 'Batal'
       });
 
       if (!result.isConfirmed) {
@@ -441,7 +447,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
 
-          const response = await fetch(`${$api.salesOrder()}/${id}`, {
+          const response = await fetch(`${$api.salesReturn()}/${id}`, {
               method: 'DELETE',
               headers: {
                   'X-CSRF-TOKEN': csrfToken,
@@ -453,19 +459,19 @@ export const useSalesOrderStore = defineStore('salesOrder', {
 
           if (!response.ok) {
               const errorData = await response.json();
-              throw new Error(errorData.message || 'Gagal menghapus Sales Order');
+              throw new Error(errorData.message || 'Gagal menghapus Sales Return');
           }
 
-          await this.fetchSalesOrders();
-          Swal.fire('Berhasil!', 'Sales Order berhasil dihapus.', 'success');
+          await this.fetchSalesReturns();
+          Swal.fire('Berhasil!', 'Sales Return berhasil dihapus.', 'success');
       } catch (error: any) {
-          Swal.fire('Error', error.message || 'Gagal menghapus Sales Order', 'error');
+          Swal.fire('Error', error.message || 'Gagal menghapus Sales Return', 'error');
       } finally {
           this.loading = false;
       }
     },
     
-    async approveSalesOrder(salesOrderId: string) {
+    async approveSalesReturn(salesReturnId: string) {
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -476,7 +482,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           const csrfData = await csrfResponse.json();
           const csrfToken = csrfData.token;
 
-          const response = await fetch($api.approveSalesOrder(salesOrderId), {
+          const response = await fetch($api.approveSalesReturn(salesReturnId), {
               method: 'PATCH',
               headers: {
                   'Authorization': `Bearer ${token}`,
@@ -488,24 +494,24 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           });
 
           if (!response.ok) {
-              const errorData = await response.json().catch(() => ({ message: 'Gagal mengapprove sales order' }));
-              throw new Error(errorData.message || 'Gagal mengapprove sales order');
+              const errorData = await response.json().catch(() => ({ message: 'Gagal mengapprove sales return' }));
+              throw new Error(errorData.message || 'Gagal mengapprove sales return');
           }
 
-          await this.fetchSalesOrders();
-          await Swal.fire('Berhasil!', 'Sales Order berhasil diapprove.', 'success');
+          await this.fetchSalesReturns();
+          await Swal.fire('Berhasil!', 'Sales Return berhasil diapprove.', 'success');
 
           return true;
       } catch (error: any) {
-          console.error('Error approving sales order:', error);
-          await Swal.fire('Error', error.message || 'Gagal mengapprove sales order.', 'error');
+          console.error('Error approving sales return:', error);
+          await Swal.fire('Error', error.message || 'Gagal mengapprove sales return.', 'error');
           return false;
       } finally {
           this.loading = false;
       }
     },
 
-    async rejectSalesOrder(salesOrderId: string) {
+    async rejectSalesReturn(salesReturnId: string) {
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -516,7 +522,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           const csrfData = await csrfResponse.json();
           const csrfToken = csrfData.token;
 
-          const response = await fetch($api.rejectSalesOrder(salesOrderId), {
+          const response = await fetch($api.rejectSalesReturn(salesReturnId), {
               method: 'PATCH',
               headers: {
                   'Authorization': `Bearer ${token}`,
@@ -528,89 +534,36 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           });
 
           if (!response.ok) {
-              const errorData = await response.json().catch(() => ({ message: 'Gagal mereject sales order' }));
-              throw new Error(errorData.message || 'Gagal mereject sales order');
+              const errorData = await response.json().catch(() => ({ message: 'Gagal mereject sales return' }));
+              throw new Error(errorData.message || 'Gagal mereject sales return');
           }
 
-          await this.fetchSalesOrders();
-          await Swal.fire('Berhasil!', 'Sales Order berhasil direject.', 'success');
+          await this.fetchSalesReturns();
+          await Swal.fire('Berhasil!', 'Sales Return berhasil direject.', 'success');
 
           return true;
       } catch (error: any) {
-          console.error('Error rejecting sales order:', error);
-          await Swal.fire('Error', error.message || 'Gagal mereject sales order.', 'error');
+          console.error('Error rejecting sales return:', error);
+          await Swal.fire('Error', error.message || 'Gagal mereject sales return.', 'error');
           return false;
       } finally {
           this.loading = false;
       }
-    },    
-
-    async updateStatusPartial(itemId: string, status: boolean, deliveredQty: number) {
-        this.loading = true;
-        this.error = null;
-        const { $api } = useNuxtApp();
-        try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
-            const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
-
-            const resData = await apiFetch($api.salesOrderItemUpdateStatusPartial(itemId), {
-                method: 'PATCH',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: { 
-                    statusPartial: status, 
-                    deliveredQty: deliveredQty 
-                },
-                credentials: 'include',
-            });
-
-            const updatedSalesOrderItem = resData.data.salesOrderItem;
-            const updatedSalesOrder = resData.data.salesOrder;
-
-            if (this.salesOrder && this.salesOrder.salesOrderItems) {
-                const index = this.salesOrder.salesOrderItems.findIndex(item => item.id === itemId);
-                if (index !== -1) {
-                    this.salesOrder.salesOrderItems[index].statusPartial = updatedSalesOrderItem.statusPartial;
-                    this.salesOrder.salesOrderItems[index].deliveredQty = updatedSalesOrderItem.deliveredQty;
-                }
-                if (this.salesOrder.status !== updatedSalesOrder.status) {
-                    this.salesOrder.status = updatedSalesOrder.status;
-                }
-            }
-            
-        } catch (error: any) {
-            console.error('Gagal memperbarui status item SO atau SO:', error);
-            this.error = error;
-            Swal.fire('Error', error.data?.message || error.message || 'Operasi gagal', 'error');
-            throw error;
-        } finally {
-            this.loading = false;
-        }
     },
 
-    async openModal(salesOrderData: SalesOrder | null = null, source: 'admin' | 'pos' | null = null) {
-      this.isEditMode = !!salesOrderData;
+    async openModal(salesReturnData: SalesReturn | null = null) {
+      this.isEditMode = !!salesReturnData;
       this.validationErrors = [];
 
-      if (salesOrderData) {
-          await this.getSalesOrderDetails(salesOrderData.id);
-          const fullData = this.salesOrder;
+      if (salesReturnData) {
+          await this.getSalesReturnDetails(salesReturnData.id);
+          const fullData = this.salesReturn;
 
           if (!fullData) {
               Swal.fire('Error', 'Tidak dapat memuat data Sales Order.', 'error');
               return;
           }
-          this.originalSalesOrder = JSON.parse(JSON.stringify(fullData));
+          this.originalSalesReturn = JSON.parse(JSON.stringify(fullData));
           const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : null;
           
           // Salin data dan format tanggal dengan benar
@@ -627,29 +580,25 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           });
 
           this.form = formData;
-          if (source) {
-            this.form.source = source;
-          }
 
           // Wait for products to be fetched before showing modal
           if (this.form.customerId) {
-              await this.fetchProductsForCustomer(this.form.customerId);
+              await this.fetchSalesOrdersByCustomer(this.form.customerId);
           }
 
-          // Pastikan salesOrderItems ada dan tambahkan stock jika belum ada
-          if (this.form.salesOrderItems && this.form.salesOrderItems.length > 0) {
-            this.form.salesOrderItems = this.form.salesOrderItems.map((item: any) => {
-                return {
-                    ...item,
-                    stock: item.stock || { quantity: 0 },
-                }
-            })
+          // Pastikan salesReturnItems ada dan tambahkan stock jika belum ada
+          if (this.form.salesReturnItems && this.form.salesReturnItems.length > 0) {
+            this.form.salesReturnItems.forEach((item: any) => {
+              if (!item.stock) {
+                item.stock = { quantity: 0 };
+              }
+            });
           } else {
-            this.form.salesOrderItems = [];
+            this.form.salesReturnItems = [];
             this.addItem();
           }
-      } else {
-          this.resetForm(source);
+      } else {  
+          this.resetForm()
           this.addItem(); // Tambahkan satu item default untuk SO baru
       }
       this.showModal = true;
@@ -658,79 +607,76 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     closeModal() {
       this.showModal = false;
       this.isEditMode = false;
-      this.originalSalesOrder = null;
+      this.originalSalesReturn = null;
       this.resetForm();
       this.validationErrors = [];
     },
     
-    resetForm(source: 'admin' | 'pos' | null = null) {
+    resetForm() {
       this.form = {
-        noSo: '',
-        noPo: '',
-        up: '',
-        customerId: null,
-        perusahaanId: null,
-        cabangId: null,
-        date: new Date().toISOString().split('T')[0],
-        dueDate: new Date().toISOString().split('T')[0],
-        discountPercent: 0,
-        taxPercent: 0,
-        description: '',
-        attachment: null,
-        status: 'draft',
-        paymentMethod: null,
-        source: source,
-        salesOrderItems: [],
+        noSr             : '',
+        noSo             : '',
+        up               : '',
+        customerId       : null,
+        salesOrderId     : null,
+        perusahaanId     : null,
+        cabangId         : null,
+        reason           : '',
+        returnDate       : new Date().toISOString().split('T')[0],
+        description      : '',
+        attachment       : null,
+        status           : 'draft',
+        totalReturnAmount: 0,
+        salesReturnItems : [],
       };
     },
 
     addItem() {
-        if (!this.form.salesOrderItems) {
-            this.form.salesOrderItems = [];
+        if (!this.form.salesReturnItems) {
+            this.form.salesReturnItems = [];
         }
-        this.form.salesOrderItems.push({
+        this.form.salesReturnItems.push({
             productId: null,
             warehouseId: null,
             quantity: 1,
             price: 0,
             description: '',
-            subtotal: 0,
             stock: { quantity: 0 },
         });
     },
 
     removeItem(index: number) {
-        this.form.salesOrderItems.splice(index, 1);
+        this.form.salesReturnItems.splice(index, 1);
     },
 
     setPagination(event: any) {
         this.params.first = event.first;
         this.params.rows = event.rows;
-        this.fetchSalesOrders();
+        this.fetchSalesReturns();
     },
 
     setSort(event: any) {
         this.params.sortField = event.sortField;
         this.params.sortOrder = event.sortOrder;
-        this.fetchSalesOrders();
+        this.fetchSalesReturns();
     },
         
     setSearch(value: string) {
         this.params.search = value;
         this.params.first = 0;
-        this.fetchSalesOrders();
+        this.fetchSalesReturns();
     },
 
-    setFilters(filters: { customerId?: number | null, source?: string | null, status?: string | null, search?: string }) {
+    setFilters(filters: { customerId?: number | null, perusahaanId?: number | null, status?: string | null, search?: string }) {
         this.params.customerId = filters.customerId;
-        this.params.source = filters.source;
+        this.params.perusahaanId = filters.perusahaanId;
         this.params.status = filters.status;
         this.params.search = filters.search || '';
         this.params.first = 0; // reset pagination
-        this.fetchSalesOrders();
+        this.fetchSalesReturns();
     },
 
-    async getSalesOrderDetails(soId: string) {
+    async getSalesReturnDetails(srId: string) {
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -740,7 +686,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         const csrfToken    = csrfData.token;
         const token        = localStorage.getItem('token');
 
-        const resData = await apiFetch($api.getSalesOrderDetails(soId), {
+        const resData = await apiFetch($api.getSalesReturnDetails(srId), {
           headers: {
             'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
@@ -752,12 +698,12 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
         }
         if (resData && resData.data) {
-          this.salesOrder = resData.data;
+          this.salesReturn = resData.data;
         } else {
-          throw new Error('Struktur data tidak valid diterima dari API getSalesOrderDetails.');
+          throw new Error('Struktur data tidak valid diterima dari API getSalesReturnDetails.');
         }
       } catch (e) {
-        console.error('Gagal mengambil detail sales order:', e);
+        console.error('Gagal mengambil detail sales return:', e);
         this.error = e;
       } finally {
         this.loading = false;

@@ -113,12 +113,26 @@
                                         </span>
                                     </template>
                                 </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem; width:10%">
-                                    <template #body="slotProps">
-                                        <button @click="pegawaiStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="pegawaiStore.deletePegawai(slotProps.data.id_pegawai)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                    </template>
-                                </Column>
+                                <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                <template #body="slotProps">
+                                    <div class="d-inline-block">
+                                        <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('edit_pegawai')">
+                                                <a class="dropdown-item" href="javascript:void(0)" @click="pegawaiStore.openModal(slotProps.data, 'admin')">
+                                                    <i class="ri-edit-box-line me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('delete_pegawai')">
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)" @click="pegawaiStore.deletePegawai(slotProps.data.id_pegawai)">
+                                                    <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </Column>
                             </MyDataTable>
                             </div>
                         </div>
@@ -302,8 +316,8 @@
                                             v-model="form.jabatan_id"
                                             :options="jabatans"
                                             label="nmJabatan"
-                                            :reduce="jabatan => jabatan.idJabatan"
-                                            :get-option-key="option => option.idJabatan"
+                                            :reduce="jabatan => jabatan.id"
+                                            :get-option-key="option => option.id"
                                             placeholder="-- Pilih Jabatan --"
                                             id="jabatan"
                                             class="jabatan"
@@ -344,7 +358,7 @@
                                             placeholder="-- Pilih Divisi --"
                                             id="divisi"
                                             class="divisi"
-                                            @update:modelValue="handleDivisionSelectedInModal"
+                                            @update:modelValue="handleDivisiSelected"
                                         />    
                                     </div>
                                     <div class="col-md-6">
@@ -465,6 +479,8 @@ import { useDivisiStore } from '~/stores/divisi'
 import { useDepartemenStore } from '~/stores/departemen'
 import { useCabangStore } from '~/stores/cabang'
 import { useJabatanStore } from '~/stores/jabatan'
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
@@ -484,6 +500,9 @@ const cabangStore = useCabangStore()
 const divisiStore = useDivisiStore()
 const departemenStore = useDepartemenStore()
 const jabatanStore = useJabatanStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
+const { userHasPermission, userHasRole } = usePermissions();
 
 const { pegawais, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, stats } = storeToRefs(pegawaiStore)
 const { perusahaans }   = storeToRefs(perusahaanStore)
@@ -507,6 +526,8 @@ onMounted(() => {
     cabangStore.fetchCabangs()
     divisiStore.fetchDivisis()
     jabatanStore.fetchJabatans()
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
     // Departemen & Cabang (dependent) fetched via watchers
     
     const modalElement = document.getElementById('PegawaiModal')
@@ -528,7 +549,6 @@ const debouncedSearch = useDebounceFn(() => {
 }, 500)
 
 watch(globalFilterValue, debouncedSearch);
-
 
 const onPage = (event) => {
     pegawaiStore.setPagination(event);
@@ -555,9 +575,13 @@ const handleCompanySelectedInModal = (perusahaanId) => {
     cabangStore.fetchCabangByPerusahaan(perusahaanId);
 };
 
-const handleDivisionSelectedInModal = (divisiId) => {
-    form.value.departemen_id = null; // Reset departemen when divisi changes
-    departemenStore.fetchDepartemensByDivisi(divisiId);
+const handleDivisiSelected = (divisiId) => {
+    form.value.departemen_id = null;
+    if (divisiId) {
+        departemenStore.fetchDepartemensByDivisi(divisiId);
+    } else {
+        departemenStore.departemens = [];
+    }
 };
 
 // Form related computed properties and functions

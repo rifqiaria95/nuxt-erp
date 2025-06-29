@@ -262,5 +262,33 @@ export const useDepartemenStore = defineStore('departemen', {
         this.params.first = 0;
         this.fetchDepartemens();
     },
+
+    async fetchDepartemensByDivisi(divisiId: number) {
+        if (!divisiId) {
+            this.departemens = []
+            return
+        }
+        this.loading = true
+        const { $api } = useNuxtApp()
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch($api.departemen() + `?divisi_id=${divisiId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                },
+            })
+            if (!response.ok) {
+                throw new Error('Gagal mengambil data departemen by divisi');
+            }
+            const result = await response.json()
+            this.departemens = result.data || []
+        } catch (error) {
+            console.error('Gagal mengambil data departemen by divisi:', error)
+        } finally {
+            this.loading = false
+        }
+    },
   }
 })

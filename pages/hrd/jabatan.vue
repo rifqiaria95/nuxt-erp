@@ -92,13 +92,27 @@
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
                             <Column field="id" header="#" :sortable="true"></Column> 
-                                <Column field="nmJabatan" header="Nama Jabatan" :sortable="true"></Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                    <template #body="slotProps">
-                                        <button @click="jabatanStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="jabatanStore.deleteJabatan(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                    </template>
-                                </Column>
+                            <Column field="nmJabatan" header="Nama Jabatan" :sortable="true"></Column>
+                            <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                <template #body="slotProps">
+                                    <div class="d-inline-block">
+                                        <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('edit_jabatan')">
+                                                <a class="dropdown-item" href="javascript:void(0)" @click="jabatanStore.openModal(slotProps.data, 'admin')">
+                                                    <i class="ri-edit-box-line me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('delete_jabatan')">
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)" @click="jabatanStore.deleteJabatan(slotProps.data.id)">
+                                                    <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </Column>
                         </MyDataTable>
                         </div>
                     </div>
@@ -159,13 +173,20 @@ import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { useJabatanStore } from '~/stores/jabatan'
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
+import { useUserStore } from '~/stores/user'
 
 const myDataTableRef = ref(null)
 const jabatanStore = useJabatanStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
+const { userHasPermission, userHasRole } = usePermissions();
+
 const { jabatans, loading, stats, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(jabatanStore)
 
 const globalFilterValue = ref('')
@@ -178,6 +199,9 @@ let modalInstance = null
 onMounted(() => {
     jabatanStore.fetchJabatans();
     jabatanStore.fetchStats();
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
+
     const modalElement = document.getElementById('JabatanModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

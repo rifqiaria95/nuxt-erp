@@ -197,12 +197,22 @@
                             </Column>
                             <Column header="Actions" :exportable="false" style="min-width:8rem">
                                 <template #body="slotProps">
-                                    <button @click="cabangStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2">
-                                        <i class="ri-edit-box-line ri-20px"></i>
-                                    </button>
-                                    <button @click="confirmDelete(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon">
-                                        <i class="ri-delete-bin-7-line ri-20px"></i>
-                                    </button>
+                                    <div class="d-inline-block">
+                                        <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('edit_cabang')">
+                                                <a class="dropdown-item" href="javascript:void(0)" @click="cabangStore.openModal(slotProps.data, 'admin')">
+                                                    <i class="ri-edit-box-line me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('delete_cabang')">
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)" @click="cabangStore.deleteCabang(slotProps.data.id)">
+                                                    <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </template>
                             </Column>
                         </MyDataTable>
@@ -293,21 +303,28 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCabangStore } from '~/stores/cabang'
 import { usePerusahaanStore } from '~/stores/perusahaan'
-import MyDataTable from '~/components/table/MyDataTable.vue'
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
 import Modal from '~/components/modal/Modal.vue'
+import MyDataTable from '~/components/table/MyDataTable.vue'
 import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import Swal from 'sweetalert2'
 import { useDebounceFn } from '@vueuse/core'
+import { useUserStore } from '~/stores/user'
 
 const { $api } = useNuxtApp()
 
 const cabangStore = useCabangStore()
 const perusahaanStore = usePerusahaanStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
+const { userHasPermission, userHasRole } = usePermissions();
 
 const { cabangs, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(cabangStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
+const { permissions } = storeToRefs(permissionStore)
 
 const myDataTableRef = ref(null)
 const globalFilterValue = ref('')
@@ -320,7 +337,9 @@ const modalInstance = ref(null)
 onMounted(() => {
     cabangStore.fetchCabangs()
     perusahaanStore.fetchPerusahaans()
-    
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
+
     const modalElement = document.getElementById('CabangModal')
     if (modalElement) {
         modalInstance.value = new bootstrap.Modal(modalElement)

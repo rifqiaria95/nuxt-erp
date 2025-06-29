@@ -2,11 +2,11 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <h4 class="mb-1">List Sales Order</h4>
+            <h4 class="mb-1">List Sales Return</h4>
             <p class="mb-6">
-            List salesOrder yang terdaftar di sistem
+            List Sales Return yang terdaftar di sistem
             </p>
-            <!-- salesOrder cards -->
+            <!-- salesReturn cards -->
             <div class="row g-6 mb-6">
                 <!-- Static cards for display, can be made dynamic later -->
                 <div class="col-xl-4 col-lg-6 col-md-6">
@@ -51,10 +51,10 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="salesOrderStore.openModal(null, 'admin')" class="btn btn-primary mb-2 text-wrap add-new-role">
-                                        Tambah Sales Order
+                                    <button @click="salesReturnStore.openModal(null)" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                        Tambah Sales Return
                                     </button>
-                                    <p class="mb-0 mt-1">Buat Sales Order baru</p>
+                                    <p class="mb-0 mt-1">Buat Sales Return baru</p>
                                 </div>
                             </div>
                         </div>
@@ -64,8 +64,8 @@
 
             <div class="row g-6">
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total & Filter Sales Order</h4>
-                    <p class="mb-0">Temukan semua akun administrator perusahaan Anda dan Sales Order terkait.</p>
+                    <h4 class="mt-6 mb-1">Total & Filter Sales Return</h4>
+                    <p class="mb-0">Temukan semua akun administrator perusahaan Anda dan Sales Return terkait.</p>
                 </div>
                 <div class="col-12">
                     <div class="card">
@@ -75,7 +75,7 @@
                                     <v-select v-model="filters.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
                                 </div>
                                 <div class="col-md-4">
-                                    <v-select v-model="filters.source" :options="sourceOptions" label="label" :reduce="option => option.value" placeholder="Pilih Source" class="v-select-style"/>
+                                    <v-select v-model="filters.perusahaanId" :options="perusahaans" label="nmPerusahaan" :reduce="p => p.id" placeholder="Pilih Perusahaan" class="v-select-style"/>
                                 </div>
                                 <div class="col-md-4">
                                     <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
@@ -85,7 +85,7 @@
                     </div>
                 </div>
                 <div class="col-12">
-                    <!-- salesOrder Table -->
+                    <!-- salesReturn Table -->
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
                             <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
@@ -106,7 +106,7 @@
                                     <span class="p-input-icon-left">
                                         <InputText
                                             v-model="globalFilterValue"
-                                            placeholder="Cari Sales Order..."
+                                            placeholder="Cari Sales Return..."
                                             class="w-full md:w-20rem"
                                         />
                                     </span>
@@ -116,7 +116,7 @@
                         <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
                                 ref="myDataTableRef"
-                                :data="salesOrders" 
+                                :data="salesReturns" 
                                 :rows="params.rows" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
@@ -133,36 +133,30 @@
                                             {{ params.first + slotProps.index + 1 }}
                                         </template>
                                     </Column>
-                                    <Column field="noSo" header="No. SO" :sortable="true">
+                                    <Column field="noSr" header="No. SR" :sortable="true" class="text-nowrap">
                                         <template #body="slotProps">
                                             <span>
-                                                {{ slotProps.data.noSo || '-' }}
+                                                {{ slotProps.data.noSr || '-' }}
                                             </span>
                                         </template>
                                     </Column>
-                                    <Column field="noPo" header="No. PO" :sortable="true">
+                                    <Column field="salesOrder.noSo" header="No. SO" :sortable="true" class="text-nowrap">
                                         <template #body="slotProps">
-                                            <span>
-                                                {{ slotProps.data.noPo || '-' }}
+                                            <span v-if="slotProps.data.salesOrder?.noSo && slotProps.data.salesOrder?.id">
+                                                <a
+                                                    :href="`/sales/sales-order-detail?id=${slotProps.data.salesOrder.id}`"
+                                                    style="text-decoration: underline; color: #007bff;"
+                                                >
+                                                    {{ slotProps.data.salesOrder.noSo }}
+                                                </a>
+                                            </span>
+                                            <span v-else>
+                                                -
                                             </span>
                                         </template>
                                     </Column>
                                     <Column field="customer.name" header="Nama Customer" :sortable="true"></Column>
-                                    <Column field="paymentMethod" header="Metode Pembayaran" :sortable="true">
-                                        <template #body="slotProps">
-                                            <span :class="getPaymentMethodBadge(slotProps.data.paymentMethod).class">
-                                                {{ getPaymentMethodBadge(slotProps.data.paymentMethod).text }}
-                                            </span>
-                                        </template>
-                                    </Column>
-                                    <Column field="source" header="Source" :sortable="true">
-                                        <template #body="slotProps">
-                                            <span>
-                                                {{ slotProps.data.source || '-' }}
-                                            </span>
-                                        </template>
-                                    </Column>
-                                    <Column field="status" header="Status SO" :sortable="true">
+                                    <Column field="status" header="Status" :sortable="true">
                                         <template #body="slotProps">
                                             <span :class="getStatusBadge(slotProps.data.status).class">
                                                 {{ getStatusBadge(slotProps.data.status).text }}
@@ -183,15 +177,10 @@
                                             </span>
                                         </template>
                                     </Column>
-                                    <Column field="up" header="Untuk Perhatian" :sortable="true"></Column>
-                                    <Column field="date" header="Tanggal SO" :sortable="true">
+                                    <Column field="salesOrder.up" header="Untuk Perhatian" :sortable="true"></Column>
+                                    <Column field="returnDate" header="Tanggal" :sortable="true">
                                         <template #body="slotProps">
-                                            {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
-                                        </template>
-                                    </Column>
-                                    <Column field="dueDate" header="Jatuh Tempo SO" :sortable="true">
-                                        <template #body="slotProps">
-                                            {{ slotProps.data.dueDate ? new Date(slotProps.data.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
+                                            {{ slotProps.data.returnDate ? new Date(slotProps.data.returnDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                         </template>
                                     </Column>
                                     <Column field="perusahaan.nmPerusahaan" header="Perusahaan" :sortable="true"></Column>
@@ -214,28 +203,23 @@
                                                 <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                                 </a>
                                                 <ul class="dropdown-menu">
-                                                    <li v-if="userHasPermission('approve_purchase_order') && slotProps.data.status == 'draft'">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.approveSalesOrder(slotProps.data.id)">
+                                                    <li v-if="userHasPermission('approve_sales_return') && slotProps.data.status == 'draft'">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesReturnStore.approveSalesReturn(slotProps.data.id)">
                                                             <i class="ri-check-line me-2"></i> Approve
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('reject_sales_order') && slotProps.data.status == 'draft')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.rejectSalesOrder(slotProps.data.id)">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('reject_sales_return') && slotProps.data.status == 'draft')">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesReturnStore.rejectSalesReturn(slotProps.data.id)">
                                                             <i class="ri-close-line me-2"></i> Reject
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('view_sales_order') && (slotProps.data.status == 'approved' || slotProps.data.status == 'partial' || slotProps.data.status == 'partial'))">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="viewSalesOrderDetails(slotProps.data.id)">
-                                                            <i class="ri-eye-line me-2"></i> Lihat Detail
-                                                        </a>
-                                                    </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_order') && slotProps.data.status == 'draft')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.openModal(slotProps.data, 'admin')">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_return') && slotProps.data.status == 'draft')">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="salesReturnStore.openModal(slotProps.data)">
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || userHasPermission('delete_sales_order')">
-                                                        <a class="dropdown-item text-danger" href="javascript:void(0)" @click="salesOrderStore.deleteSalesOrder(slotProps.data.id)">
+                                                    <li v-if="userHasRole('superadmin') || userHasPermission('delete_sales_return')">
+                                                        <a class="dropdown-item text-danger" href="javascript:void(0)" @click="salesReturnStore.deleteSalesReturn(slotProps.data.id)">
                                                             <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                         </a>
                                                     </li>
@@ -246,26 +230,26 @@
                             </MyDataTable>
                         </div>
                     </div>
-                    <!--/ salesOrder Table -->
+                    <!--/ salesReturn Table -->
                 </div>
             </div>
-            <!--/ salesOrder cards -->
+            <!--/ salesReturn cards -->
 
             <Modal 
-                id="SalesOrderModal"
+                id="SalesReturnModal"
                 :title="modalTitle" 
                 :description="modalDescription"
                 :validation-errors-from-parent="validationErrors"
             >
                 <template #default>
-                    <form @submit.prevent="salesOrderStore.saveSalesOrder()">
+                    <form @submit.prevent="salesReturnStore.saveSalesReturn()">
                          <div class="row">
                             <div class="col">
                                 <ul class="nav nav-tabs" role="tablist">
                                     <li class="nav-item">
                                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-info" role="tab" aria-selected="true" type="button">
                                             <span class="ri-user-line ri-20px d-sm-none"></span>
-                                            <span class="d-none d-sm-block">Informasi Sales Order</span>
+                                            <span class="d-none d-sm-block">Informasi Sales Return</span>
                                         </button>
                                     </li>
                                     <li class="nav-item">
@@ -282,139 +266,98 @@
                                 <div class="row g-4">
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="hidden" v-model="form.noSo" class="form-control" placeholder="No SO" required>
+                                            <input type="hidden" v-model="form.noSr" class="form-control" placeholder="No SR" required>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <input type="text" v-model="form.noPo" class="form-control" placeholder="No. PO" required>
-                                            <label>No. PO</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
+                                     <div class="col-md-6">
                                         <v-select v-model="form.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
                                     </div>
                                     <div class="col-md-6">
+                                        <v-select v-model="form.salesOrderId" :options="salesOrders" label="noSo" :reduce="so => so.id" placeholder="Pilih Sales Order" class="v-select-style" :disabled="!form.customerId"/>
+                                    </div>
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="text" v-model="form.up" class="form-control" placeholder="Untuk Perhatian" required>
+                                            <input type="text" v-model="form.up" class="form-control" placeholder="Untuk Perhatian" readonly>
                                             <label>Untuk Perhatian</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="date" v-model="form.date" class="form-control" required>
-                                            <label>Tanggal SO</label>
+                                            <input type="date" v-model="form.returnDate" class="form-control" required>
+                                            <label>Tanggal Pengembalian</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <input type="date" v-model="form.dueDate" class="form-control" required>
-                                            <label>Jatuh Tempo SO</label>
-                                        </div>
+                                        <v-select v-model="form.perusahaanId" :options="perusahaans" label="nmPerusahaan" :reduce="p => p.id" placeholder="Pilih Perusahaan" class="v-select-style" readonly/>
                                     </div>
                                     <div class="col-md-6">
-                                        <v-select v-model="form.perusahaanId" :options="perusahaans" label="nmPerusahaan" :reduce="p => p.id" placeholder="Pilih Perusahaan" class="v-select-style"/>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <v-select v-model="form.cabangId" :options="filteredCabangs" label="nmCabang" :reduce="c => c.id" placeholder="Pilih Cabang" class="v-select-style"/>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-floating form-floating-outline">
-                                            <v-select
-                                                v-model="form.paymentMethod"
-                                                :options="paymentMethodOptions"
-                                                label="label"
-                                                :reduce="option => option.value"
-                                                :get-option-key="option => option.value"
-                                                placeholder="-- Pilih Metode Pembayaran --"
-                                                id="select-payment-method"
-                                                class="select-payment-method"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-floating form-floating-outline">
-                                            <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)">
-                                            <label>Discount SO (%)</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <div class="form-floating form-floating-outline">
-                                            <input type="number" v-model="form.taxPercent" class="form-control" placeholder="Tax (%)">
-                                            <label>Tax SO (%)</label>
-                                        </div>
+                                        <v-select v-model="form.cabangId" :options="filteredCabangs" label="nmCabang" :reduce="c => c.id" placeholder="Pilih Cabang" class="v-select-style" readonly/>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="file" @change="onFileChange" class="form-control">
-                                            <label>Attachment SO</label>
+                                            <label>Attachment</label>
                                             <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" :value="formatRupiah(form.totalReturnAmount)" class="form-control" placeholder="Total">
+                                            <label>Total Pengembalian</label>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
-                                            <textarea v-model="form.description" class="form-control" placeholder="Deskripsi SO"></textarea>
-                                            <label>Deskripsi SO</label>
+                                            <textarea v-model="form.description" class="form-control" placeholder="Deskripsi"></textarea>
+                                            <label>Deskripsi</label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
-                                <div v-for="(item, index) in form.salesOrderItems" :key="index" class="repeater-item mb-4">
+                                <div v-for="(item, index) in form.salesReturnItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
-                                        <div class="col-12">
+                                        <div class="col-6">
                                             <v-select v-model="item.warehouseId" :options="warehouses"
-                                            :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang SO" class="v-select-style" @update:modelValue="updateStockInfo(index)"/>
+                                            :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style" @update:modelValue="updateStockInfo(index)" readonly/>
                                         </div>
-                                        <div class="col-md-4">
-                                            <v-select v-model="item.productId" :options="customerProducts" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
+                                        <div class="col-md-6">
+                                            <v-select v-model="item.productId" :options="allAvailableProducts" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style" readonly/>
                                         </div>
-                                        <div class="col-md-2">
+                                        <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
-                                                <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty">
-                                                <label>Jumlah SO</label>
+                                                <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty" readonly>
+                                                <label>Jumlah</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="text" :value="formatRupiah(item.price)" class="form-control" placeholder="Harga" readonly>
-                                                <label>Harga SO</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-floating form-floating-outline">
-                                                <input type="text" :value="formatRupiah(item.subtotal)" class="form-control" placeholder="Subtotal" readonly>
-                                                <label>Subtotal SO</label>
+                                                <label>Harga</label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                             <div class="form-floating form-floating-outline">
-                                                <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item">
-                                                <label>Deskripsi SO</label>
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" v-model="item.reason" class="form-control" placeholder="Alasan">
+                                                <label>Alasan</label>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
-                                            <div class="form-floating form-floating-outline">
-                                                <input type="text" :value="item.stock && item.stock.quantity !== undefined && item.stock.quantity !== null ? Math.floor(item.stock.quantity) : ''" class="form-control" placeholder="Stock" readonly>
-                                                <label>Stock</label>
+                                        <div class="col-md-9">
+                                             <div class="form-floating form-floating-outline">
+                                                <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item" readonly>
+                                                <label>Deskripsi</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3 d-flex align-items-center">
-                                            <button @click.prevent="salesOrderStore.removeItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
+                                            <button @click.prevent="salesReturnStore.removeItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
                                         </div>
                                     </div>
                                     <hr class="my-4">
                                 </div>
-                                <div class="mt-4">
-                                    <button @click.prevent="salesOrderStore.addItem()" class="btn btn-primary">Tambah Item</button>
-                                </div>
-                                <div class="d-flex justify-content-end mt-4">
-                                    <span class="fw-bold fs-5">Grand Total: {{ formatRupiah(grandTotal) }}</span>
-                                </div>
                             </div>
                         </div>
                         <div class="modal-footer mt-6">
-                             <button type="button" class="btn btn-outline-secondary" @click="salesOrderStore.closeModal()">Tutup</button>
+                             <button type="button" class="btn btn-outline-secondary" @click="salesReturnStore.closeModal()">Tutup</button>
                             <button type="submit" class="btn btn-primary" :disabled="loading">
                                 <span v-if="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                                 Simpan
@@ -431,7 +374,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useSalesOrderStore } from '~/stores/sales-order'
+import { useSalesReturnStore } from '~/stores/sales-return'
 import { useCustomerStore } from '~/stores/customer'
 import { usePerusahaanStore } from '~/stores/perusahaan'
 import { useCabangStore } from '~/stores/cabang'
@@ -456,7 +399,7 @@ const router = useRouter();
 
 // Store
 const myDataTableRef        = ref(null)
-const salesOrderStore       = useSalesOrderStore()
+const salesReturnStore       = useSalesReturnStore()
 const customerStore         = useCustomerStore()
 const perusahaanStore       = usePerusahaanStore()
 const warehouseStore        = useWarehouseStore()
@@ -468,7 +411,7 @@ const formatRupiah          = useFormatRupiah()
 const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore       = usePermissionsStore()
 
-const { salesOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, customerProducts } = storeToRefs(salesOrderStore)
+const { salesReturns, salesOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, allAvailableProducts } = storeToRefs(salesReturnStore)
 const { customers }   = storeToRefs(customerStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
 const { cabangs }     = storeToRefs(cabangStore)
@@ -480,7 +423,7 @@ const { permissions } = storeToRefs(permissionStore)
 // State
 const filters = ref({
   customerId: null,
-  source: null,
+  perusahaanId: null,
   status: null,
   search: '',
 });
@@ -488,27 +431,8 @@ const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
-const modalTitle = computed(() => isEditMode.value ? 'Edit Sales Order' : 'Tambah Sales Order');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data Sales Order di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan data Sales Order baru.');
-
-const grandTotal = computed(() => {
-  if (!form.value || !form.value.salesOrderItems) return 0;
-  
-  const totalItems = form.value.salesOrderItems.reduce((total, item) => {
-    const quantity = Number(item.quantity) || 0;
-    const unitPrice = Number(item.price) || 0;
-    return total + (quantity * unitPrice);
-  }, 0);
-
-  const discountPercent = Number(form.value.discountPercent) || 0;
-  const taxPercent = Number(form.value.taxPercent) || 0;
-
-  const discountAmount = totalItems * (discountPercent / 100);
-  const totalAfterDiscount = totalItems - discountAmount;
-  const taxAmount = totalAfterDiscount * (taxPercent / 100);
-
-  return totalAfterDiscount + taxAmount;
-});
+const modalTitle = computed(() => isEditMode.value ? 'Edit Sales Return' : 'Tambah Sales Return');
+const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data Sales Return di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan data Sales Return baru.');
 
 const getAttachmentUrl = (attachmentPath) => {
     if (!attachmentPath || typeof attachmentPath !== 'string') return null;
@@ -517,27 +441,15 @@ const getAttachmentUrl = (attachmentPath) => {
     return `${baseUrl}/${attachmentPath}`;
 };
 
-const paymentMethodOptions = [
-    { label: 'Cash', value: 'cash' }, { label: 'Transfer', value: 'transfer' },
-    { label: 'QRIS', value: 'qris' }, { label: 'Card', value: 'card' }
-];
-
-const sourceOptions = ref([
-    { label: 'POS', value: 'pos' },
-    { label: 'Admin', value: 'admin' },
-]);
-
 const statusOptions = ref([
     { label: 'Draft', value: 'draft' },
     { label: 'Approved', value: 'approved' },
-    { label: 'Delivered', value: 'delivered' },
     { label: 'Rejected', value: 'rejected' },
-    { label: 'Partial', value: 'partial' },
 ]);
 
 let modalInstance = null;
 onMounted(() => {
-    salesOrderStore.fetchSalesOrders();
+    salesReturnStore.fetchSalesReturns();
     customerStore.fetchCustomers();
     perusahaanStore.fetchPerusahaans();
     cabangStore.fetchCabangs();
@@ -546,7 +458,7 @@ onMounted(() => {
     permissionStore.fetchPermissions();
     userStore.loadUser();
 
-    const modalElement = document.getElementById('SalesOrderModal')
+    const modalElement = document.getElementById('SalesReturnModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
@@ -565,8 +477,8 @@ watch(showModal, (newValue) => {
             }
             
             // Fetch stock for existing items
-            if (form.value.salesOrderItems && form.value.salesOrderItems.length > 0) {
-                form.value.salesOrderItems.forEach((item, index) => {
+            if (form.value.salesReturnItems && form.value.salesReturnItems.length > 0) {
+                form.value.salesReturnItems.forEach((item, index) => {
                     updateStockInfo(index);
                 });
             }
@@ -578,32 +490,35 @@ watch(showModal, (newValue) => {
     }
 })
 
-watch(() => form.value.perusahaanId, (newPerusahaanId) => {
-    if (newPerusahaanId) {
-        if(!isEditMode.value) {
-            form.value.cabangId = null;
-        }
+watch(() => form.value.perusahaanId, (newPerusahaanId, oldPerusahaanId) => {
+    if (oldPerusahaanId && newPerusahaanId !== oldPerusahaanId && !isEditMode.value) {
+        form.value.cabangId = null;
     }
 });
 
 watch(() => form.value.customerId, (newCustomerId, oldCustomerId) => {
-  if (newCustomerId && oldCustomerId && newCustomerId !== oldCustomerId) {
-    salesOrderStore.fetchProductsForCustomer(newCustomerId);
-    
-    form.value.salesOrderItems = [];
-    salesOrderStore.addItem();
-  } else if (newCustomerId && !oldCustomerId) {
-    salesOrderStore.fetchProductsForCustomer(newCustomerId);
+  if (newCustomerId && newCustomerId !== oldCustomerId) {
+    salesReturnStore.fetchSalesOrdersByCustomer(newCustomerId);
+    form.value.salesOrderId = null;
+    form.value.salesReturnItems = [];
+    salesReturnStore.addItem();
   } else if (!newCustomerId) {
-    salesOrderStore.customerProducts = [];
-    form.value.salesOrderItems = [];
-    salesOrderStore.addItem();
+    salesReturnStore.salesOrders = [];
+    form.value.salesOrderId = null;
+    form.value.salesReturnItems = [];
+    salesReturnStore.addItem();
   }
 });
 
-watch(() => salesOrderStore.customerProducts, (newProducts) => {
-  if (form.value.salesOrderItems && newProducts) {
-    form.value.salesOrderItems.forEach(item => {
+watch(() => form.value.salesOrderId, (newSalesOrderId) => {
+    if (newSalesOrderId) {
+        salesReturnStore.populateFormFromSalesOrder(newSalesOrderId);
+    }
+});
+
+watch(() => salesReturnStore.allAvailableProducts, (newProducts) => {
+  if (form.value.salesReturnItems && newProducts) {
+    form.value.salesReturnItems.forEach(item => {
       const productExists = newProducts.some(p => p.id === item.productId);
       if (!productExists) {
         item.productId = null;
@@ -626,21 +541,21 @@ watch(globalFilterValue, useDebounceFn((newValue) => {
 
 watch(filters, (newFilters) => {
     const { page, rows, ...restFilters } = newFilters;
-    salesOrderStore.setFilters(restFilters);
+    salesReturnStore.setFilters(restFilters);
 }, { deep: true });
 
 const onPage = (event) => {
     params.value.first = event.first;
-    salesOrderStore.fetchSalesOrders();
+    salesReturnStore.fetchSalesReturns();
 };
 const handleRowsChange = () => {
     params.value.first = 0;
-    salesOrderStore.fetchSalesOrders();
+    salesReturnStore.fetchSalesReturns();
 };
 const onSort = (event) => {
     params.value.sortField = event.sortField;
     params.value.sortOrder = event.sortOrder;
-    salesOrderStore.fetchSalesOrders();
+    salesReturnStore.fetchSalesReturns();
 };
 
 const exportData = (format) => {
@@ -659,40 +574,28 @@ function onFileChange(e) {
 }
 
 const onProductChange = (index) => {
-  const selectedProductId = form.value.salesOrderItems[index].productId;
-  const selectedProduct = customerProducts.value.find(p => p.id === selectedProductId);
+  const selectedProductId = form.value.salesReturnItems[index].productId;
+  const selectedProduct = allAvailableProducts.value.find(p => p.id === selectedProductId);
 
   if (selectedProduct) {
-    const item = form.value.salesOrderItems[index];
+    const item = form.value.salesReturnItems[index];
     item.price = Number(selectedProduct.priceSell) || 0;
     calculateSubtotal(index);
     updateStockInfo(index)
   }
 };
 
-const onQuantityChange = (index) => {
-  calculateSubtotal(index);
-};
-
-const calculateSubtotal = (index) => {
-  const item = form.value.salesOrderItems[index];
-  const quantity = Number(item.quantity) || 0;
-  const unitPrice = Number(item.price) || 0;
-  item.subtotal = quantity * unitPrice;
-};
-
-const viewSalesOrderDetails = (salesOrderId) => {
-    router.push({ path: `/sales/sales-order-detail`, query: { id: salesOrderId } });
+const viewSalesReturnDetails = (salesReturnId) => {
+    // Implement navigation to sales return detail page if exists
+    // router.push({ path: `/sales/sales-return-detail`, query: { id: salesReturnId } });
 };
 
 const getStatusBadge = (status) => {
     switch (status) {
         case 'draft': return { text: 'Draft', class: 'badge rounded-pill bg-label-secondary' };
         case 'approved': return { text: 'Approved', class: 'badge rounded-pill bg-label-primary' };
-        case 'delivered': return { text: 'Delivered', class: 'badge rounded-pill bg-label-success' };
         case 'rejected': return { text: 'Rejected', class: 'badge rounded-pill bg-label-danger' };
-        case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
-        default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
+        case 'returned': return { text: 'Returned', class: 'badge rounded-pill bg-label-info' };
     }
 };
 
@@ -705,30 +608,6 @@ const getPaymentMethodBadge = (paymentMethod) => {
         default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }
 };
-
-const updateStockInfo = async (index) => {
-    const item = form.value.salesOrderItems[index]
-    if (item.productId && item.warehouseId) {
-        try {
-            stockStore.params.search = '' // Reset search if any
-            stockStore.params.rows = 1 // We only need one record
-            const response = await stockStore.fetchStocksPaginated({
-                productId: item.productId,
-                warehouseId: item.warehouseId,
-            })
-            if (response && response.data && response.data.length > 0) {
-                item.stock = response.data[0]
-            } else {
-                item.stock = { quantity: 0 }
-            }
-        } catch (error) {
-            console.error('Failed to fetch stock info:', error)
-            item.stock = { quantity: 0 }
-        }
-    } else {
-        item.stock = { quantity: 0 }
-    }
-}
 
 </script>
 

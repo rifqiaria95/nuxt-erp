@@ -75,9 +75,9 @@
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
                                 <Column field="id" header="#" :sortable="true"></Column> 
+                                <Column field="code" header="Kode Gudang" :sortable="true"></Column>
                                 <Column field="name" header="Nama Gudang" :sortable="true"></Column>
                                 <Column field="address" header="Alamat Gudang" :sortable="true"></Column>
-                                <Column field="code" header="Kode Gudang" :sortable="true"></Column>
                                 <Column field="phone" header="No. Telepon Gudang" :sortable="true"></Column>
                                 <Column field="email" header="Email Gudang" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">

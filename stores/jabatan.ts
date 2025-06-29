@@ -88,7 +88,7 @@ export const useJabatanStore = defineStore('jabatan', {
         })
         const result = await response.json()
         this.jabatans = (result.data || []).map((item: any) => ({
-          id: item.idJabatan,
+          id       : item.idJabatan,
           nmJabatan: item.nmJabatan,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,

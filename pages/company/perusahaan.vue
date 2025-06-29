@@ -217,11 +217,25 @@
                                 <Column field="emailPerusahaan" header="Email Perusahaan" :sortable="true"></Column>
                                 <Column field="npwpPerusahaan" header="NPWP Perusahaan" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                    <template #body="slotProps">
-                                        <button @click="perusahaanStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="perusahaanStore.deletePerusahaan(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                    </template>
-                                </Column>
+                                <template #body="slotProps">
+                                    <div class="d-inline-block">
+                                        <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('edit_perusahaan')">
+                                                <a class="dropdown-item" href="javascript:void(0)" @click="perusahaanStore.openModal(slotProps.data, 'admin')">
+                                                    <i class="ri-edit-box-line me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('delete_perusahaan')">
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)" @click="perusahaanStore.deletePerusahaan(slotProps.data.id)">
+                                                    <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </Column>
                         </MyDataTable>
                         </div>
                     </div>
@@ -354,10 +368,13 @@ import { storeToRefs } from 'pinia'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { usePerusahaanStore } from '~/stores/perusahaan'
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
+import { useUserStore } from '~/stores/user'
 
 const config = useRuntimeConfig();
 const getLogoUrl = (logoPath) => {
@@ -377,6 +394,10 @@ const getLogoUrl = (logoPath) => {
 
 const myDataTableRef = ref(null)
 const perusahaanStore = usePerusahaanStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
+const { userHasPermission, userHasRole } = usePermissions();
+
 const { perusahaans, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, selectedPerusahaan } = storeToRefs(perusahaanStore)
 
 const globalFilterValue = ref('')
@@ -388,6 +409,9 @@ const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data pe
 let modalInstance = null
 onMounted(() => {
     perusahaanStore.fetchPerusahaans();
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
+
     const modalElement = document.getElementById('PerusahaanModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

@@ -82,6 +82,14 @@ export default defineNuxtPlugin(() => {
     // Sales Order Item
     salesOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/sales-order-item/updateStatusPartial/${id}`,
 
+    // Sales Return
+    salesReturn          : () => `${apiBase}/sales-return`,
+    approveSalesReturn   : (id: number | string) => `${apiBase}/sales-return/approveSalesReturn/${id}`,
+    rejectSalesReturn    : (id: number | string) => `${apiBase}/sales-return/rejectSalesReturn/${id}`,
+    salesReturnUpdate    : (id: number | string) => `${apiBase}/sales-return/update/${id}`,
+    getSalesReturnDetails: (id: number | string) => `${apiBase}/sales-return/getSalesReturnDetails/${id}`,
+    getSalesOrderForSalesReturn: (id: number | string) => `${apiBase}/sales-return/get-sales-order/${id}`,
+
     // Product
     product: () => `${apiBase}/product`,
 

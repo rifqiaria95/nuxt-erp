@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
+import { useDepartemenStore } from '~/stores/departemen'
 
 export interface Pegawai {
     id: number
@@ -239,7 +240,7 @@ export const usePegawaiStore = defineStore('pegawai', {
             }
         },
 
-        openModal(pegawaiData: any | null = null) {
+        async openModal(pegawaiData: any | null = null) {
             this.isEditMode = !!pegawaiData;
             this.validationErrors = [];
             
@@ -263,6 +264,12 @@ export const usePegawaiStore = defineStore('pegawai', {
 
                     this.form.cabang_id = this.initialHistory.cabangId;
                     this.form.departemen_id = this.initialHistory.departemenId;
+
+                    if (this.form.divisi_id) {
+                        const departemenStore = useDepartemenStore()
+                        await departemenStore.fetchDepartemensByDivisi(this.form.divisi_id)
+                        this.form.departemen_id = this.initialHistory.departemenId
+                    }
                 } else {
                      this.form.jabatan_id = null;
                      this.form.perusahaan_id = null;

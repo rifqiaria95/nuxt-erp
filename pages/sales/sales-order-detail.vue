@@ -71,7 +71,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="item in salesOrder.salesOrderItems" :key="item.id">
+                                <tr v-for="item in salesOrder.salesOrderItems" :key="item.id" class="position-relative">
                                     <td class="text-nowrap text-heading">{{ item.product.name }}</td>
                                     <td class="text-nowrap">{{ item.description }}</td>
                                     <td>{{ formatRupiah(item.price) }}</td>
@@ -82,12 +82,12 @@
                                           class="form-control"
                                           v-model="item.deliveredQty"
                                           style="width: 80px;"
-                                          :disabled="item.statusPartial"
+                                          :disabled="item.statusPartial || isReturned(item)"
                                         />
                                     </td>
                                     <td>{{ formatRupiah(item.subtotal) }}</td>
                                     <td>
-                                        <label class="switch switch-success">
+                                        <label class="switch switch-success" v-if="!isReturned(item)">
                                             <input type="checkbox" class="switch-input" :checked="item.statusPartial" @change="updateStatusPartial(item.id, !item.statusPartial, item.deliveredQty)" />
                                             <span class="switch-toggle-slider">
                                             <span class="switch-on">
@@ -100,6 +100,9 @@
                                             <span class="switch-label">{{ item.statusPartial ? 'Done' : 'Pending' }}</span>
                                         </label>
                                     </td>
+                                    <div v-if="isReturned(item)" class="returned-overlay">
+                                        RETURNED
+                                    </div>
                                 </tr>
                             </tbody>
                             </table>
@@ -332,6 +335,14 @@ const formatRupiah       = useFormatRupiah()
 const { salesOrder, loading } = storeToRefs(salesOrderStore)
 const soId = route.query.id
 
+const isReturned = (item) => {
+    if (!item.salesReturnItems) {
+        return false;
+    }
+    // An item is returned if it's part of any sales return that has been approved.
+    return item.salesReturnItems.some(ri => ri.salesReturn && ri.salesReturn.status === 'approved');
+}
+
 async function refreshSalesOrderDetails() {
     const soIdToFetch = Array.isArray(soId) ? soId[0] : soId;
     if (typeof soIdToFetch === 'string') {
@@ -392,5 +403,24 @@ onMounted(refreshSalesOrderDetails)
 <style scoped>
     .invoice-preview-header {
         background-color: #F2F3F4;
+    }
+    .position-relative {
+        position: relative;
+    }
+    .returned-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: red;
+        z-index: 10;
+        border-radius: 0.5rem;
     }
 </style>

@@ -62,11 +62,25 @@
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
                             <Column field="id" header="#" :sortable="true"></Column> 
-                            <Column field="nm_divisi" header="Nama Divisi" :sortable="true"></Column>
+                            <Column field="nmDivisi" header="Nama Divisi" :sortable="true"></Column>
                             <Column header="Actions" :exportable="false" style="min-width:8rem">
                                 <template #body="slotProps">
-                                    <button @click="divisiStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
-                                    <button @click="divisiStore.deleteDivisi(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
+                                    <div class="d-inline-block">
+                                        <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
+                                        </a>
+                                        <ul class="dropdown-menu">
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('edit_divisi')">
+                                                <a class="dropdown-item" href="javascript:void(0)" @click="divisiStore.openModal(slotProps.data, 'admin')">
+                                                    <i class="ri-edit-box-line me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li v-if="userHasRole('superadmin') || userHasPermission('delete_divisi')">
+                                                <a class="dropdown-item text-danger" href="javascript:void(0)" @click="divisiStore.deleteDivisi(slotProps.data.id)">
+                                                    <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </template>
                             </Column>
                         </MyDataTable>
@@ -92,7 +106,7 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
-                                        v-model="form.nm_divisi" 
+                                        v-model="form.nmDivisi" 
                                         placeholder="Masukkan nama divisi"
                                         required
                                     >
@@ -123,13 +137,20 @@ import { storeToRefs } from 'pinia';
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { useDivisiStore } from '~/stores/divisi'
+import { usePermissionsStore } from '~/stores/permissions'
+import { usePermissions } from '~/composables/usePermissions'
 import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
+import { useUserStore } from '~/stores/user'
 
 const myDataTableRef = ref(null)
 const divisiStore = useDivisiStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
+const { userHasPermission, userHasRole } = usePermissions();
+
 const { divisis, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(divisiStore)
 
 const globalFilterValue = ref('')
@@ -141,6 +162,9 @@ const modalDescription = computed(() => isEditMode.value ? 'Ubah detail divisi.'
 let modalInstance = null
 onMounted(() => {
     divisiStore.fetchDivisis();
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
+
     const modalElement = document.getElementById('DivisiModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

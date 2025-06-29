@@ -75,12 +75,13 @@
                                     <td class="text-nowrap text-heading">{{ item.product.name }}</td>
                                     <td class="text-nowrap">{{ item.description }}</td>
                                     <td>{{ formatRupiah(item.price) }}</td>
-                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ Math.floor(Number(item.quantity) || 0) }}</td>
                                     <td>
                                         <input
                                           type="number"
                                           class="form-control"
                                           v-model="item.receivedQty"
+                                          @input="item.receivedQty = Math.floor(Number(item.receivedQty) || 0)"
                                           style="width: 80px;"
                                           :disabled="item.statusPartial"
                                         />
@@ -351,6 +352,16 @@ async function updateStatusPartial(itemId, status, receivedQty) {
 
     if (!item) {
         console.error('Item not found!')
+        return
+    }
+
+    if (status && (receivedQty == 0 || receivedQty == null)) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Validasi Gagal',
+            text: 'Jumlah yang diterima tidak boleh 0!',
+        })
+        await refreshPurchaseOrderDetails()
         return
     }
 
