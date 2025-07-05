@@ -98,16 +98,7 @@
   const pending    = ref(false);
   const error      = ref(null);
 
-  let csrfToken = null;
-  try {
-    const res = await fetch($api.csrfToken(), { credentials: 'include' });
-    const data = await res.json();
-    csrfToken = data.token;
-  } catch (e) {
-    // handle error
-  }
 
-  // Handle login
   const handleLogin = async () => {
     pending.value = true;
     error.value = null;
@@ -117,7 +108,6 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
         },
         body: JSON.stringify({
           email: email.value,
@@ -126,16 +116,12 @@
         credentials: 'include'
       });
 
-      // Cek status response sebelum parsing data
       if (!response.ok) {
-        // Ambil pesan error dari response body jika ada
         let errorData = {};
         try {
           errorData = await response.json();
         } catch (e) {
-          // Tidak bisa parse json, biarkan kosong
         }
-        // Set error.value agar bisa ditampilkan di view
         error.value = errorData?.message || `Terjadi kesalahan (${response.status})`;
         toast.error({
           title: 'Login Gagal!',
@@ -152,7 +138,6 @@
       const data = await response.json();
       console.log('Login response:', data);
 
-      // Pastikan data.token dan data.token.token ada sebelum setItem
       if (!data.token || !data.token.token) {
         error.value = 'Token tidak ditemukan pada response server.';
         toast.error({
@@ -180,7 +165,6 @@
       router.push('/dashboard');
       console.log('LOGIN RESPONSE', response)
     } catch (err) {
-      // Tangani error network atau error lain di luar response API
       console.log('LOGIN ERROR', err)
       error.value = err?.data?.message || err.message || 'Terjadi kesalahan saat login.';
       toast.error({

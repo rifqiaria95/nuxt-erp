@@ -265,13 +265,6 @@ export const useStocksStore = defineStore('stocks', {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
 
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        if (!csrfResponse.ok)
-          throw new Error('Gagal mengambil token CSRF')
-
-        const csrfData = await csrfResponse.json()
-        const csrfToken = csrfData.token
-
         const url = `${$api.stock()}/${id}`
 
         const response = await fetch(url, {
@@ -279,7 +272,6 @@ export const useStocksStore = defineStore('stocks', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
           },
           credentials: 'include',
         })

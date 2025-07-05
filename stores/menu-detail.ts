@@ -115,14 +115,7 @@ export const useMenuDetailStore = defineStore('menu-detail', {
       const { $api } = useNuxtApp();
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
 
         let url = $api.menuDetails();
         let method = 'POST';
@@ -138,7 +131,6 @@ export const useMenuDetailStore = defineStore('menu-detail', {
           method,
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -158,7 +150,6 @@ export const useMenuDetailStore = defineStore('menu-detail', {
         this.closeModal();
         await this.fetchMenuDetails();
 
-        // Refresh menu groups in the sidebar
         const menuGroupStore = useMenuGroupStore();
         await menuGroupStore.fetchAllMenuGroups();
         
@@ -194,19 +185,11 @@ export const useMenuDetailStore = defineStore('menu-detail', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken) {
-            throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-          }
 
           const response = await fetch(`${$api.menuDetails()}/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json',
             },
@@ -219,7 +202,6 @@ export const useMenuDetailStore = defineStore('menu-detail', {
           }
 
           await this.fetchMenuDetails();
-          // Refresh menu groups in the sidebar
           const menuGroupStore = useMenuGroupStore();
           await menuGroupStore.fetchAllMenuGroups();
 
@@ -233,7 +215,6 @@ export const useMenuDetailStore = defineStore('menu-detail', {
     },
 
     async openModal(menuDetail: MenuDetail | null = null) {
-        // Always fetch the latest menu groups for the select options
         await this.fetchMenuGroupsForSelect();
         
         this.isEditMode = !!menuDetail;
@@ -245,7 +226,7 @@ export const useMenuDetailStore = defineStore('menu-detail', {
                 name: '',
                 route: '',
                 order: undefined,
-                status: 1, // Default to 'Aktif'
+                status: 1,
                 menuGroupId: undefined,
             };
         }

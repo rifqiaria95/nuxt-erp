@@ -126,7 +126,6 @@ export const useStockOutStore = defineStore('stockOut', {
             body: JSON.stringify(payload),
             headers: {
               'Authorization': `Bearer ${token}`,
-              'X-CSRF-TOKEN': csrfToken || '',
               'Content-Type': 'application/json',
             },
             credentials: 'include',
@@ -140,7 +139,6 @@ export const useStockOutStore = defineStore('stockOut', {
             body: JSON.stringify(payload),
             headers: {
               'Authorization': `Bearer ${token}`,
-              'X-CSRF-TOKEN': csrfToken || '',
               'Content-Type': 'application/json',
             },
             credentials: 'include',
@@ -215,7 +213,6 @@ export const useStockOutStore = defineStore('stockOut', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
           },
           credentials: 'include',
         })
@@ -255,7 +252,6 @@ export const useStockOutStore = defineStore('stockOut', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
           },
           credentials: 'include',
         })

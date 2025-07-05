@@ -106,16 +106,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       this.error = null
       const { $api } = useNuxtApp()
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
-
         const url = new URL($api.purchaseOrder())
         const params = new URLSearchParams({
             page     : ((this.params.first / this.params.rows) + 1).toString(),
@@ -131,7 +122,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -159,21 +149,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         const userStore = useUserStore();
 
         try {
-            // Ambil CSRF token dan token otentikasi
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
             const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             const formData = new FormData()
 
-            // Append main form data
             const dataToAppend = { ...this.form };
-            // Hapus data relasi dan data yang tidak perlu dikirim
             delete dataToAppend.purchaseOrderItems;
             delete dataToAppend.attachment;
             delete dataToAppend.vendor;
@@ -190,7 +170,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 }
             });
 
-            // Append createdBy hanya untuk PO baru
             if (!this.isEditMode && userStore.user && userStore.user.id) {
                 formData.append('createdBy', userStore.user.id.toString())
                 if(this.form.status === 'approved') {
@@ -201,7 +180,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 }
             }
 
-            // Append attachment if it's a file
             if (this.form.attachment instanceof File) {
                 formData.append('attachment', this.form.attachment);
             }
@@ -228,7 +206,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             const response = await fetch(url, {
                 method: method,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                 },
@@ -281,15 +258,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         }
   
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
             const token = localStorage.getItem('token');
   
             const response = await fetch(`${$api.purchaseOrder()}/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                 },
@@ -316,10 +289,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       const { $api } = useNuxtApp();
       try {
           const token = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.approvePurchaseOrder(purchaseOrderId), {
               method: 'PATCH',
@@ -327,7 +296,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });
@@ -356,10 +324,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       const { $api } = useNuxtApp();
       try {
           const token = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.rejectPurchaseOrder(purchaseOrderId), {
               method: 'PATCH',
@@ -367,7 +331,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });
@@ -395,19 +358,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         this.error = null;
         const { $api } = useNuxtApp();
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
             const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             const resData = await apiFetch($api.purchaseOrderItemUpdateStatusPartial(itemId), {
                 method: 'PATCH',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
@@ -528,22 +483,15 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       this.error = null;
       const { $api } = useNuxtApp();
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token;
         const token        = localStorage.getItem('token');
 
         const resData = await apiFetch($api.getPurchaseOrderDetails(poId), {
           headers: {
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
           credentials: 'include',
         });
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
         if (resData && resData.data) {
           this.purchaseOrder = resData.data;
         } else {

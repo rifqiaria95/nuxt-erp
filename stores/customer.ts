@@ -115,15 +115,8 @@ export const useCustomerStore = defineStore('customer', {
       const { $api } = useNuxtApp()
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        const csrfData     = await csrfResponse.json()
-        const csrfToken    = csrfData.token
         const token        = localStorage.getItem('token')
 
-        if (!token || !csrfToken) {
-          throw new Error('Otentikasi tidak valid. Silakan login kembali.');
-        }
-        
         const formData = new FormData()
         Object.keys(this.form).forEach(key => {
             const value = this.form[key as keyof typeof this.form];
@@ -153,7 +146,6 @@ export const useCustomerStore = defineStore('customer', {
           body: formData,
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
           },
           credentials: 'include',
@@ -196,19 +188,11 @@ export const useCustomerStore = defineStore('customer', {
 
       this.loading = true;
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken || !token) {
-              throw new Error('Otentikasi tidak valid. Silakan login kembali.');
-          }
 
           const response = await fetch($api.customer() + `/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

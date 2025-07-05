@@ -185,7 +185,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN' : csrfToken,
             'Accept'       : 'application/json',
             'Content-Type' : 'application/json'
           },
@@ -226,7 +225,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
         }
         const response = await fetch($api.getSalesOrderForSalesReturn(customerId), {
           headers: {
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },

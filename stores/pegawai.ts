@@ -142,9 +142,6 @@ export const usePegawaiStore = defineStore('pegawai', {
             
             try {
                 const token = localStorage.getItem('token');
-                const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-                const csrfData = await csrfResponse.json();
-                const csrfToken = csrfData.token;
 
                 let response;
                 let url;
@@ -158,7 +155,6 @@ export const usePegawaiStore = defineStore('pegawai', {
                         body: formData,
                         headers: {
                             'Authorization': `Bearer ${token}`,
-                            'X-CSRF-TOKEN': csrfToken || '',
                         },
                         credentials: 'include'
                     });
@@ -169,7 +165,6 @@ export const usePegawaiStore = defineStore('pegawai', {
                         body: formData,
                         headers: {
                             'Authorization': `Bearer ${token}`,
-                            'X-CSRF-TOKEN': csrfToken || ''
                         },
                         credentials: 'include'
                     });
@@ -212,15 +207,11 @@ export const usePegawaiStore = defineStore('pegawai', {
             if (result.isConfirmed) {
                 try {
                     const token = localStorage.getItem('token');
-                    const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-                    const csrfData = await csrfResponse.json();
-                    const csrfToken = csrfData.token;
 
                     const response = await fetch($api.pegawaiDelete(id), {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`,
-                            'X-CSRF-TOKEN': csrfToken,
                             'Content-Type': 'application/json',
                         },
                         credentials: 'include'
@@ -245,7 +236,7 @@ export const usePegawaiStore = defineStore('pegawai', {
             this.validationErrors = [];
             
             if (pegawaiData) {
-                this.form = JSON.parse(JSON.stringify(pegawaiData)); // Deep copy to avoid reactivity issues
+                this.form = JSON.parse(JSON.stringify(pegawaiData));
                 
                 this.form.tgl_lahir_pegawai = pegawaiData.tgl_lahir_pegawai ? pegawaiData.tgl_lahir_pegawai.substring(0, 10) : '';
                 this.form.tgl_masuk_pegawai = pegawaiData.tgl_masuk_pegawai ? pegawaiData.tgl_masuk_pegawai.substring(0, 10) : '';

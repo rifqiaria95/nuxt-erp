@@ -67,23 +67,13 @@ export const useKategoriStore = defineStore('kategori', {
       this.error = null
       const { $api } = useNuxtApp()
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
-
         const url = new URL($api.categories())
 
         const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -119,20 +109,12 @@ export const useKategoriStore = defineStore('kategori', {
             tooling: undefined,
         };
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
             const token = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token not found. Cannot proceed with request.');
-            }
 
             const response = await fetch($api.countProductByCategory(), {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -154,14 +136,7 @@ export const useKategoriStore = defineStore('kategori', {
         const { $api } = useNuxtApp();
 
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData  = await csrfResponse.json();
-            const csrfToken = csrfData.token;
             const token     = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             let url = $api.categories();
             let method = 'POST';
@@ -176,7 +151,6 @@ export const useKategoriStore = defineStore('kategori', {
                 method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -185,7 +159,6 @@ export const useKategoriStore = defineStore('kategori', {
             });
 
             if (!response.ok) {
-                // Cek jika error 404, tampilkan pesan khusus
                 if (response.status === 404) {
                     throw new Error('Endpoint tidak ditemukan. Pastikan endpoint dan method sudah benar.');
                 }
@@ -210,7 +183,6 @@ export const useKategoriStore = defineStore('kategori', {
       this.loading = true;
       const { $api } = useNuxtApp();
 
-      // Tampilkan konfirmasi sebelum menghapus
       const result = await Swal.fire({
           title: 'Apakah Anda yakin?',
           text: "Data kategori yang dihapus tidak dapat dikembalikan!",
@@ -227,19 +199,11 @@ export const useKategoriStore = defineStore('kategori', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken) {
-              throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-          }
 
           const response = await fetch($api.categories() + `/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

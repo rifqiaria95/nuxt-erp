@@ -88,14 +88,7 @@ export const useUnitStore = defineStore('unit', {
       const { $api } = useNuxtApp();
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
 
         let url = $api.unit();
         let method = 'POST';
@@ -111,7 +104,6 @@ export const useUnitStore = defineStore('unit', {
           method,
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -162,19 +154,10 @@ export const useUnitStore = defineStore('unit', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken) {
-            throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-          }
-
           const response = await fetch(`${$api.unit()}/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json',
             },

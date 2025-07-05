@@ -430,7 +430,6 @@ const handleSavePermission = async () => {
                 body: JSON.stringify(payload),
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include'
@@ -442,7 +441,6 @@ const handleSavePermission = async () => {
                 body: JSON.stringify(payload),
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken || '',
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include'
@@ -640,7 +638,6 @@ const deletePermission = async (permissionId) => {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken
                 },
                 credentials: 'include'
             });

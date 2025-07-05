@@ -61,16 +61,7 @@ export const useCabangStore = defineStore('cabang', {
       const { $api } = useNuxtApp()
 
       try {
-
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
 
         const url = new URL($api.cabang())
         url.searchParams.append('page', this.params.page.toString())
@@ -87,7 +78,6 @@ export const useCabangStore = defineStore('cabang', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -115,20 +105,13 @@ export const useCabangStore = defineStore('cabang', {
         this.loading = true
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token');
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
 
-        if (!csrfToken) {
-            throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
         try {
             const response = await fetch($api.cabang() + `?perusahaan_id=${perusahaanId}`, {
                  method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
                 },
             })
             const result = await response.json()
@@ -146,21 +129,12 @@ export const useCabangStore = defineStore('cabang', {
       const { $api } = useNuxtApp()
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token;
         const token        = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
 
         await fetch($api.cabang(), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
@@ -189,15 +163,10 @@ export const useCabangStore = defineStore('cabang', {
       const token = localStorage.getItem('token');
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-        
         await fetch($api.cabang() + `/${this.form.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
@@ -223,14 +192,9 @@ export const useCabangStore = defineStore('cabang', {
       const token = localStorage.getItem('token');
       
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
-
         await fetch($api.cabang() + `/${id}`, {
           method: 'DELETE',
            headers: {
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
@@ -248,7 +212,6 @@ export const useCabangStore = defineStore('cabang', {
       this.validationErrors = null
       if (cabang) {
         this.isEditMode = true
-        // Pastikan form diisi dengan data yang sesuai dari object cabang
         this.form = { 
           id: cabang.id,
           kodeCabang: cabang.kodeCabang,

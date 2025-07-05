@@ -72,7 +72,6 @@ export const useVendorStore = defineStore('vendor', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -138,7 +137,6 @@ export const useVendorStore = defineStore('vendor', {
             const response = await fetch(url, {
                 method: method,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                 },
@@ -202,7 +200,6 @@ export const useVendorStore = defineStore('vendor', {
           const response = await fetch($api.vendor() + `/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

@@ -137,9 +137,6 @@ export const useJabatanStore = defineStore('jabatan', {
         const { $api } = useNuxtApp();
 
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
             const token = localStorage.getItem('token');
 
             let url = $api.jabatan();
@@ -154,7 +151,6 @@ export const useJabatanStore = defineStore('jabatan', {
                 method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -202,15 +198,11 @@ export const useJabatanStore = defineStore('jabatan', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
 
           const response = await fetch(`${$api.jabatan()}/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

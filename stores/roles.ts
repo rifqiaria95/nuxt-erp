@@ -125,15 +125,7 @@ export const useRolesStore = defineStore('roles', {
             const { $api } = useNuxtApp();
 
             try {
-                const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-                const csrfData = await csrfResponse.json();
-                const csrfToken = csrfData.token;
                 const token = localStorage.getItem('token');
-
-                if (!csrfToken) {
-                    throw new Error('CSRF token tidak ditemukan.');
-                }
-
                 let url = $api.roleStore();
                 let method = 'POST';
 
@@ -151,7 +143,6 @@ export const useRolesStore = defineStore('roles', {
                     method,
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
@@ -204,19 +195,11 @@ export const useRolesStore = defineStore('roles', {
 
             this.loading = true;
             try {
-                const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-                const csrfData = await csrfResponse.json();
-                const csrfToken = csrfData.token;
                 const token = localStorage.getItem('token');
-
-                if (!csrfToken) {
-                    throw new Error('CSRF token tidak ditemukan.');
-                }
 
                 const response = await fetch($api.roleDelete(id), {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken,
                         'Authorization': `Bearer ${token}`,
                         'Accept': 'application/json',
                     },

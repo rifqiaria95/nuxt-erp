@@ -90,14 +90,7 @@ export const useDivisiStore = defineStore('divisi', {
       const { $api } = useNuxtApp();
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
 
         let url = $api.divisi();
         let method = 'POST';
@@ -115,7 +108,6 @@ export const useDivisiStore = defineStore('divisi', {
           method,
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -166,19 +158,11 @@ export const useDivisiStore = defineStore('divisi', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken) {
-            throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-          }
 
           const response = await fetch(`${$api.divisi()}/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json',
             },

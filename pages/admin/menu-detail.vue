@@ -277,7 +277,7 @@ watch(globalFilterValue, debouncedSearch);
 const onPage = (event) => menuDetailStore.setPagination(event);
 
 const handleRowsChange = () => {
-    params.value.first = 0; // Reset to first page
+    params.value.first = 0;
     menuDetailStore.fetchMenuDetails();
 };
 

@@ -143,14 +143,7 @@ export const useProductStore = defineStore('product', {
       const { $api } = useNuxtApp();
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken || !token) {
-              throw new Error('Otentikasi tidak valid. Silakan login kembali.');
-          }
 
           const formData = new FormData();
           Object.keys(this.form).forEach(key => {
@@ -171,14 +164,13 @@ export const useProductStore = defineStore('product', {
 
           if (this.isEditMode && this.form.id) {
               url = `${$api.product()}/${this.form.id}`;
-              formData.append('_method', 'PUT'); // adonisjs needs this for form-data PUT requests
+              formData.append('_method', 'PUT');
           }
 
           const response = await fetch(url, {
-              method: 'POST', // Always POST for FormData with _method spoofing
+              method: 'POST',
               headers: {
                   'Authorization': `Bearer ${token}`,
-                  'X-CSRF-TOKEN': csrfToken,
                   'Accept': 'application/json',
               },
               body: formData,
@@ -225,19 +217,11 @@ export const useProductStore = defineStore('product', {
       
       this.loading = true;
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken || !token) {
-              throw new Error('Otentikasi tidak valid. Silakan login kembali.');
-          }
 
           const response = await fetch($api.product() + `/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

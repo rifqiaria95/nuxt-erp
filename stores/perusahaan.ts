@@ -91,9 +91,6 @@ export const usePerusahaanStore = defineStore('perusahaan', {
         const { $api } = useNuxtApp();
 
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
             const token = localStorage.getItem('token');
 
             const formData = new FormData();
@@ -110,14 +107,12 @@ export const usePerusahaanStore = defineStore('perusahaan', {
 
             if (this.isEditMode && this.form.id) {
                 url = `${$api.perusahaan()}/${this.form.id}`;
-                // BROWSER TIDAK MENDUKUNG FormData DENGAN METHOD 'PUT'
             }
 
             const response = await fetch(url, {
                 method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                 },
                 body: formData,
@@ -163,15 +158,11 @@ export const usePerusahaanStore = defineStore('perusahaan', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
 
           const response = await fetch(`${$api.perusahaan()}/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

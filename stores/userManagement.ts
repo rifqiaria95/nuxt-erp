@@ -172,15 +172,7 @@ export const useUserManagementStore = defineStore('user-management', {
         const { $api } = useNuxtApp();
 
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
             const token = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan.');
-            }
-
             let url = $api.users();
             let method = 'POST';
 
@@ -205,7 +197,6 @@ export const useUserManagementStore = defineStore('user-management', {
                 method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'X-CSRF-TOKEN': csrfToken,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
@@ -253,15 +244,11 @@ export const useUserManagementStore = defineStore('user-management', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
 
           const response = await fetch(`${$api.users()}/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },

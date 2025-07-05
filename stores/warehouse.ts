@@ -158,7 +158,6 @@ export const useWarehouseStore = defineStore('warehouse', {
                     method,
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
@@ -214,7 +213,6 @@ export const useWarehouseStore = defineStore('warehouse', {
               const response = await fetch(`${$api.warehouse()}/${id}`, {
                   method: 'DELETE',
                   headers: {
-                      'X-CSRF-TOKEN': csrfToken,
                       'Authorization': `Bearer ${token}`,
                       'Accept': 'application/json',
                   },

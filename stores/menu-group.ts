@@ -136,14 +136,7 @@ export const useMenuGroupStore = defineStore('menu-group', {
       const { $api } = useNuxtApp();
 
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
 
         let url = $api.menuGroups();
         let method = 'POST';
@@ -159,7 +152,6 @@ export const useMenuGroupStore = defineStore('menu-group', {
           method,
           headers: {
             'Authorization': `Bearer ${token}`,
-            'X-CSRF-TOKEN': csrfToken,
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
@@ -210,19 +202,11 @@ export const useMenuGroupStore = defineStore('menu-group', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken) {
-            throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-          }
 
           const response = await fetch(`${$api.menuGroups()}/${id}`, {
             method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,
                 'Authorization': `Bearer ${token}`,
                 'Accept': 'application/json',
             },
