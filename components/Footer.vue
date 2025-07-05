@@ -18,7 +18,7 @@
   </template>
   
   <script setup>
-  // No specific script needed for this static footer, but good to have the block.
+  // 
   </script>
   
   <style scoped>
