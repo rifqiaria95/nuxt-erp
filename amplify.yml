@@ -8,9 +8,15 @@ frontend:
       commands:
         - npm run generate
   artifacts:
-    baseDirectory: .output/public
+    baseDirectory: dist
     files:
       - "**/*"
   cache:
     paths:
-      - node_modules/**/*
+      - node_modules/**
+
+redirects:
+  - source: '</^((?!\.).)*$/>'
+    target: /index.html
+    status: 200
+    condition: null
