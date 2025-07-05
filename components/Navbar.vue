@@ -241,14 +241,11 @@
 
       // Cek status response sebelum parsing data
       if (!response.ok) {
-        // Ambil pesan error dari response body jika ada
         let errorData = {};
         try {
           errorData = await response.json();
         } catch (e) {
-          // Tidak bisa parse json, biarkan kosong
         }
-        // Set error.value agar bisa ditampilkan di view
         toast.error({
           title: 'Logout Gagal!',
           icon: 'ri-close-line',
