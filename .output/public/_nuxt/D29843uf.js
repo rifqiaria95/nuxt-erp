@@ -1,0 +1,1 @@
+const l=()=>i=>{if(i===null||i===""||i===void 0)return"";let s=i.toString().replace(/\./g,",").replace(/[^,\d]/g,""),t=s.split(","),a=t[0].length%3,r=t[0].substring(0,a),e=t[0].substring(a).match(/\d{3}/gi);return e&&(r+=(a?".":"")+e.join(".")),r=t[1]!=null?r+","+t[1]:r,r=r.replace(",00",""),"Rp "+r};export{l as u};
