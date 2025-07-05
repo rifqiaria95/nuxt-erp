@@ -215,22 +215,23 @@ export const useMenuDetailStore = defineStore('menu-detail', {
     },
 
     async openModal(menuDetail: MenuDetail | null = null) {
-        await this.fetchMenuGroupsForSelect();
-        
-        this.isEditMode = !!menuDetail;
-        this.validationErrors = [];
-        if (menuDetail) {
-            this.form = { ...menuDetail };
-        } else {
-            this.form = {
-                name: '',
-                route: '',
-                order: undefined,
-                status: 1,
-                menuGroupId: undefined,
-            };
-        }
-        this.showModal = true;
+      
+      this.isEditMode = !!menuDetail;
+      this.validationErrors = [];
+      if (menuDetail) {
+        this.form = { ...menuDetail };
+      } else {
+        this.form = {
+          name: '',
+          route: '',
+          order: undefined,
+          status: 1,
+          menuGroupId: undefined,
+        };
+      }
+      this.showModal = true;
+      
+      await this.fetchMenuGroupsForSelect();
     },
 
     closeModal() {
