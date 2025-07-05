@@ -203,7 +203,7 @@
                                         placeholder="-- Pilih Menu Group --"
                                         class="select-menu-group"
                                     />   
-                                    <p v-if="menuGroups.length === 0" class="small text-muted">Memuat data menu group...</p>
+                                    <p v-if="menuGroups.length === 0" class="small text-muted">Memuat data menu group....</p>
                                 </div>
                             </div>
                         </div>
