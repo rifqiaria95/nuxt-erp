@@ -10,8 +10,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     // Cek validitas token ke backend
     try {
       const token = localStorage.getItem('token')
-      await $fetch('/auth/api/me', {
-        baseURL: 'http://localhost:3333',
+      const { $api } = useNuxtApp()
+      await $fetch($api.me(), {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
       })

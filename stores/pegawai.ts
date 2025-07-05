@@ -281,7 +281,8 @@ export const usePegawaiStore = defineStore('pegawai', {
                 }
 
                 if (pegawaiData.avatar) {
-                    const BASE_URL = 'http://localhost:3333/';
+                    const config = useRuntimeConfig();
+                    const BASE_URL = config.public.apiBase ? config.public.apiBase.replace('/api', '/') : 'http://localhost:3333/';
                     const avatarPathClean = pegawaiData.avatar.startsWith('/') ? pegawaiData.avatar.slice(1) : pegawaiData.avatar;
                     this.form.avatarPreview = pegawaiData.avatar.startsWith('http') ? pegawaiData.avatar : BASE_URL + avatarPathClean;
                 } else {

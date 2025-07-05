@@ -20,7 +20,8 @@ export const usePermissionsStore = defineStore('permissions', {
         async fetchPermissions() {
             this.loading = true
             try {
-                const response = await fetch('http://localhost:3333/api/permissions')
+                const { $api } = useNuxtApp()
+                const response = await fetch($api.permissions())
                 const data = await response.json()
                 this.permissions = data.data 
             } catch (error) {

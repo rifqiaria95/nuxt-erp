@@ -176,8 +176,9 @@
     import { useRouter } from 'vue-router'
     import { useLayoutStore } from '~/stores/layout';
 
-    const userStore = useUserStore()
-    const router = useRouter()
+    const { $api }    = useNuxtApp()
+    const userStore   = useUserStore()
+    const router      = useRouter()
     const layoutStore = useLayoutStore();
 
     // --- Search bar logic ---
@@ -228,17 +229,37 @@
 
     const handleLogout = async () => {
         userStore.clearUser()
-        document.documentElement.className = '' // Reset all classes on html tag
+        document.documentElement.className = ''
         localStorage.removeItem('token')
+        const response = await fetch($api.logout(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      // Cek status response sebelum parsing data
+      if (!response.ok) {
+        // Ambil pesan error dari response body jika ada
+        let errorData = {};
         try {
-            await fetch('http://localhost:3333/auth/api/logout', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-            })
-        } catch (e) {}
-        router.push('/auth/login')
+          errorData = await response.json();
+        } catch (e) {
+          // Tidak bisa parse json, biarkan kosong
+        }
+        // Set error.value agar bisa ditampilkan di view
+        toast.error({
+          title: 'Logout Gagal!',
+          icon: 'ri-close-line',
+          message: `Gagal logout: ${errorData?.message || `Terjadi kesalahan (${response.status})`}`,
+          timeout: 3000,
+          position: 'topRight',
+          layout: 2,
+        });
+        return;
+      }
+      router.push('/auth/login')
     }
   </script>
 
