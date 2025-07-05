@@ -103,7 +103,7 @@
     pending.value = true;
     error.value = null;
     try {
-      console.log('Login endpoint:', $api.login());
+      // console.log('Login endpoint:', $api.login());
       const response = await fetch($api.login(), {
         method: 'POST',
         headers: {
@@ -136,7 +136,7 @@
       }
 
       const data = await response.json();
-      console.log('Login response:', data);
+      // console.log('Login response:', data);
 
       if (!data.token || !data.token.token) {
         error.value = 'Token tidak ditemukan pada response server.';
@@ -163,9 +163,9 @@
         layout: 2,
       })
       router.push('/dashboard');
-      console.log('LOGIN RESPONSE', response)
+      // console.log('LOGIN RESPONSE', response)
     } catch (err) {
-      console.log('LOGIN ERROR', err)
+      // console.log('LOGIN ERROR', err)
       error.value = err?.data?.message || err.message || 'Terjadi kesalahan saat login.';
       toast.error({
         title: 'Login Gagal!',
