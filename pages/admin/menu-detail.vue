@@ -199,7 +199,6 @@
                                         :options="menuGroups"
                                         label="name"
                                         :reduce="menuGroup => menuGroup.id"
-                                        :disabled="menuGroups.length === 0"
                                         placeholder="-- Pilih Menu Group --"
                                         class="select-menu-group"
                                     />   
