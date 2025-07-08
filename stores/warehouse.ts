@@ -141,9 +141,6 @@ export const useWarehouseStore = defineStore('warehouse', {
             const { $api } = useNuxtApp();
     
             try {
-                const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-                const csrfData = await csrfResponse.json();
-                const csrfToken = csrfData.token;
                 const token = localStorage.getItem('token');
     
                 let url = $api.warehouse();
@@ -205,9 +202,6 @@ export const useWarehouseStore = defineStore('warehouse', {
           }
     
           try {
-              const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-              const csrfData = await csrfResponse.json();
-              const csrfToken = csrfData.token;
               const token = localStorage.getItem('token');
     
               const response = await fetch(`${$api.warehouse()}/${id}`, {
@@ -215,6 +209,7 @@ export const useWarehouseStore = defineStore('warehouse', {
                   headers: {
                       'Authorization': `Bearer ${token}`,
                       'Accept': 'application/json',
+                      'Content-Type': 'application/json'
                   },
                   credentials: 'include',
               });

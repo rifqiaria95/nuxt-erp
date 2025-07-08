@@ -150,15 +150,8 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       this.error = null
       const { $api } = useNuxtApp()
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token;
         const token        = localStorage.getItem('token');
 
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
 
         const url = new URL($api.salesReturn())
         const params = new URLSearchParams({
@@ -214,15 +207,8 @@ export const useSalesReturnStore = defineStore('salesReturn', {
         return
       }
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
 
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
         const response = await fetch($api.getSalesOrderForSalesReturn(customerId), {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -315,15 +301,7 @@ export const useSalesReturnStore = defineStore('salesReturn', {
         }
 
         try {
-            // Ambil CSRF token dan token otentikasi
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
             const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             const formData = new FormData()
 
@@ -387,7 +365,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
             const response = await fetch(url, {
                 method: method,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                 },
@@ -440,15 +417,11 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
 
           const response = await fetch(`${$api.salesReturn()}/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },
@@ -475,10 +448,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       const { $api } = useNuxtApp();
       try {
           const token = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.approveSalesReturn(salesReturnId), {
               method: 'PATCH',
@@ -486,7 +455,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });
@@ -515,10 +483,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       const { $api } = useNuxtApp();
       try {
           const token = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.rejectSalesReturn(salesReturnId), {
               method: 'PATCH',
@@ -526,7 +490,6 @@ export const useSalesReturnStore = defineStore('salesReturn', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });
@@ -679,22 +642,15 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       this.error = null;
       const { $api } = useNuxtApp();
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token;
         const token        = localStorage.getItem('token');
 
         const resData = await apiFetch($api.getSalesReturnDetails(srId), {
           headers: {
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
           credentials: 'include',
         });
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
         if (resData && resData.data) {
           this.salesReturn = resData.data;
         } else {

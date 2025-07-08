@@ -404,9 +404,6 @@ const fetchStats = async () => {
 const handleSavePermission = async () => {
     layoutStore.setLoading(true);
     try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token || document.querySelector('meta[name="csrf-token"]')?.content;
         const token = localStorage.getItem('token');
         
         let response;
@@ -625,11 +622,6 @@ const deletePermission = async (permissionId) => {
         layoutStore.setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const csrfResponse = await fetch($api.csrfToken(), {
-                credentials: 'include'
-            });
-            const csrfData = await csrfResponse.json();
-            const csrfToken = csrfData.token;
 
             const url = $api.permissionDelete(permissionId);
 

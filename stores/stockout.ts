@@ -102,9 +102,6 @@ export const useStockOutStore = defineStore('stockOut', {
       this.loading = true
       try {
         const { $api } = useNuxtApp()
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        const csrfData = await csrfResponse.json()
-        const csrfToken = csrfData.token || (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content
         const token = localStorage.getItem('token')
         let response
         let url
@@ -199,13 +196,6 @@ export const useStockOutStore = defineStore('stockOut', {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
 
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        if (!csrfResponse.ok)
-          throw new Error('Gagal mengambil token CSRF')
-
-        const csrfData = await csrfResponse.json()
-        const csrfToken = csrfData.token
-
         const url = `${$api.stockOut()}/${id}`
 
         const response = await fetch(url, {
@@ -237,13 +227,6 @@ export const useStockOutStore = defineStore('stockOut', {
       try {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
-
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        if (!csrfResponse.ok)
-          throw new Error('Gagal mengambil token CSRF')
-
-        const csrfData = await csrfResponse.json()
-        const csrfToken = csrfData.token
 
         const url = `${$api.postStockOut(id)}`
 

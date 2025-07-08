@@ -56,15 +56,7 @@ export const useVendorStore = defineStore('vendor', {
       this.error = null
       const { $api } = useNuxtApp()
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
 
         const url = new URL($api.vendor())
 
@@ -103,15 +95,7 @@ export const useVendorStore = defineStore('vendor', {
         const { $api } = useNuxtApp();
 
         try {
-            // Ambil CSRF token dan token otentikasi
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
             const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             // Siapkan FormData untuk pengiriman data, termasuk file logo jika ada
             const formData = new FormData();
@@ -188,14 +172,7 @@ export const useVendorStore = defineStore('vendor', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
-
-          if (!csrfToken) {
-              throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-          }
 
           const response = await fetch($api.vendor() + `/${id}`, {
               method: 'DELETE',

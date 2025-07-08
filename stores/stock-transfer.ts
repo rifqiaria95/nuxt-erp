@@ -132,9 +132,6 @@ export const useStockTransferStore = defineStore('stockTransfer', {
       this.loading = true
       try {
         const { $api } = useNuxtApp()
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        const csrfData = await csrfResponse.json()
-        const csrfToken = csrfData.token || (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content
         const token = localStorage.getItem('token')
         let response
         let url
@@ -242,13 +239,6 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
 
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' })
-        if (!csrfResponse.ok)
-          throw new Error('Gagal mengambil token CSRF')
-
-        const csrfData = await csrfResponse.json()
-        const csrfToken = csrfData.token
-
         const url = `${$api.stockTransfer()}/${id}`
 
         const response = await fetch(url, {
@@ -256,6 +246,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           credentials: 'include',
         })
@@ -281,10 +272,6 @@ export const useStockTransferStore = defineStore('stockTransfer', {
       const { $api } = useNuxtApp();
       try {
           const token        = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData  = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.approveStockTransfer(stockTransferId), {
               method: 'PATCH',
@@ -292,7 +279,6 @@ export const useStockTransferStore = defineStore('stockTransfer', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });

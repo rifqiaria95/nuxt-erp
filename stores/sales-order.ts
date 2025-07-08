@@ -167,16 +167,8 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
-      try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token;
+        try {
         const token        = localStorage.getItem('token');
-
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
 
         const url = new URL($api.salesOrder())
         const params = new URLSearchParams({
@@ -233,15 +225,8 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         return
       }
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData = await csrfResponse.json();
-        const csrfToken = csrfData.token;
         const token = localStorage.getItem('token');
 
-
-        if (!csrfToken) {
-          throw new Error('CSRF token not found. Cannot proceed with request.');
-        }
         const response = await fetch($api.customer() + '/' + customerId, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -309,15 +294,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         }
 
         try {
-            // Ambil CSRF token dan token otentikasi
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
             const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             const formData = new FormData()
 
@@ -381,7 +358,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             const response = await fetch(url, {
                 method: method,
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                 },
@@ -434,15 +410,11 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       }
 
       try {
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
           const token = localStorage.getItem('token');
 
           const response = await fetch(`${$api.salesOrder()}/${id}`, {
               method: 'DELETE',
               headers: {
-                  'X-CSRF-TOKEN': csrfToken,
                   'Authorization': `Bearer ${token}`,
                   'Accept': 'application/json',
               },
@@ -469,10 +441,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       const { $api } = useNuxtApp();
       try {
           const token = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.approveSalesOrder(salesOrderId), {
               method: 'PATCH',
@@ -480,7 +448,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });
@@ -509,10 +476,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       const { $api } = useNuxtApp();
       try {
           const token = localStorage.getItem('token');
-          const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-          if (!csrfResponse.ok) throw new Error('Gagal mendapatkan CSRF token.');
-          const csrfData = await csrfResponse.json();
-          const csrfToken = csrfData.token;
 
           const response = await fetch($api.rejectSalesOrder(salesOrderId), {
               method: 'PATCH',
@@ -520,7 +483,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type' : 'application/json',
                   'Accept'       : 'application/json',
-                  'X-CSRF-TOKEN' : csrfToken,
               },
               credentials: 'include',
           });
@@ -548,19 +510,11 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         this.error = null;
         const { $api } = useNuxtApp();
         try {
-            const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-            const csrfData     = await csrfResponse.json();
-            const csrfToken    = csrfData.token;
             const token        = localStorage.getItem('token');
-
-            if (!csrfToken) {
-                throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-            }
 
             const resData = await apiFetch($api.salesOrderItemUpdateStatusPartial(itemId), {
                 method: 'PATCH',
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
@@ -733,22 +687,15 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       this.error = null;
       const { $api } = useNuxtApp();
       try {
-        const csrfResponse = await fetch($api.csrfToken(), { credentials: 'include' });
-        const csrfData     = await csrfResponse.json();
-        const csrfToken    = csrfData.token;
         const token        = localStorage.getItem('token');
 
         const resData = await apiFetch($api.getSalesOrderDetails(soId), {
           headers: {
-            'X-CSRF-TOKEN': csrfToken,
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
           credentials: 'include',
         });
-        if (!csrfToken) {
-          throw new Error('CSRF token tidak ditemukan. Tidak dapat melanjutkan request.');
-        }
         if (resData && resData.data) {
           this.salesOrder = resData.data;
         } else {
