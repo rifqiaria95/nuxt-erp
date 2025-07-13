@@ -118,6 +118,13 @@
                                     </Column>
                                     <Column field="noPo" header="No. PO" :sortable="true"></Column>
                                     <Column field="vendor.name" header="Nama Vendor" :sortable="true"></Column>
+                                    <Column field="poType" header="Tipe PO" :sortable="true">
+                                        <template #body="slotProps">
+                                            <span :class="getPoTypeBadge(slotProps.data.poType).class">
+                                                {{ getPoTypeBadge(slotProps.data.poType).text }}
+                                            </span>
+                                        </template>
+                                    </Column>
                                     <Column field="status" header="Status PO" :sortable="true">
                                         <template #body="slotProps">
                                             <span :class="getStatusBadge(slotProps.data.status).class">
@@ -150,8 +157,16 @@
                                             {{ slotProps.data.dueDate ? new Date(slotProps.data.dueDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                         </template>
                                     </Column>
-                                    <Column field="perusahaan.nmPerusahaan" header="Perusahaan" :sortable="true"></Column>
-                                    <Column field="cabang.nmCabang" header="Cabang" :sortable="true"></Column>
+                                    <Column field="perusahaan.nmPerusahaan" header="Perusahaan" :sortable="true">
+                                        <template #body="slotProps">
+                                            {{ slotProps.data.perusahaan?.nmPerusahaan || '-' }}
+                                        </template>
+                                    </Column>
+                                    <Column field="cabang.nmCabang" header="Cabang" :sortable="true">
+                                        <template #body="slotProps">
+                                            {{ slotProps.data.cabang?.nmCabang || '-' }}
+                                        </template>
+                                    </Column>
                                     <Column field="attachment" header="Nama File" :sortable="true">
                                         <template #body="slotProps">
                                             <div v-if="slotProps.data.attachment">
@@ -233,12 +248,53 @@
                                 </ul>
                             </div>
                         </div>
-                        <div class="tab-content pt-6">
+                        <div class="tab-content pt-4">
                             <div class="tab-pane fade active show" id="form-tabs-info" role="tabpanel">
                                 <div class="row g-4">
                                     <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
                                             <input type="hidden" v-model="form.noPo" class="form-control" placeholder="No PO" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tipe Purchase Order</label>
+                                        <div class="d-flex gap-5">
+                                            <div class="form-check">
+                                                <input 
+                                                    class="form-check-input" 
+                                                    type="checkbox" 
+                                                    id="poType_internal" 
+                                                    :checked="form.poType === 'internal'"
+                                                    @change="handlePoTypeChange('internal')"
+                                                >
+                                                <label class="form-check-label" for="poType_internal">
+                                                    Internal
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input 
+                                                    class="form-check-input" 
+                                                    type="checkbox" 
+                                                    id="poType_external" 
+                                                    :checked="form.poType === 'external'"
+                                                    @change="handlePoTypeChange('external')"
+                                                >
+                                                <label class="form-check-label" for="poType_external">
+                                                    External
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="form-floating form-floating-outline">
+                                            <input 
+                                                type="text" 
+                                                v-model="form.extNamaPerusahaan" 
+                                                class="form-control" 
+                                                placeholder="Nama Perusahaan External"
+                                                :disabled="!isExternalPO"
+                                            >
+                                            <label>Nama Perusahaan External</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -263,11 +319,28 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <v-select v-model="form.perusahaanId" :options="perusahaans" label="nmPerusahaan" :reduce="p => p.id" placeholder="Pilih Perusahaan" class="v-select-style"/>
+                                        <v-select 
+                                            v-model="form.perusahaanId" 
+                                            :options="perusahaans" 
+                                            label="nmPerusahaan" 
+                                            :reduce="p => p.id" 
+                                            placeholder="Pilih Perusahaan" 
+                                            class="v-select-style"
+                                            :disabled="isExternalPO"
+                                        />
                                     </div>
                                     <div class="col-md-6">
-                                        <v-select v-model="form.cabangId" :options="filteredCabangs" label="nmCabang" :reduce="c => c.id" placeholder="Pilih Cabang" class="v-select-style"/>
+                                        <v-select 
+                                            v-model="form.cabangId" 
+                                            :options="filteredCabangs" 
+                                            label="nmCabang" 
+                                            :reduce="c => c.id" 
+                                            placeholder="Pilih Cabang" 
+                                            class="v-select-style"
+                                            :disabled="isExternalPO"
+                                        />
                                     </div>
+
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)">
@@ -482,6 +555,10 @@ const filteredCabangs = computed(() => {
     return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
+const isExternalPO = computed(() => {
+    return form.value.poType === 'external';
+});
+
 const debouncedSearch = useDebounceFn(() => {
     purchaseOrderStore.setSearch(globalFilterValue.value)
 }, 500)
@@ -543,6 +620,34 @@ const getStatusBadge = (status) => {
         case 'rejected': return { text: 'Rejected', class: 'badge rounded-pill bg-label-danger' };
         case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
         default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    }
+};
+
+const getPoTypeBadge = (poType) => {
+    switch (poType) {
+        case 'internal': return { text: 'Internal', class: 'badge rounded-pill bg-label-info' };
+        case 'external': return { text: 'External', class: 'badge rounded-pill bg-label-dark' };
+        default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    }
+};
+
+const handlePoTypeChange = (selectedType) => {
+    // Jika checkbox yang diklik sudah dipilih, tidak perlu mengubah apapun
+    if (form.value.poType === selectedType) {
+        return;
+    }
+    
+    // Set tipe PO ke yang dipilih
+    form.value.poType = selectedType;
+    
+    // Reset field yang tidak diperlukan berdasarkan tipe PO
+    if (selectedType === 'internal') {
+        // Reset external fields
+        form.value.extNamaPerusahaan = '';
+    } else if (selectedType === 'external') {
+        // Reset internal fields
+        form.value.perusahaanId = null;
+        form.value.cabangId = null;
     }
 };
 

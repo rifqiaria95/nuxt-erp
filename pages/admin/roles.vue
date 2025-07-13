@@ -139,7 +139,7 @@
                                     </span>
                                 </div>
                             </div>
-                             <DataTable :value="filteredMenuDetails" :rows="permissionTableRows" paginator
+                             <DataTable :value="filteredMenuDetails" :rows="permissionTableRows"
                                 paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                                 currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} menu"
                                 responsiveLayout="scroll"

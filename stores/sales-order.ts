@@ -686,8 +686,10 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
+      
       try {
-        const token        = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
+        console.log('🔍 Store Debug - Token exists:', !!token);
 
         const resData = await apiFetch($api.getSalesOrderDetails(soId), {
           headers: {
@@ -696,14 +698,70 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           },
           credentials: 'include',
         });
+        
+        console.log('🔍 Store Debug - API Response:', resData);
+        
         if (resData && resData.data) {
           this.salesOrder = resData.data;
         } else {
+          console.error('❌ Store Debug - Invalid response structure:', resData);
           throw new Error('Struktur data tidak valid diterima dari API getSalesOrderDetails.');
         }
-      } catch (e) {
-        console.error('Gagal mengambil detail sales order:', e);
+      } catch (e: any) {
+        console.error('❌ Store Debug - Error details:', {
+          message: e.message,
+          status: e.status,
+          statusText: e.statusText,
+          data: e.data,
+          response: e.response
+        });
+        
+        // Try fallback with standard show endpoint
+        if (e.status === 404) {
+          console.log('🔄 Store Debug - Trying fallback with standard show endpoint');
+          try {
+            const fallbackUrl = `${$api.salesOrder()}/${soId}`;
+            console.log('🔍 Store Debug - Fallback URL:', fallbackUrl);
+            
+            const fallbackData = await apiFetch(fallbackUrl, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Accept': 'application/json',
+              },
+              credentials: 'include',
+            });
+            
+            console.log('🔍 Store Debug - Fallback Response:', fallbackData);
+            
+            if (fallbackData && fallbackData.data) {
+              console.log('✅ Store Debug - Fallback successful, setting salesOrder data:', fallbackData.data);
+              this.salesOrder = fallbackData.data;
+              return; // Exit successfully
+            }
+          } catch (fallbackError) {
+            console.error('❌ Store Debug - Fallback also failed:', fallbackError);
+          }
+        }
+        
         this.error = e;
+        
+        // Create more specific error messages
+        let errorMessage = 'Gagal mengambil detail sales order';
+        
+        if (e.status === 404) {
+          errorMessage = `Sales Order dengan ID ${soId} tidak ditemukan`;
+        } else if (e.status === 401) {
+          errorMessage = 'Tidak memiliki akses untuk melihat Sales Order ini';
+        } else if (e.status === 403) {
+          errorMessage = 'Tidak memiliki izin untuk melihat Sales Order ini';
+        } else if (e.status === 500) {
+          errorMessage = 'Terjadi kesalahan server, silakan coba lagi';
+        } else if (e.message) {
+          errorMessage = e.message;
+        }
+        
+        // Throw error with more specific message
+        throw new Error(errorMessage);
       } finally {
         this.loading = false;
       }

@@ -79,6 +79,10 @@ export default defineNuxtPlugin(() => {
     salesOrderUpdate    : (id: number | string) => `${apiBase}/sales-order/update/${id}`,
     getSalesOrderDetails: (id: number | string) => `${apiBase}/sales-order/getSalesOrderDetails/${id}`,
 
+    // Sales Invoice
+    salesInvoice          : () => `${apiBase}/sales-invoice`,
+    getSalesInvoiceDetails: (id: number | string) => `${apiBase}/sales-invoice/getSalesInvoiceDetails/${id}`,
+
     // Sales Order Item
     salesOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/sales-order-item/updateStatusPartial/${id}`,
 

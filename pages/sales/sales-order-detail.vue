@@ -61,13 +61,22 @@
                             <table class="table m-0">
                             <thead>
                                 <tr>
-                                <th>Item</th>
-                                <th>Description</th>
-                                <th>Cost</th>
-                                <th>Qty</th>
-                                <th>Delivered Qty</th>
-                                <th>Total Price</th>
-                                <th>Status</th>
+                                    <th>Item</th>
+                                    <th>Description</th>
+                                    <th>Cost</th>
+                                    <th>Qty</th>
+                                    <th>Delivered Qty</th>
+                                    <th>Total Price</th>
+                                    <th>
+                                        Status
+                                        <input 
+                                            type="checkbox" 
+                                            class="form-check-input ms-2" 
+                                            :checked="allItemsCompleted"
+                                            @change="toggleAllItemsStatus"
+                                            title="Toggle all items status" 
+                                        />
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -329,14 +338,16 @@ import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
 const salesOrderStore = useSalesOrderStore()
-const route              = useRoute()
-const formatRupiah       = useFormatRupiah()
+const route           = useRoute()
+const toast           = useToast();
+const formatRupiah    = useFormatRupiah()
 
 const { salesOrder, loading } = storeToRefs(salesOrderStore)
 const soId = route.query.id
 
 const isReturned = (item) => {
-    if (!item.salesReturnItems) {
+    // Add safety check for salesReturnItems availability
+    if (!item.salesReturnItems || !Array.isArray(item.salesReturnItems)) {
         return false;
     }
     // An item is returned if it's part of any sales return that has been approved.
@@ -345,15 +356,37 @@ const isReturned = (item) => {
 
 async function refreshSalesOrderDetails() {
     const soIdToFetch = Array.isArray(soId) ? soId[0] : soId;
-    if (typeof soIdToFetch === 'string') {
+    console.log('🔍 Debug - soId from route:', soId);
+    console.log('🔍 Debug - soIdToFetch:', soIdToFetch);
+    console.log('🔍 Debug - typeof soIdToFetch:', typeof soIdToFetch);
+    
+    if (typeof soIdToFetch === 'string' && soIdToFetch.trim() !== '') {
         loading.value = true
         try {
+            console.log('🔍 Debug - Calling getSalesOrderDetails with ID:', soIdToFetch);
             await salesOrderStore.getSalesOrderDetails(soIdToFetch)
+            console.log('✅ Debug - getSalesOrderDetails successful');
         } catch (error) {
-            console.error("Failed to refresh SO details:", error)
+            console.error("❌ Failed to refresh SO details:", error)
+            
+            // Show user-friendly error message
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal Memuat Data',
+                text: `Tidak dapat memuat detail Sales Order dengan ID: ${soIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
+                confirmButtonText: 'OK'
+            })
         } finally {
             loading.value = false
         }
+    } else {
+        console.error('❌ Invalid soId:', soIdToFetch);
+        Swal.fire({
+            icon: 'error',
+            title: 'Parameter Tidak Valid',
+            text: 'ID Sales Order tidak valid atau kosong.',
+            confirmButtonText: 'OK'
+        })
     }
 }
 
@@ -388,6 +421,72 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     }
 }
 
+async function toggleAllItemsStatus(event) {
+    const isChecked = event.target.checked
+    
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
+        return
+    }
+
+    if (isChecked) {
+        const result = await Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Apakah Anda yakin ingin mengubah status semua item menjadi selesai?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, ubah semua',
+            cancelButtonText: 'Batal'
+        })
+
+        if (!result.isConfirmed) {
+            event.target.checked = false
+            return
+        }
+    }
+
+    try {
+        loading.value = true
+        const itemsToUpdate = salesOrder.value.salesOrderItems.filter(item => !isReturned(item))
+        
+        for (const item of itemsToUpdate) {
+            const newStatus = isChecked ? true : false
+            const deliveredQty = isChecked ? item.quantity : item.deliveredQty
+            
+            try {
+                await salesOrderStore.updateStatusPartial(item.id, newStatus, deliveredQty)
+            } catch (error) {
+                console.error(`Failed to update item ${item.id}:`, error)
+            }
+        }
+        await refreshSalesOrderDetails()
+        
+        toast.success({
+            title: 'Berhasil!',
+            message: `Status semua item berhasil ${isChecked ? 'diubah menjadi selesai' : 'direset'}`,
+            icon: 'ri-check-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
+    } catch (error) {
+        console.error('Failed to update all items status:', error)
+        toast.error({
+            title: 'Gagal!',
+            message: 'Terjadi kesalahan saat memperbarui status semua item.',
+            icon: 'ri-close-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
+        // Reset checkbox pada error
+        event.target.checked = !isChecked
+    } finally {
+        loading.value = false
+    }
+}
+
 const totalBeforeTax = computed(() => {
     if (salesOrder.value && salesOrder.value.salesOrderItems) {
         const subtotal = salesOrder.value.salesOrderItems.reduce((sum, item) => sum + Number(item.subtotal), 0)
@@ -395,6 +494,18 @@ const totalBeforeTax = computed(() => {
         return subtotal - discount
     }
     return 0
+})
+
+// Computed property untuk mengecek apakah semua item sudah completed
+const allItemsCompleted = computed(() => {
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
+        return false
+    }
+    
+    // Return true hanya jika semua item statusPartial = true dan tidak ada yang di-return
+    return salesOrder.value.salesOrderItems.every(item => 
+        item.statusPartial === true && !isReturned(item)
+    )
 })
 
 onMounted(refreshSalesOrderDetails)

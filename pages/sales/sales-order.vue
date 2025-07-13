@@ -682,6 +682,21 @@ const calculateSubtotal = (index) => {
 };
 
 const viewSalesOrderDetails = (salesOrderId) => {
+    console.log('🔍 Page Debug - viewSalesOrderDetails called with ID:', salesOrderId);
+    console.log('🔍 Page Debug - ID type:', typeof salesOrderId);
+    
+    if (!salesOrderId) {
+        console.error('❌ Page Debug - No salesOrderId provided');
+        Swal.fire({
+            icon: 'error',
+            title: 'Parameter Tidak Valid',
+            text: 'ID Sales Order tidak valid.',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+    
+    console.log('🔍 Page Debug - Navigating to sales-order-detail with ID:', salesOrderId);
     router.push({ path: `/sales/sales-order-detail`, query: { id: salesOrderId } });
 };
 

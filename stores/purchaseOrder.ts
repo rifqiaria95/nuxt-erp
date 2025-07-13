@@ -25,37 +25,39 @@ export interface PurchaseOrderItem {
 }
 
 export interface PurchaseOrder {
-  id             : string
-  name?          : string
-  noPo           : string
-  up             : string
-  vendorId       : number
-  perusahaanId   : number
-  cabangId       : number
-  date           : string
-  dueDate        : string
-  status         : string
-  total          : string
-  discountPercent: string
-  taxPercent     : string
-  description    : string
-  attachment?    : string
-  createdAt      : string
-  updatedAt      : string
-  createdBy      : number
-  approvedBy     : number | null
-  receivedBy     : number | null
-  rejectedBy     : number | null
-  approvedAt     : string | null
-  receivedAt     : string | null
-  rejectedAt     : string | null
-  vendor?        : Vendor
-  perusahaan?    : Perusahaan
-  cabang?        : Cabang
-  createdByUser? : User
-  approvedByUser?: User
-  receivedByUser?: User
-  purchaseOrderItems? : PurchaseOrderItem[]
+  id                 : string
+  name?              : string
+  noPo               : string
+  up                 : string
+  extNamaPerusahaan  : string
+  vendorId           : number
+  perusahaanId       : number
+  cabangId           : number
+  date               : string
+  dueDate            : string
+  status             : string
+  poType             : string
+  total              : string
+  discountPercent    : string
+  taxPercent         : string
+  description        : string
+  attachment?        : string
+  createdAt          : string
+  updatedAt          : string
+  createdBy          : number
+  approvedBy         : number | null
+  receivedBy         : number | null
+  rejectedBy         : number | null
+  approvedAt         : string | null
+  receivedAt         : string | null
+  rejectedAt         : string | null
+  vendor?            : Vendor
+  perusahaan?        : Perusahaan
+  cabang?            : Cabang
+  createdByUser?     : User
+  approvedByUser?    : User
+  receivedByUser?    : User
+  purchaseOrderItems?: PurchaseOrderItem[]
 }
 
 interface PurchaseOrderState {
@@ -163,9 +165,53 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             delete dataToAppend.approvedByUser;
             delete dataToAppend.receivedByUser;
             delete dataToAppend.rejectedByUser;
+            
+            // Untuk create, hapus noPo karena di-generate di backend
+            if (!this.isEditMode) {
+                delete dataToAppend.noPo;
+            }
+
+            // Conditional logic berdasarkan poType
+            if (dataToAppend.poType === 'internal') {
+                // Untuk PO Internal: hapus extNamaPerusahaan, pastikan ada perusahaanId dan cabangId
+                delete dataToAppend.extNamaPerusahaan;
+                if (!dataToAppend.perusahaanId) {
+                    throw new Error('Perusahaan harus dipilih untuk PO Internal');
+                }
+                if (!dataToAppend.cabangId) {
+                    throw new Error('Cabang harus dipilih untuk PO Internal');
+                }
+            } else if (dataToAppend.poType === 'external') {
+                // Untuk PO External: hapus perusahaanId dan cabangId, pastikan ada extNamaPerusahaan
+                delete dataToAppend.perusahaanId;
+                delete dataToAppend.cabangId;
+                if (!dataToAppend.extNamaPerusahaan || dataToAppend.extNamaPerusahaan.trim() === '') {
+                    throw new Error('Nama Perusahaan External harus diisi untuk PO External');
+                }
+            }
+
+            // Validasi frontend sebelum kirim
+            if (!dataToAppend.vendorId) {
+                throw new Error('Vendor harus dipilih');
+            }
+            if (!dataToAppend.up || dataToAppend.up.trim() === '') {
+                throw new Error('Untuk Perhatian harus diisi');
+            }
+            if (!dataToAppend.date) {
+                throw new Error('Tanggal PO harus diisi');
+            }
+            if (!dataToAppend.dueDate) {
+                throw new Error('Jatuh Tempo harus diisi');
+            }
+            if (!dataToAppend.poType) {
+                throw new Error('Tipe PO harus dipilih');
+            }
+
+            console.log('Data being sent:', dataToAppend);
+
             Object.keys(dataToAppend).forEach(key => {
                 const value = dataToAppend[key];
-                if (value !== null && value !== undefined) {
+                if (value !== null && value !== undefined && value !== '') {
                     formData.append(key, value);
                 }
             });
@@ -184,16 +230,28 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 formData.append('attachment', this.form.attachment);
             }
 
-            // Append purchase order items using camelCase keys
-            this.form.purchaseOrderItems.forEach((item: any, i: number) => {
-                if (item.productId && item.quantity > 0) {
-                    Object.keys(item).forEach(itemKey => {
-                        const value = item[itemKey];
-                        if (value !== null && value !== undefined) {
-                           formData.append(`purchaseOrderItems[${i}][${itemKey}]`, value);
-                        }
-                    });
-                }
+            // Validasi items
+            if (!this.form.purchaseOrderItems || this.form.purchaseOrderItems.length === 0) {
+                throw new Error('Minimal harus ada 1 item produk');
+            }
+
+            // Validasi setiap item
+            const validItems = this.form.purchaseOrderItems.filter((item: any) => 
+                item.productId && item.quantity && item.quantity > 0 && item.price && item.price > 0
+            );
+            
+            if (validItems.length === 0) {
+                throw new Error('Minimal harus ada 1 item produk yang valid (produk, quantity > 0, harga > 0)');
+            }
+
+            // Append hanya items yang valid
+            validItems.forEach((item: any, i: number) => {
+                Object.keys(item).forEach(itemKey => {
+                    const value = item[itemKey];
+                    if (value !== null && value !== undefined) {
+                       formData.append(`purchaseOrderItems[${i}][${itemKey}]`, value);
+                    }
+                });
             });
 
             const method = this.isEditMode ? 'POST' : 'POST';
@@ -215,11 +273,20 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.error('Server Error Response:', errorData);
                 if (response.status === 422) {
                     this.validationErrors = errorData.errors;
                      Swal.fire('Gagal Validasi', errorData.errors.map((e: any) => e.message).join('<br>'), 'error');
                 } else {
-                    throw new Error(errorData.message || 'Gagal menyimpan data purchaseOrder');
+                    // Tampilkan detail error jika ada
+                    let errorMessage = errorData.message || 'Gagal menyimpan data purchaseOrder';
+                    if (errorData.error) {
+                        errorMessage += `\nDetail: ${errorData.error.message}`;
+                        if (errorData.error.constraint) {
+                            errorMessage += `\nConstraint: ${errorData.error.constraint}`;
+                        }
+                    }
+                    throw new Error(errorMessage);
                 }
             } else {
                 this.closeModal();
@@ -231,6 +298,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         } catch (error: any) {
             // Clear validation errors on new general error
             this.validationErrors = [];
+            console.error('Save Purchase Order Error:', error);
             Swal.fire('Gagal', error.message || 'Operasi gagal', 'error');
         } finally {
             this.loading = false;
@@ -427,14 +495,20 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             }
         } else {
             this.form = {
-                noPo: '', up: '', vendorId: null, perusahaanId: null, cabangId: null,
+                noPo: '',
+                up: '',
+                vendorId: null,
+                perusahaanId: null,
+                cabangId: null,
+                extNamaPerusahaan: '',
                 date: new Date().toISOString().split('T')[0], 
                 dueDate: new Date().toISOString().split('T')[0], 
                 discountPercent: 0, 
                 taxPercent: 0, 
                 description: '',
                 attachment: null, 
-                status: 'draft', 
+                status: 'draft',
+                poType: 'internal', // Default ke internal
                 purchaseOrderItems: [],
             };
             this.addItem(); // Tambahkan satu item default untuk PO baru
@@ -445,7 +519,13 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     closeModal() {
         this.showModal = false;
         this.isEditMode = false;
-        this.form = { purchaseOrderItems: [] };
+        this.form = { 
+            poType: 'internal',
+            extNamaPerusahaan: '',
+            perusahaanId: null,
+            cabangId: null,
+            purchaseOrderItems: [] 
+        };
         this.validationErrors = [];
     },
 

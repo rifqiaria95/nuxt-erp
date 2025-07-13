@@ -228,35 +228,40 @@
     }
 
     const handleLogout = async () => {
-        userStore.clearUser()
-        document.documentElement.className = ''
-        localStorage.removeItem('token')
-        const response = await fetch($api.logout(), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-      });
-
-      // Cek status response sebelum parsing data
-      if (!response.ok) {
-        let errorData = {};
         try {
-          errorData = await response.json();
-        } catch (e) {
+            // Bersihkan data lokal terlebih dahulu
+            userStore.clearUser()
+            document.documentElement.className = ''
+            localStorage.removeItem('token')
+
+            // Coba logout dari server
+            const response = await fetch($api.logout(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            // Cek status response sebelum parsing data
+            if (!response.ok) {
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    // Ignore parsing error
+                }
+                console.warn('Logout dari server gagal:', errorData?.message || `Status: ${response.status}`);
+                // Tidak menampilkan error ke user karena logout lokal sudah berhasil
+            }
+        } catch (error) {
+            // Tangani error fetch (network error, server tidak tersedia, dll)
+            console.warn('Gagal menghubungi server untuk logout:', error.message);
+            // Tidak menampilkan error ke user karena logout lokal sudah berhasil
+        } finally {
+            // Selalu redirect ke halaman login, meskipun logout server gagal
+            router.push('/auth/login')
         }
-        toast.error({
-          title: 'Logout Gagal!',
-          icon: 'ri-close-line',
-          message: `Gagal logout: ${errorData?.message || `Terjadi kesalahan (${response.status})`}`,
-          timeout: 3000,
-          position: 'topRight',
-          layout: 2,
-        });
-        return;
-      }
-      router.push('/auth/login')
     }
   </script>
 
