@@ -65,6 +65,22 @@
 
       <hr class="my-6" />
 
+      <!-- ✅ INFO SECTION -->
+      <div v-if="salesInvoice.salesInvoiceItems && salesInvoice.salesInvoiceItems.length > 0" 
+           class="alert alert-info d-flex align-items-center mb-4" role="alert">
+        <i class="ri-information-line me-2"></i>
+        <div>
+          <strong>Invoice Items:</strong> Menampilkan {{ salesInvoice.salesInvoiceItems.length }} item dari Sales Invoice Items
+        </div>
+      </div>
+      <div v-else-if="salesInvoice.salesOrder?.salesOrderItems && salesInvoice.salesOrder.salesOrderItems.length > 0" 
+           class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+        <i class="ri-alert-line me-2"></i>
+        <div>
+          <strong>Fallback Mode:</strong> Menampilkan {{ salesInvoice.salesOrder.salesOrderItems.length }} item dari Sales Order (Invoice Items belum dibuat)
+        </div>
+      </div>
+
       <div class="table-responsive border border-bottom-0 rounded">
         <table class="table m-0">
           <thead>
@@ -78,13 +94,33 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in salesInvoice.salesOrder?.salesOrderItems" :key="item.id">
+            <!-- ✅ GUNAKAN SALES INVOICE ITEMS, bukan sales order items -->
+            <tr v-for="(item, index) in salesInvoice.salesInvoiceItems" :key="item.id">
               <td>{{ index + 1 }}</td>
               <td>{{ item.product?.name || '-' }}</td>
               <td>{{ item.description || '-' }}</td>
               <td>{{ Number(item.quantity) }}</td>
               <td>{{ formatRupiah(item.price || 0) }}</td>
               <td>{{ formatRupiah(item.subtotal || 0) }}</td>
+            </tr>
+            <!-- ✅ FALLBACK: jika tidak ada salesInvoiceItems, tampilkan dari salesOrder -->
+            <tr v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && salesInvoice.salesOrder?.salesOrderItems" 
+                v-for="(item, index) in salesInvoice.salesOrder.salesOrderItems" :key="`fallback-${item.id}`">
+              <td>{{ index + 1 }}</td>
+              <td>{{ item.product?.name || '-' }}</td>
+              <td>{{ item.description || '-' }}</td>
+              <td>{{ Number(item.quantity) }}</td>
+              <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
+              <td>{{ formatRupiah(item.price || 0) }}</td>
+              <td>{{ formatRupiah(item.subtotal || 0) }}</td>
+              <td>-</td>
+            </tr>
+            <!-- ✅ MESSAGE jika tidak ada items sama sekali -->
+            <tr v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && 
+                      (!salesInvoice.salesOrder?.salesOrderItems || salesInvoice.salesOrder.salesOrderItems.length === 0)">
+              <td colspan="8" class="text-center py-4 text-muted">
+                <em>Tidak ada item untuk ditampilkan</em>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -204,10 +240,23 @@
   };
 
   const calculateSubtotal = () => {
-    if (!salesInvoice.value || !salesInvoice.value.salesOrder?.salesOrderItems) return 0;
-    return salesInvoice.value.salesOrder.salesOrderItems.reduce((total, item) => {
-      return total + (Number(item.subtotal) || 0);
-    }, 0);
+    if (!salesInvoice.value) return 0;
+    
+    // ✅ PRIORITAS: Gunakan salesInvoiceItems jika ada
+    if (salesInvoice.value.salesInvoiceItems && salesInvoice.value.salesInvoiceItems.length > 0) {
+      return salesInvoice.value.salesInvoiceItems.reduce((total, item) => {
+        return total + (Number(item.subtotal) || 0);
+      }, 0);
+    }
+    
+    // ✅ FALLBACK: Gunakan salesOrderItems jika salesInvoiceItems tidak ada
+    if (salesInvoice.value.salesOrder?.salesOrderItems) {
+      return salesInvoice.value.salesOrder.salesOrderItems.reduce((total, item) => {
+        return total + (Number(item.subtotal) || 0);
+      }, 0);
+    }
+    
+    return 0;
   };
 
   const calculateDiscount = () => {
@@ -236,6 +285,11 @@
     if (salesInvoiceId) {
       try {
         await salesInvoiceStore.fetchSalesInvoiceById(salesInvoiceId);
+        
+        // ✅ DEBUG: Log data untuk memastikan salesInvoiceItems dimuat
+        console.log('🔍 Print Invoice Debug - Sales Invoice Data:', salesInvoice.value);
+        console.log('🔍 Print Invoice Debug - Sales Invoice Items:', salesInvoice.value?.salesInvoiceItems);
+        console.log('🔍 Print Invoice Debug - Items Count:', salesInvoice.value?.salesInvoiceItems?.length || 0);
       } catch (e) {
         Swal.fire('Error', e.message || 'Gagal memuat detail sales invoice.', 'error');
       }
@@ -247,6 +301,11 @@
   /* Custom styles for print */
   @media print {
     .no-print {
+      display: none !important;
+    }
+    
+    /* Hide alert info when printing */
+    .alert {
       display: none !important;
     }
   }

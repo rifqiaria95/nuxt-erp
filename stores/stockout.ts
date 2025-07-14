@@ -349,7 +349,7 @@ export const useStockOutStore = defineStore('stockOut', {
         const { $api } = useNuxtApp()
         const token = localStorage.getItem('token')
 
-        const response = await fetch(`${$api.stockOutDetail()}/${id}`, {
+        const response = await fetch(`${$api.getStockOutDetails(id)}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

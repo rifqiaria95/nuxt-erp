@@ -189,8 +189,8 @@
                                                 </a>
                                                 <ul class="dropdown-menu">
                                                     <li v-if="userHasRole('superadmin') || userHasPermission('view_sales_invoice')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="printSalesInvoice(slotProps.data.id)">
-                                                            <i class="ri-printer-line me-2"></i> Cetak Invoice
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="viewSalesInvoiceDetails(slotProps.data.id)">
+                                                            <i class="ri-eye-line me-2"></i> Lihat Detail
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_invoice') && slotProps.data.status == 'unpaid')">
@@ -854,7 +854,7 @@ const viewSalesInvoiceDetails = (salesInvoiceId) => {
 const getStatusBadge = (status) => {
     switch (status) {
         case 'unpaid': return { text: 'Unpaid', class: 'badge rounded-pill bg-label-danger' };
-        case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-primary' };
+        case 'partial': return { text: 'Partial', class: 'badge rounded-pill bg-label-warning' };
         case 'paid': return { text: 'Paid', class: 'badge rounded-pill bg-label-success' };
         default: return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }
@@ -933,11 +933,11 @@ const formatDate = (dateString) => {
 
     :deep(.sales-order-select .vs__dropdown-option--highlight) {
         background-color: #e3f2fd;
-        color: #1976d2;
+        color: #666CFF;
     }
 
     :deep(.sales-order-select .vs__dropdown-option--selected) {
-        background-color: #1976d2;
+        background-color: #666CFF;
         color: white;
     }
 
@@ -990,7 +990,7 @@ const formatDate = (dateString) => {
     }
 
     .card-header.bg-primary {
-        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+        background: linear-gradient(135deg, #8185ff 0%, #666CFF 100%) !important;
     }
 
     .card-body .text-sm {
@@ -1003,7 +1003,7 @@ const formatDate = (dateString) => {
 
     /* Styling untuk format rupiah yang positif dan negatif */
     .text-danger {
-        color: #dc3545 !important;
+        color: #FF6D6A !important;
     }
 
     .text-success {
@@ -1011,11 +1011,11 @@ const formatDate = (dateString) => {
     }
 
     .text-warning {
-        color: #ffc107 !important;
+        color: #FDB935 !important;
     }
 
     .text-primary {
-        color: #0d6efd !important;
+        color: #666CFF !important;
     }
 
     /* Responsive design untuk payment summary */

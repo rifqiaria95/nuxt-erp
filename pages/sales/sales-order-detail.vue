@@ -8,6 +8,15 @@
                 </div>
             </div>
             <template v-else-if="salesOrder">
+                <!-- ✅ STATUS ALERT untuk DELIVERED -->
+                <div v-if="isDelivered" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                    <i class="ri-check-circle-fill me-2"></i>
+                    <div>
+                        <strong>Status: DELIVERED</strong> - Sales Order ini sudah selesai dan tidak dapat diubah lagi.
+                        Jika ada perubahan yang diperlukan, silakan buat Sales Return.
+                    </div>
+                </div>
+                
                 <div class="row invoice-preview">
                 <!-- Invoice -->
                 <div class="col-xl-9 col-md-8 col-12 mb-md-0 mb-6">
@@ -28,7 +37,13 @@
                                 <p class="mb-0">{{ salesOrder.perusahaan.npwpPerusahaan }}</p>
                             </div>
                             <div>
-                                <h5 class="mb-6">Sales Number : {{ salesOrder.noSo }}</h5>
+                                <div class="d-flex align-items-center gap-3 mb-6">
+                                    <h5 class="mb-0">Sales Number : {{ salesOrder.noSo }}</h5>
+                                    <!-- ✅ STATUS BADGE -->
+                                    <span :class="getStatusBadgeClass(salesOrder.status)">
+                                        {{ getStatusText(salesOrder.status) }}
+                                    </span>
+                                </div>
                                 <div class="mb-1">
                                 <span>Date Issues: </span>
                                 <span>{{ new Date(salesOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
@@ -69,12 +84,14 @@
                                     <th>Total Price</th>
                                     <th>
                                         Status
+                                        <!-- ✅ DISABLE MASTER CHECKBOX ketika DELIVERED -->
                                         <input 
                                             type="checkbox" 
                                             class="form-check-input ms-2" 
                                             :checked="allItemsCompleted"
                                             @change="toggleAllItemsStatus"
-                                            title="Toggle all items status" 
+                                            :disabled="isDelivered"
+                                            :title="isDelivered ? 'Tidak dapat mengubah status - Sales Order sudah delivered' : 'Toggle all items status'" 
                                         />
                                     </th>
                                 </tr>
@@ -91,13 +108,20 @@
                                           class="form-control"
                                           v-model="item.deliveredQty"
                                           style="width: 80px;"
-                                          :disabled="item.statusPartial || isReturned(item)"
+                                          :disabled="item.statusPartial || isReturned(item) || isDelivered"
                                         />
                                     </td>
                                     <td>{{ formatRupiah(item.subtotal) }}</td>
                                     <td>
                                         <label class="switch switch-success" v-if="!isReturned(item)">
-                                            <input type="checkbox" class="switch-input" :checked="item.statusPartial" @change="updateStatusPartial(item.id, !item.statusPartial, item.deliveredQty)" />
+                                            <!-- ✅ DISABLE INDIVIDUAL CHECKBOX ketika DELIVERED -->
+                                            <input 
+                                                type="checkbox" 
+                                                class="switch-input" 
+                                                :checked="item.statusPartial" 
+                                                @change="updateStatusPartial(item.id, !item.statusPartial, item.deliveredQty)"
+                                                :disabled="isDelivered"
+                                            />
                                             <span class="switch-toggle-slider">
                                             <span class="switch-on">
                                                 <i class="ri-check-line"></i>
@@ -109,8 +133,14 @@
                                             <span class="switch-label">{{ item.statusPartial ? 'Done' : 'Pending' }}</span>
                                         </label>
                                     </td>
+                                    <!-- ✅ OVERLAY untuk RETURNED items -->
                                     <div v-if="isReturned(item)" class="returned-overlay">
                                         RETURNED
+                                    </div>
+                                    <!-- ✅ OVERLAY untuk DELIVERED status -->
+                                    <div v-if="isDelivered && !isReturned(item)" class="delivered-overlay">
+                                        <i class="ri-lock-line me-1"></i>
+                                        DELIVERED - LOCKED
                                     </div>
                                 </tr>
                             </tbody>
@@ -354,18 +384,42 @@ const isReturned = (item) => {
     return item.salesReturnItems.some(ri => ri.salesReturn && ri.salesReturn.status === 'approved');
 }
 
+// ✅ COMPUTED PROPERTY untuk mengecek apakah sales order sudah delivered
+const isDelivered = computed(() => {
+    return salesOrder.value?.status === 'delivered'
+})
+
+// ✅ FUNCTION untuk mendapatkan status badge class
+const getStatusBadgeClass = (status) => {
+    switch (status) {
+        case 'draft': return 'badge bg-secondary'
+        case 'approved': return 'badge bg-primary'
+        case 'partial': return 'badge bg-warning'
+        case 'delivered': return 'badge bg-success'
+        case 'rejected': return 'badge bg-danger'
+        default: return 'badge bg-light'
+    }
+}
+
+// ✅ FUNCTION untuk mendapatkan status text
+const getStatusText = (status) => {
+    switch (status) {
+        case 'draft': return 'DRAFT'
+        case 'approved': return 'APPROVED'
+        case 'partial': return 'PARTIAL'
+        case 'delivered': return 'DELIVERED'
+        case 'rejected': return 'REJECTED'
+        default: return 'UNKNOWN'
+    }
+}
+
 async function refreshSalesOrderDetails() {
     const soIdToFetch = Array.isArray(soId) ? soId[0] : soId;
-    console.log('🔍 Debug - soId from route:', soId);
-    console.log('🔍 Debug - soIdToFetch:', soIdToFetch);
-    console.log('🔍 Debug - typeof soIdToFetch:', typeof soIdToFetch);
     
     if (typeof soIdToFetch === 'string' && soIdToFetch.trim() !== '') {
         loading.value = true
         try {
-            console.log('🔍 Debug - Calling getSalesOrderDetails with ID:', soIdToFetch);
             await salesOrderStore.getSalesOrderDetails(soIdToFetch)
-            console.log('✅ Debug - getSalesOrderDetails successful');
         } catch (error) {
             console.error("❌ Failed to refresh SO details:", error)
             
@@ -391,6 +445,17 @@ async function refreshSalesOrderDetails() {
 }
 
 async function updateStatusPartial(itemId, status, receivedQty) {
+    // Validasi: Cek apakah sales order sudah delivered
+    if (isDelivered.value) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Aksi Tidak Diizinkan',
+            text: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
+            confirmButtonText: 'Mengerti'
+        })
+        return
+    }
+
     const item = salesOrder.value.salesOrderItems.find(i => i.id === itemId)
 
     if (!item) {
@@ -422,6 +487,18 @@ async function updateStatusPartial(itemId, status, receivedQty) {
 }
 
 async function toggleAllItemsStatus(event) {
+    // Validasi: Cek apakah sales order sudah delivered
+    if (isDelivered.value) {
+        event.target.checked = allItemsCompleted.value // Reset checkbox
+        Swal.fire({
+            icon: 'warning',
+            title: 'Aksi Tidak Diizinkan',
+            text: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
+            confirmButtonText: 'Mengerti'
+        })
+        return
+    }
+
     const isChecked = event.target.checked
     
     if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
@@ -533,5 +610,37 @@ onMounted(refreshSalesOrderDetails)
         color: red;
         z-index: 10;
         border-radius: 0.5rem;
+    }
+    
+    /* ✅ CSS untuk DELIVERED overlay */
+    .delivered-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(40, 199, 111, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #28c76f;
+        z-index: 10;
+        border-radius: 0.5rem;
+        border: 2px solid #28c76f;
+    }
+    
+    /* ✅ CSS untuk disabled checkbox styling */
+    .switch.switch-success input:disabled + .switch-toggle-slider {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* ✅ CSS untuk disabled input styling */
+    input:disabled {
+        background-color: #f8f9fa !important;
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 </style>

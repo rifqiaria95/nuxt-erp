@@ -7,6 +7,45 @@ import type { Customer } from './customer'
 
 
 
+export interface SalesInvoiceItem {
+  id              : string
+  salesInvoiceId  : string
+  salesOrderItemId: string
+  productId       : number
+  warehouseId     : number | null
+  quantity        : number
+  price           : number
+  subtotal        : number
+  description     : string | null
+  deliveredQty    : number
+  isReturned      : boolean
+  createdAt       : string
+  updatedAt       : string
+  product?        : {
+    id      : number
+    name    : string
+    sku     : string
+    priceSell: number
+    unitId? : number
+    unit?   : {
+      id  : number
+      name: string
+    }
+  }
+  warehouse?      : {
+    id  : number
+    name: string
+  }
+  salesOrderItem? : {
+    id          : string
+    quantity    : number
+    price       : number
+    subtotal    : number
+    statusPartial: boolean
+    deliveredQty: number
+  }
+}
+
 export interface SalesInvoice {
   id              : string
   name?           : string
@@ -27,6 +66,53 @@ export interface SalesInvoice {
   createdAt       : string
   updatedAt       : string
   customer?       : Customer
+  salesOrder?     : {
+    id          : string
+    noSo        : string
+    status      : string
+    date        : string
+    dueDate     : string
+    up          : string
+    description : string
+    discountPercent: number
+    taxPercent  : number
+    total       : number
+    customerId  : number
+    perusahaanId: number
+    cabangId    : number
+    customer?   : Customer
+    perusahaan? : {
+      id             : number
+      nmPerusahaan   : string
+      alamatPerusahaan: string
+      kodePerusahaan : string
+      npwpPerusahaan : string
+      tlpPerusahaan  : string
+      emailPerusahaan: string
+      logoPerusahaan : string
+    }
+    cabang?     : {
+      id           : number
+      nmCabang     : string
+      alamatCabang : string
+      perusahaanId : number
+    }
+    salesOrderItems?: Array<{
+      id          : string
+      quantity    : number
+      price       : number
+      subtotal    : number
+      statusPartial: boolean
+      deliveredQty: number
+      product?    : {
+        id  : number
+        name: string
+        sku : string
+        priceSell: number
+      }
+    }>
+  }
+  salesInvoiceItems?: SalesInvoiceItem[]
 }
 
 interface SalesInvoiceState {
@@ -480,7 +566,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         const token = localStorage.getItem('token');
         console.log('🔍 Store Debug - fetchSalesInvoiceById - Token exists:', !!token);
 
-        const resData = await apiFetch($api.getSalesInvoiceDetails(invoiceId), {
+        const resData = await apiFetch($api.salesInvoiceShow(invoiceId), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
@@ -523,6 +609,67 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         }
         
         // Throw error with more specific message
+        throw new Error(errorMessage);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // ✅ NEW: Fetch invoice detail dengan salesInvoiceItems untuk detail page
+    async fetchInvoiceDetailWithItems(invoiceId: string) {
+      this.loading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+      
+      try {
+        const token = localStorage.getItem('token');
+        console.log('🔍 Store Debug - fetchInvoiceDetailWithItems - Token exists:', !!token);
+
+        const resData = await apiFetch($api.salesInvoiceShow(invoiceId), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+          credentials: 'include',
+        });
+        
+        console.log('🔍 Store Debug - fetchInvoiceDetailWithItems - API Response:', resData);
+        
+        if (resData && resData.data) {
+          // Set salesInvoice dengan data lengkap termasuk salesInvoiceItems
+          this.salesInvoice = resData.data;
+          return resData.data;
+        } else {
+          console.error('❌ Store Debug - Invalid response structure:', resData);
+          throw new Error('Struktur data tidak valid diterima dari API.');
+        }
+      } catch (e: any) {
+        console.error('❌ Store Debug - fetchInvoiceDetailWithItems Error details:', {
+          message: e.message,
+          status: e.status,
+          statusText: e.statusText,
+          data: e.data,
+          response: e.response
+        });
+        
+        this.error = e;
+        
+        // Create more specific error messages
+        let errorMessage = 'Gagal mengambil detail sales invoice';
+        
+        if (e.status === 404) {
+          errorMessage = `Sales Invoice dengan ID ${invoiceId} tidak ditemukan`;
+        } else if (e.status === 401) {
+          errorMessage = 'Tidak memiliki akses untuk melihat Sales Invoice ini';
+        } else if (e.status === 403) {
+          errorMessage = 'Tidak memiliki izin untuk melihat Sales Invoice ini';
+        } else if (e.status === 500) {
+          errorMessage = 'Terjadi kesalahan server, silakan coba lagi';
+        } else if (e.message) {
+          errorMessage = e.message;
+        }
+        
+        // Throw error dengan specific message
         throw new Error(errorMessage);
       } finally {
         this.loading = false;

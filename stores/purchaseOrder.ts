@@ -117,6 +117,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             sortOrder: this.params.sortOrder?.toString() || '',
             draw     : this.params.draw.toString(),
             search   : this.params.search || '',
+            includeItems: 'true', // Include purchaseOrderItems with product relation
         });
         url.search = params.toString();
 
@@ -133,6 +134,15 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         if (!response.ok) throw new Error('Gagal mengambil data purchaseOrder')
 
         const result = await response.json()
+        console.log('=== DEBUG: fetchPurchaseOrders ===');
+        console.log('API Response result:', result);
+        console.log('result.data:', result.data);
+        if (result.data && result.data.length > 0) {
+          console.log('Sample PO data:', result.data[0]);
+          console.log('Sample PO id:', result.data[0].id);
+          console.log('Sample PO id type:', typeof result.data[0].id);
+        }
+        
         this.purchaseOrders = result.data
         this.totalRecords = result.meta.total
       } catch (e: any) {
@@ -467,10 +477,22 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },
 
     openModal(purchaseOrderData: PurchaseOrder | null = null) {
+        console.log('=== DEBUG: openModal ===');
+        console.log('purchaseOrderData:', purchaseOrderData);
+        
         this.isEditMode = !!purchaseOrderData;
         this.validationErrors = [];
 
         if (purchaseOrderData) {
+            console.log('Edit mode - purchaseOrderData.purchaseOrderItems:', purchaseOrderData.purchaseOrderItems);
+            if (purchaseOrderData.purchaseOrderItems) {
+                purchaseOrderData.purchaseOrderItems.forEach((item, index) => {
+                    console.log(`Item ${index}:`, item);
+                    console.log(`Item ${index} product:`, item.product);
+                    console.log(`Item ${index} productId:`, item.productId);
+                });
+            }
+            
             const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : null;
             
             // Salin data dan format tanggal dengan benar
@@ -487,6 +509,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             });
 
             this.form = formData;
+            console.log('Form data after assignment:', this.form);
+            console.log('Form purchaseOrderItems:', this.form.purchaseOrderItems);
 
             // Pastikan purchaseOrderItems ada
             if (!this.form.purchaseOrderItems || this.form.purchaseOrderItems.length === 0) {
@@ -494,6 +518,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 this.addItem();
             }
         } else {
+            console.log('Create mode');
             this.form = {
                 noPo: '',
                 up: '',
@@ -562,8 +587,14 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
+      
+      console.log('=== DEBUG: getPurchaseOrderDetails ===');
+      console.log('poId param:', poId);
+      console.log('API endpoint:', $api.getPurchaseOrderDetails(poId));
+      
       try {
         const token        = localStorage.getItem('token');
+        console.log('Token exists:', !!token);
 
         const resData = await apiFetch($api.getPurchaseOrderDetails(poId), {
           headers: {
@@ -572,17 +603,69 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           },
           credentials: 'include',
         });
+        
+        console.log('API Response:', resData);
+        
         if (resData && resData.data) {
           this.purchaseOrder = resData.data;
+          console.log('Successfully set purchaseOrder:', this.purchaseOrder);
         } else {
+          console.error('Invalid data structure received:', resData);
           throw new Error('Struktur data tidak valid diterima dari API getPurchaseOrderDetails.');
         }
       } catch (e) {
-        console.error('Gagal mengambil detail purchase order:', e);
+        console.error('Error in getPurchaseOrderDetails:', e);
+        console.error('Error details:', {
+          message: e.message,
+          status: e.status,
+          statusText: e.statusText,
+          data: e.data
+        });
         this.error = e;
       } finally {
         this.loading = false;
       }
+    },
+
+    async fetchPurchaseOrderForEdit(purchaseOrderId: string) {
+        console.log('=== DEBUG: fetchPurchaseOrderForEdit ===');
+        console.log('purchaseOrderId:', purchaseOrderId);
+        
+        this.loading = true;
+        this.error = null;
+        const { $api } = useNuxtApp();
+        
+        try {
+            const token = localStorage.getItem('token');
+            console.log('Token exists:', !!token);
+
+            const resData = await apiFetch($api.getPurchaseOrderDetails(purchaseOrderId), {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                },
+                credentials: 'include',
+            });
+            
+            console.log('API Response for edit:', resData);
+            
+            if (resData && resData.data) {
+                console.log('Purchase order data for edit:', resData.data);
+                console.log('Purchase order items:', resData.data.purchaseOrderItems);
+                
+                // Panggil openModal dengan data lengkap
+                this.openModal(resData.data);
+            } else {
+                console.error('Invalid data structure received:', resData);
+                throw new Error('Data tidak valid diterima dari API.');
+            }
+        } catch (e) {
+            console.error('Error in fetchPurchaseOrderForEdit:', e);
+            this.error = e;
+            Swal.fire('Error', 'Gagal mengambil data purchase order untuk edit', 'error');
+        } finally {
+            this.loading = false;
+        }
     },
   }
 })

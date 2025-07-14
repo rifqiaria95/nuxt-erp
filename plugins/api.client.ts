@@ -80,8 +80,8 @@ export default defineNuxtPlugin(() => {
     getSalesOrderDetails: (id: number | string) => `${apiBase}/sales-order/getSalesOrderDetails/${id}`,
 
     // Sales Invoice
-    salesInvoice          : () => `${apiBase}/sales-invoice`,
-    getSalesInvoiceDetails: (id: number | string) => `${apiBase}/sales-invoice/getSalesInvoiceDetails/${id}`,
+    salesInvoice          : () => `${apiBase}/sales-invoices`,
+    salesInvoiceShow      : (id: number | string) => `${apiBase}/sales-invoices/${id}`,
 
     // Sales Order Item
     salesOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/sales-order-item/updateStatusPartial/${id}`,
@@ -106,6 +106,7 @@ export default defineNuxtPlugin(() => {
     postStockIn            : (id: number | string) => `${apiBase}/stock-in/postStockIn/${id}`,
     countStockIn           : () => `${apiBase}/stock-in/getTotalStockIn`,
     stockOut               : () => `${apiBase}/stock-out`,
+    getStockOutDetails     : (id: number | string) => `${apiBase}/stock-out/getStockOutDetails/${id}`,
     postStockOut           : (id: number | string) => `${apiBase}/stock-out/postStockOut/${id}`,
     countStockOut          : () => `${apiBase}/stock-out/getTotalStockOut`,
     stockInDetail          : () => `${apiBase}/stock-in-detail`,

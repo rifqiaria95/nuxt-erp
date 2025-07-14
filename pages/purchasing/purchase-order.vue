@@ -201,7 +201,7 @@
                                                         </a>
                                                     </li>
                                                     <li v-if="userHasRole('superadmin') || (userHasPermission('edit_purchase_order') && slotProps.data.status == 'draft')">
-                                                        <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.openModal(slotProps.data)">
+                                                        <a class="dropdown-item" href="javascript:void(0)" @click="purchaseOrderStore.fetchPurchaseOrderForEdit(slotProps.data.id)">
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>
                                                     </li>
@@ -375,7 +375,16 @@
                                             <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style"/>
                                         </div>
                                         <div class="col-md-4">
-                                            <v-select v-model="item.productId" :options="products" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
+                                            <v-select 
+                                                v-model="item.productId" 
+                                                :options="products" 
+                                                :get-option-label="p => `${p.name} (${p.unit?.name})`" 
+                                                :reduce="p => p.id" 
+                                                placeholder="Pilih Produk" 
+                                                @update:modelValue="onProductChange(index)" 
+                                                class="v-select-style"
+                                            />
+                                            <small class="text-muted">Selected: {{ item.productId }}</small>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-floating form-floating-outline">
@@ -542,6 +551,23 @@ watch(showModal, (newValue) => {
     }
 })
 
+watch(products, (newProducts) => {
+    console.log('=== DEBUG: Products loaded ===');
+    console.log('Products count:', newProducts ? newProducts.length : 0);
+    if (newProducts && newProducts.length > 0) {
+        console.log('Sample product:', newProducts[0]);
+    }
+})
+
+watch(() => form.value.purchaseOrderItems, (newItems) => {
+    console.log('=== DEBUG: Purchase Order Items changed ===');
+    console.log('Items count:', newItems ? newItems.length : 0);
+    if (newItems && newItems.length > 0) {
+        console.log('Sample item:', newItems[0]);
+        console.log('Sample item productId:', newItems[0].productId);
+    }
+}, { deep: true })
+
 watch(() => form.value.perusahaanId, (newPerusahaanId) => {
     if (newPerusahaanId) {
         if(!isEditMode.value) {
@@ -587,12 +613,20 @@ function onFileChange(e) {
 }
 
 const onProductChange = (index) => {
+  console.log('=== DEBUG: onProductChange ===');
+  console.log('Index:', index);
+  console.log('Current item:', form.value.purchaseOrderItems[index]);
+  
   const selectedProductId = form.value.purchaseOrderItems[index].productId;
+  console.log('Selected productId:', selectedProductId);
+  
   const selectedProduct = products.value.find(p => p.id === selectedProductId);
+  console.log('Found product:', selectedProduct);
 
   if (selectedProduct) {
     const item = form.value.purchaseOrderItems[index];
     item.price = Number(selectedProduct.priceBuy) || 0;
+    console.log('Set price to:', item.price);
     calculateSubtotal(index);
   }
 };
@@ -602,10 +636,20 @@ const onQuantityChange = (index) => {
 };
 
 const calculateSubtotal = (index) => {
+  console.log('=== DEBUG: calculateSubtotal ===');
+  console.log('Index:', index);
+  
   const item = form.value.purchaseOrderItems[index];
+  console.log('Item before calculation:', item);
+  
   const quantity = Number(item.quantity) || 0;
   const price = Number(item.price) || 0;
+  
+  console.log('Quantity:', quantity);
+  console.log('Price:', price);
+  
   item.subtotal = quantity * price;
+  console.log('Calculated subtotal:', item.subtotal);
 };
 
 const viewPurchaseOrderDetails = (purchaseOrderId) => {
