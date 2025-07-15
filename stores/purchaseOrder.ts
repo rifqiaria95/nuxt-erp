@@ -17,8 +17,8 @@ export interface PurchaseOrderItem {
   price          : number
   description    : string
   subtotal       : number
-  statusPartial : boolean
-  receivedQty   : string
+  statusPartial  : boolean
+  receivedQty    : string
   createdAt      : string
   updatedAt      : string
   product?       : Product
@@ -62,21 +62,21 @@ export interface PurchaseOrder {
 
 interface PurchaseOrderState {
   purchaseOrders: PurchaseOrder[]
-  purchaseOrder: PurchaseOrder | null
-  loading: boolean
-  error: any
-  totalRecords: number
-  params: {
-    first: number
-    rows: number
+  purchaseOrder : PurchaseOrder | null
+  loading       : boolean
+  error         : any
+  totalRecords  : number
+  params        : {
+    first    : number
+    rows     : number
     sortField: string | null
     sortOrder: number | null
-    draw: number
-    search: string
+    draw     : number
+    search   : string
   }
-  form: any,
-  isEditMode: boolean
-  showModal: boolean
+  form            : any,
+  isEditMode      : boolean
+  showModal       : boolean
   validationErrors: any[]
 }
 
@@ -86,20 +86,20 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     purchaseOrder : null,
     loading       : true,
     error         : null,
-    totalRecords: 0,
-    params: {
-        first: 0,
-        rows: 10,
+    totalRecords  : 0,
+    params        : {
+        first    : 0,
+        rows     : 10,
         sortField: 'id',
         sortOrder: 1,
-        draw: 1,
-        search: '',
+        draw     : 1,
+        search   : '',
     },
     form: {
         purchaseOrderItems: []
     },
-    isEditMode: false,
-    showModal: false,
+    isEditMode      : false,
+    showModal       : false,
     validationErrors: [],
   }),
   actions: {
@@ -134,14 +134,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         if (!response.ok) throw new Error('Gagal mengambil data purchaseOrder')
 
         const result = await response.json()
-        console.log('=== DEBUG: fetchPurchaseOrders ===');
-        console.log('API Response result:', result);
-        console.log('result.data:', result.data);
-        if (result.data && result.data.length > 0) {
-          console.log('Sample PO data:', result.data[0]);
-          console.log('Sample PO id:', result.data[0].id);
-          console.log('Sample PO id type:', typeof result.data[0].id);
-        }
         
         this.purchaseOrders = result.data
         this.totalRecords = result.meta.total
@@ -216,8 +208,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             if (!dataToAppend.poType) {
                 throw new Error('Tipe PO harus dipilih');
             }
-
-            console.log('Data being sent:', dataToAppend);
 
             Object.keys(dataToAppend).forEach(key => {
                 const value = dataToAppend[key];
@@ -477,22 +467,10 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },
 
     openModal(purchaseOrderData: PurchaseOrder | null = null) {
-        console.log('=== DEBUG: openModal ===');
-        console.log('purchaseOrderData:', purchaseOrderData);
-        
         this.isEditMode = !!purchaseOrderData;
         this.validationErrors = [];
 
         if (purchaseOrderData) {
-            console.log('Edit mode - purchaseOrderData.purchaseOrderItems:', purchaseOrderData.purchaseOrderItems);
-            if (purchaseOrderData.purchaseOrderItems) {
-                purchaseOrderData.purchaseOrderItems.forEach((item, index) => {
-                    console.log(`Item ${index}:`, item);
-                    console.log(`Item ${index} product:`, item.product);
-                    console.log(`Item ${index} productId:`, item.productId);
-                });
-            }
-            
             const formatDate = (dateStr: string | null) => dateStr ? new Date(dateStr).toISOString().split('T')[0] : null;
             
             // Salin data dan format tanggal dengan benar
@@ -509,8 +487,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             });
 
             this.form = formData;
-            console.log('Form data after assignment:', this.form);
-            console.log('Form purchaseOrderItems:', this.form.purchaseOrderItems);
 
             // Pastikan purchaseOrderItems ada
             if (!this.form.purchaseOrderItems || this.form.purchaseOrderItems.length === 0) {
@@ -518,7 +494,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 this.addItem();
             }
         } else {
-            console.log('Create mode');
             this.form = {
                 noPo: '',
                 up: '',
@@ -588,13 +563,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       this.error = null;
       const { $api } = useNuxtApp();
       
-      console.log('=== DEBUG: getPurchaseOrderDetails ===');
-      console.log('poId param:', poId);
-      console.log('API endpoint:', $api.getPurchaseOrderDetails(poId));
-      
       try {
         const token        = localStorage.getItem('token');
-        console.log('Token exists:', !!token);
 
         const resData = await apiFetch($api.getPurchaseOrderDetails(poId), {
           headers: {
@@ -604,16 +574,13 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           credentials: 'include',
         });
         
-        console.log('API Response:', resData);
-        
         if (resData && resData.data) {
           this.purchaseOrder = resData.data;
-          console.log('Successfully set purchaseOrder:', this.purchaseOrder);
         } else {
           console.error('Invalid data structure received:', resData);
           throw new Error('Struktur data tidak valid diterima dari API getPurchaseOrderDetails.');
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Error in getPurchaseOrderDetails:', e);
         console.error('Error details:', {
           message: e.message,
@@ -628,16 +595,12 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },
 
     async fetchPurchaseOrderForEdit(purchaseOrderId: string) {
-        console.log('=== DEBUG: fetchPurchaseOrderForEdit ===');
-        console.log('purchaseOrderId:', purchaseOrderId);
-        
         this.loading = true;
         this.error = null;
         const { $api } = useNuxtApp();
         
         try {
             const token = localStorage.getItem('token');
-            console.log('Token exists:', !!token);
 
             const resData = await apiFetch($api.getPurchaseOrderDetails(purchaseOrderId), {
                 headers: {
@@ -647,11 +610,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 credentials: 'include',
             });
             
-            console.log('API Response for edit:', resData);
-            
             if (resData && resData.data) {
-                console.log('Purchase order data for edit:', resData.data);
-                console.log('Purchase order items:', resData.data.purchaseOrderItems);
                 
                 // Panggil openModal dengan data lengkap
                 this.openModal(resData.data);
@@ -659,7 +618,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 console.error('Invalid data structure received:', resData);
                 throw new Error('Data tidak valid diterima dari API.');
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error('Error in fetchPurchaseOrderForEdit:', e);
             this.error = e;
             Swal.fire('Error', 'Gagal mengambil data purchase order untuk edit', 'error');
