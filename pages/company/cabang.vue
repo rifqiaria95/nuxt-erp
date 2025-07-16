@@ -137,14 +137,14 @@
                         </div>
                         </div>
                         <div class="col-7">
-                        <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
-                            class="btn btn-sm btn-primary mb-4 text-nowrap"
-                            @click="cabangStore.openModal()"
-                            >
-                            Tambah Cabang
-                            </button>
-                        </div>
+                            <div class="card-body text-sm-end text-center ps-sm-0">
+                                <button v-if="userHasRole('superadmin') || userHasPermission('create_cabang')"
+                                class="btn btn-sm btn-primary mb-4 text-nowrap"
+                                @click="cabangStore.openModal()"
+                                >
+                                Tambah Cabang
+                                </button>
+                            </div>
                         </div>
                     </div>
                     </div>

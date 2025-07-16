@@ -79,6 +79,7 @@ export const useUserManagementStore = defineStore('user-management', {
   }),
   actions: {
     async fetchUsers() {
+        const toast = useToast();
         this.loading = true;
         const { $api } = useNuxtApp();
         try {
@@ -110,12 +111,17 @@ export const useUserManagementStore = defineStore('user-management', {
 
         } catch (error: any) {
             this.error = error.message;
-            Swal.fire('Error', `Tidak dapat memuat data user: ${error.message}`, 'error');
+            toast.error({
+              title: 'Error',
+              message: `Tidak dapat memuat data user: ${error.message}`,
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
     },
     async fetchRoles() {
+        const toast = useToast();
         const { $api } = useNuxtApp();
         try {
             const token = localStorage.getItem('token')
@@ -133,10 +139,15 @@ export const useUserManagementStore = defineStore('user-management', {
             this.roles = data.data || data
         } catch (error: any) {
             console.error('Error fetching role:', error)
-            Swal.fire('Error', `Tidak dapat memuat data role: ${error.message}`, 'error');
+            toast.error({
+              title: 'Error',
+              message: `Tidak dapat memuat data role: ${error.message}`,
+              color: 'red'
+            });
         }
     },
     async fetchStats() {
+        const toast = useToast();
         const { $api } = useNuxtApp();
         const defaultStats = {
             total: undefined,
@@ -167,6 +178,7 @@ export const useUserManagementStore = defineStore('user-management', {
         }
     },
     async saveUser() {
+        const toast = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -215,15 +227,24 @@ export const useUserManagementStore = defineStore('user-management', {
             this.closeModal();
             await this.fetchUsers();
             await this.fetchStats();
-            Swal.fire('Berhasil!', `User berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+            toast.success({
+              title: 'Success',
+              message: `User berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`,
+              color: 'green'
+            });
 
         } catch (error: any) {
-            Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Operasi gagal',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
     },
     async deleteUser(id: number) {
+      const toast = useToast();
       this.loading = true;
       const { $api } = useNuxtApp();
 
@@ -262,9 +283,17 @@ export const useUserManagementStore = defineStore('user-management', {
 
           await this.fetchUsers();
           await this.fetchStats();
-          Swal.fire('Berhasil!', 'User berhasil dihapus.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'User berhasil dihapus.',
+            color: 'green'
+          });
       } catch (error: any) {
-          Swal.fire('Error', error.message || 'Gagal menghapus user', 'error');
+        toast.error({
+          title: 'Error',
+          message: error.message || 'Gagal menghapus user',
+          color: 'red'
+        });
       } finally {
           this.loading = false;
       }

@@ -138,7 +138,7 @@
                         </div>
                         <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
+                            <button v-if="userHasRole('superadmin') || userHasPermission('create_vendor')"
                             class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"
                             @click="vendorStore.openModal()"
                             >
@@ -330,6 +330,9 @@ import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
+import { usePermissions } from '~/composables/usePermissions'
+
+const { userHasPermission, userHasRole } = usePermissions();
 
 const vendorStore = useVendorStore()
 const { vendors, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(vendorStore)

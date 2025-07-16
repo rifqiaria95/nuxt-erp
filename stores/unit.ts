@@ -46,6 +46,7 @@ export const useUnitStore = defineStore('unit', {
   }),
   actions: {
     async fetchUnit() {
+      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -76,13 +77,18 @@ export const useUnitStore = defineStore('unit', {
 
       } catch (e: any) {
         this.error = e.message
-        Swal.fire('Error', `Tidak dapat memuat data unit: ${e.message}`, 'error');
+        toast.error({
+          title: 'Error',
+          message: `Tidak dapat memuat data unit: ${e.message}`,
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
     },
 
     async saveUnit() {
+      const toast     = useToast();
       this.loading = true;
       this.validationErrors = [];
       const { $api } = useNuxtApp();
@@ -122,11 +128,19 @@ export const useUnitStore = defineStore('unit', {
         
         this.closeModal();
         await this.fetchUnit();
-        Swal.fire('Berhasil!', `Unit berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+        toast.success({
+          title: 'Success',
+          message: `Unit berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`,
+          color: 'green'
+        });
 
       } catch (error: any) {
         if (error.message !== 'Data validasi tidak valid') {
-            Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Operasi gagal',
+              color: 'red'
+            });
         }
       } finally {
         this.loading = false;
@@ -134,18 +148,19 @@ export const useUnitStore = defineStore('unit', {
     },
 
     async deleteUnit(id: number) {
+      const toast     = useToast();
       this.loading = true;
       const { $api } = useNuxtApp();
 
       const result = await Swal.fire({
-          title: 'Apakah Anda yakin?',
-          text: "Data unit yang dihapus tidak dapat dikembalikan!",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Ya, hapus!',
-          cancelButtonText: 'Batal'
+        title: 'Apakah Anda yakin?',
+        text: "Data unit yang dihapus tidak dapat dikembalikan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
       });
 
       if (!result.isConfirmed) {
@@ -170,10 +185,18 @@ export const useUnitStore = defineStore('unit', {
           }
 
           await this.fetchUnit();
-          Swal.fire('Berhasil!', 'Unit berhasil dihapus.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Unit berhasil dihapus.',
+            color: 'green'
+          });
       } catch (error: any) {
           console.error('Gagal menghapus unit:', error);
-          Swal.fire('Error', error.message || 'Gagal menghapus unit', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal menghapus unit',
+            color: 'red'
+          });
       } finally {
           this.loading = false;
       }

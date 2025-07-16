@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
-import { apiFetch } from '~/utils/apiFetch'
 
 export interface Vendor {
   id     : number
@@ -52,6 +51,7 @@ export const useVendorStore = defineStore('vendor', {
   }),
   actions: {
     async fetchVendors() {
+      const toast = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -83,13 +83,18 @@ export const useVendorStore = defineStore('vendor', {
         this.totalRecords = result.meta.total
       } catch (e: any) {
         this.error = e.message
-        Swal.fire('Error', `Tidak dapat memuat data vendor: ${e.message}`, 'error');
+        toast.error({
+          title: 'Error',
+          message: `Tidak dapat memuat data vendor: ${e.message}`,
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
     },
 
     async saveVendor() {
+      const toast = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -142,16 +147,25 @@ export const useVendorStore = defineStore('vendor', {
 
             this.closeModal();
             await this.fetchVendors();
-            Swal.fire('Berhasil!', `Vendor berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+            toast.success({
+              title: 'Success',
+              message: `Vendor berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`,
+              color: 'green'
+            });
 
         } catch (error: any) {
-            Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Operasi gagal',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
     },
 
     async deleteVendor(id: number) {
+      const toast = useToast();
       this.loading = true;
       const { $api } = useNuxtApp();
 
@@ -189,10 +203,18 @@ export const useVendorStore = defineStore('vendor', {
           }
 
           await this.fetchVendors();
-          Swal.fire('Berhasil!', 'Vendor berhasil dihapus.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Vendor berhasil dihapus.',
+            color: 'green'
+          });
       } catch (error: any) {
           console.error('Gagal menghapus vendor:', error);
-          Swal.fire('Error', error.message || 'Gagal menghapus vendor', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal menghapus vendor',
+            color: 'red'
+          });
       } finally {
           this.loading = false;
       }

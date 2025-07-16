@@ -367,7 +367,7 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     }
 
     if (status && (receivedQty == 0 || receivedQty == null)) {
-        Swal.fire({
+        toast({
             icon: 'error',
             title: 'Validasi Gagal',
             text: 'Jumlah yang diterima tidak boleh 0!',
@@ -377,7 +377,7 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     }
 
     if (receivedQty > item.quantity) {
-        Swal.fire({
+        toast({
             icon: 'error',
             title: 'Validasi Gagal',
             text: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
@@ -391,7 +391,7 @@ async function updateStatusPartial(itemId, status, receivedQty) {
         await refreshPurchaseOrderDetails()
     } catch (error) {
         console.error('Failed to update status:', error)
-        Swal.fire({
+        toast({
             icon: 'error',
             title: 'Update Gagal',
             text: 'Terjadi kesalahan saat memperbarui status item.',

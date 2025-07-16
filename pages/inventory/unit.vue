@@ -17,7 +17,7 @@
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
-                                    <button type="button" class="btn btn-primary" @click="unitStore.openModal()">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_unit')" type="button" class="btn btn-primary" @click="unitStore.openModal()">
                                         <i class="ri-add-line me-1"></i> Tambah
                                     </button>
                                 </div>
@@ -130,6 +130,9 @@ import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
+import { usePermissions } from '~/composables/usePermissions'
+
+const { userHasPermission, userHasRole } = usePermissions();
 
 const myDataTableRef = ref(null)
 const unitStore = useUnitStore()

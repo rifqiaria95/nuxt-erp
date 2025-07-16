@@ -8,58 +8,47 @@
             </p>
             <!-- salesOrder cards -->
             <div class="row g-6 mb-6">
-                <!-- Static cards for display, can be made dynamic later -->
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="mb-1">Total Orders</h5>
-                                <span class="badge bg-label-primary rounded-pill">Yearly</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <h1 class="mb-0 display-4">15</h1>
-                                <i class="ri-arrow-up-s-line ri-24px text-success"></i>
-                                <span class="fw-medium text-success">15.8%</span>
-                            </div>
-                            <p class="mb-0 mt-2">Analytics for last year</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="mb-1">Pending Orders</h5>
-                                <span class="badge bg-label-warning rounded-pill">Weekly</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <h1 class="mb-0 display-4">5</h1>
-                                <i class="ri-arrow-down-s-line ri-24px text-danger"></i>
-                                <span class="fw-medium text-danger">8.2%</span>
-                            </div>
-                            <p class="mb-0 mt-2">Analytics for last week</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card h-100">
-                        <div class="row h-100">
-                            <div class="col-sm-5">
-                                <div class="d-flex align-items-end h-100 justify-content-center">
-                                    <img src="/img/illustrations/add-new-role-illustration.png" class="img-fluid" alt="Image" width="70">
-                                </div>
-                            </div>
-                            <div class="col-sm-7">
-                                <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="salesOrderStore.openModal(null, 'admin')" class="btn btn-primary mb-2 text-wrap add-new-role">
-                                        Tambah Sales Order
-                                    </button>
-                                    <p class="mb-0 mt-1">Buat Sales Order baru</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Card untuk Tambah Pegawai -->                
+                <CardBox
+                    v-if="stats.total !== undefined"
+                    title="Total Sales Order"
+                    :total="(stats.total !== undefined ? stats.total + ' Sales Order' : 'Memuat...')"
+                    :column-class="cardBoxColumnClass"
+                />
+                <CardBox
+                    v-if="stats.approved !== undefined"
+                    title="Total Sales Order Approved"
+                    :total="(stats.approved !== undefined ? stats.approved + ' Sales Order' : 'Memuat...')"
+                    :column-class="cardBoxColumnClass"
+                />
+                <CardBox
+                    v-if="stats.rejected !== undefined"
+                    title="Total Sales Order Rejected"
+                    :total="(stats.rejected !== undefined ? stats.rejected + ' Sales Order' : 'Memuat...')"
+                    :column-class="cardBoxColumnClass"
+                />
+                <CardBox
+                    v-if="stats.partial !== undefined"
+                    title="Total Sales Order Partial"
+                    :total="(stats.partial !== undefined ? stats.partial + ' Sales Order' : 'Memuat...')"
+                    :column-class="cardBoxColumnClass"
+                />
+                <CardBox
+                    v-if="stats.delivered !== undefined"
+                    title="Total Sales Order Delivered"
+                    :total="(stats.delivered !== undefined ? stats.delivered + ' Sales Order' : 'Memuat...')"
+                    :column-class="cardBoxColumnClass"
+                />
+                <CardBox
+                    v-if="userHasRole('superadmin') || userHasPermission('create_sales_order')"
+                    :isAddButtonCard="true"
+                    image-src="/img/illustrations/add-new-role-illustration.png"
+                    image-alt="Tambah Sales Order"
+                    button-text="Tambah Sales Order"
+                    modal-target="#SalesOrderModal" 
+                    @button-click="salesOrderStore.openModal()"
+                    :column-class="cardBoxColumnClass"
+                />
             </div>
 
             <div class="row g-6">
@@ -442,6 +431,7 @@ import { useUserStore } from '~/stores/user'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
 import Modal from '~/components/modal/Modal.vue'
+import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import vSelect from 'vue-select'
 import Dropdown from 'primevue/dropdown'
@@ -468,7 +458,7 @@ const formatRupiah          = useFormatRupiah()
 const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore       = usePermissionsStore()
 
-const { salesOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, customerProducts } = storeToRefs(salesOrderStore)
+const { salesOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, customerProducts, stats } = storeToRefs(salesOrderStore)
 const { customers }   = storeToRefs(customerStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
 const { cabangs }     = storeToRefs(cabangStore)
@@ -486,6 +476,10 @@ const filters = ref({
 });
 const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
+
+const cardBoxColumnClass = computed(() => {
+  return stats.value.total !== undefined ? 'col-6' : 'col-xl-4 col-lg-6 col-md-6';
+});
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 const modalTitle = computed(() => isEditMode.value ? 'Edit Sales Order' : 'Tambah Sales Order');
@@ -538,6 +532,7 @@ const statusOptions = ref([
 let modalInstance = null;
 onMounted(() => {
     salesOrderStore.fetchSalesOrders();
+    salesOrderStore.fetchStats(); // <--- TAMBAHKAN INI
     customerStore.fetchCustomers();
     perusahaanStore.fetchPerusahaans();
     cabangStore.fetchCabangs();
@@ -687,7 +682,7 @@ const viewSalesOrderDetails = (salesOrderId) => {
     
     if (!salesOrderId) {
         console.error('❌ Page Debug - No salesOrderId provided');
-        Swal.fire({
+        toast.fire({
             icon: 'error',
             title: 'Parameter Tidak Valid',
             text: 'ID Sales Order tidak valid.',

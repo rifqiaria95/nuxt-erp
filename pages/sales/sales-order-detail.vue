@@ -424,22 +424,26 @@ async function refreshSalesOrderDetails() {
             console.error("❌ Failed to refresh SO details:", error)
             
             // Show user-friendly error message
-            Swal.fire({
-                icon: 'error',
+            toast.error({
                 title: 'Gagal Memuat Data',
-                text: `Tidak dapat memuat detail Sales Order dengan ID: ${soIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
-                confirmButtonText: 'OK'
+                message: `Tidak dapat memuat detail Sales Order dengan ID: ${soIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
+                icon: 'ri-close-line',
+                timeout: 3000,
+                position: 'topRight',
+                layout: 2,
             })
         } finally {
             loading.value = false
         }
     } else {
         console.error('❌ Invalid soId:', soIdToFetch);
-        Swal.fire({
-            icon: 'error',
+        toast.error({
             title: 'Parameter Tidak Valid',
-            text: 'ID Sales Order tidak valid atau kosong.',
-            confirmButtonText: 'OK'
+            message: 'ID Sales Order tidak valid atau kosong.',
+            icon: 'ri-close-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
         })
     }
 }
@@ -447,11 +451,13 @@ async function refreshSalesOrderDetails() {
 async function updateStatusPartial(itemId, status, receivedQty) {
     // Validasi: Cek apakah sales order sudah delivered
     if (isDelivered.value) {
-        Swal.fire({
-            icon: 'warning',
+        toast.warning({
             title: 'Aksi Tidak Diizinkan',
-            text: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
-            confirmButtonText: 'Mengerti'
+            message: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
+            icon: 'ri-alert-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
         })
         return
     }
@@ -464,10 +470,13 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     }
 
     if (receivedQty > item.quantity) {
-        Swal.fire({
-            icon: 'error',
+        toast.error({
             title: 'Validasi Gagal',
-            text: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
+            message: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
+            icon: 'ri-close-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
         })
         await refreshSalesOrderDetails()
         return
@@ -476,12 +485,23 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     try {
         await salesOrderStore.updateStatusPartial(itemId, status, receivedQty)
         await refreshSalesOrderDetails()
+        toast.success({
+            title: 'Berhasil!',
+            message: 'Status item berhasil diperbarui.',
+            icon: 'ri-check-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
     } catch (error) {
         console.error('Failed to update status:', error)
-        Swal.fire({
-            icon: 'error',
+        toast.error({
             title: 'Update Gagal',
-            text: 'Terjadi kesalahan saat memperbarui status item.',
+            message: 'Terjadi kesalahan saat memperbarui status item.',
+            icon: 'ri-close-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
         })
     }
 }
@@ -490,11 +510,13 @@ async function toggleAllItemsStatus(event) {
     // Validasi: Cek apakah sales order sudah delivered
     if (isDelivered.value) {
         event.target.checked = allItemsCompleted.value // Reset checkbox
-        Swal.fire({
-            icon: 'warning',
+        toast.warning({
             title: 'Aksi Tidak Diizinkan',
-            text: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
-            confirmButtonText: 'Mengerti'
+            message: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
+            icon: 'ri-alert-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
         })
         return
     }

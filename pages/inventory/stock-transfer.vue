@@ -29,6 +29,7 @@
                     :total="stats.rejected + ' Stock Transfer'"
                 />
                 <CardBox
+                    v-if="userHasRole('superadmin') || userHasPermission('create_stock_transfer')"
                     :isAddButtonCard="true"
                     image-src="/img/illustrations/add-new-role-illustration.png"
                     image-alt="Tambah Stock Transfer"
@@ -446,14 +447,14 @@ watch(() => form.value.fromWarehouseId, (newWarehouseId, oldWarehouseId) => {
 
 const handleSaveStockTransfer = async () => {
     if (!form.value.date) {
-        return Swal.fire('Validasi', 'Tanggal wajib diisi.', 'warning');
+        return toast.fire('Validasi', 'Tanggal wajib diisi.', 'warning');
     }
 
     try {
         await stockTransferStore.saveStockTransfer();
         await stockTransferStore.fetchStockTransfersPaginated();
         stockTransferStore.closeModal();
-        Swal.fire(
+        toast.fire(
             'Berhasil!',
             `Stock Transfer berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
             'success'
@@ -464,7 +465,7 @@ const handleSaveStockTransfer = async () => {
             stockTransferStore.validationErrors = Array.isArray(errorData.errors)
                 ? errorData.errors
                 : Object.values(errorData.errors).flat();
-            Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+            toast.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
         } else if(errorData.status === 422) {
             stockTransferStore.validationErrors = errorData.errors;
         } else {
@@ -492,14 +493,14 @@ const approveStockTransfer = async (id) => {
                  stockTransferStore.validationErrors = Array.isArray(parsedError.errors)
                     ? parsedError.errors
                     : Object.values(parsedError.errors).flat();
-                return Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+                return toast.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
             }
              errorMessage = parsedError.message || errorMessage;
         } catch (e) {
             // Biarkan errorMessage seperti apa adanya jika bukan JSON
         }
         
-        await Swal.fire('Error', errorMessage, 'error');
+        await toast.fire('Error', errorMessage, 'error');
     }
 };
 
@@ -509,7 +510,7 @@ const loadLazyData = async () => {
         await stockTransferStore.fetchStockTransfersPaginated();
     } catch (error) {
         const error_message = error.message;
-        Swal.fire('Error', `Tidak dapat memuat data Stock Transfer: ${error_message}`, 'error');
+        toast.fire('Error', `Tidak dapat memuat data Stock Transfer: ${error_message}`, 'error');
     }
 };
 
@@ -554,14 +555,14 @@ const deleteStockTransfer = async (id) => {
         try {
             await stockTransferStore.deleteStockTransfer(id);
             loadLazyData(); // Muat ulang data
-            await Swal.fire({
+            await toast.fire({
                 title: 'Berhasil!',
                 text: 'Stock Transfer berhasil dihapus.',
                 icon: 'success'
             });
 
         } catch (error) {
-            await Swal.fire({
+            await toast.fire({
                 title: 'Error',
                 text: error.message,
                 icon: 'error'

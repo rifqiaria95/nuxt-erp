@@ -73,11 +73,12 @@ export default defineNuxtPlugin(() => {
     purchaseOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/purchase-order-item/updateStatusPartial/${id}`,
 
     // Sales Order
-    salesOrder          : () => `${apiBase}/sales-order`,
-    approveSalesOrder   : (id: number | string) => `${apiBase}/sales-order/approveSalesOrder/${id}`,
-    rejectSalesOrder    : (id: number | string) => `${apiBase}/sales-order/rejectSalesOrder/${id}`,
-    salesOrderUpdate    : (id: number | string) => `${apiBase}/sales-order/update/${id}`,
-    getSalesOrderDetails: (id: number | string) => `${apiBase}/sales-order/getSalesOrderDetails/${id}`,
+    salesOrder             : () => `${apiBase}/sales-order`,
+    countSalesOrderByStatus: () => `${apiBase}/sales-order/countByStatus`,
+    approveSalesOrder      : (id: number | string) => `${apiBase}/sales-order/approveSalesOrder/${id}`,
+    rejectSalesOrder       : (id: number | string) => `${apiBase}/sales-order/rejectSalesOrder/${id}`,
+    salesOrderUpdate       : (id: number | string) => `${apiBase}/sales-order/update/${id}`,
+    getSalesOrderDetails   : (id: number | string) => `${apiBase}/sales-order/getSalesOrderDetails/${id}`,
 
     // Sales Invoice
     salesInvoice          : () => `${apiBase}/sales-invoices`,

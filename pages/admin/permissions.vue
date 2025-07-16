@@ -418,7 +418,7 @@ const handleSavePermission = async () => {
         if (isEditMode.value) {
             const permissionIdToUpdate = formPermission.value.id;
             if (!permissionIdToUpdate) {
-                Swal.fire('Error', 'ID Permission tidak ditemukan untuk update.', 'error');
+                toast.fire('Error', 'ID Permission tidak ditemukan untuk update.', 'error');
                 return;
             }
             url = $api.permissionUpdate(permissionIdToUpdate);
@@ -448,7 +448,7 @@ const handleSavePermission = async () => {
             await fetchAllPageData();
             handleCloseModal();
             permissionsStore.fetchPermissions();
-            await Swal.fire(
+            toast.fire(
                 'Berhasil!',
                 `Permission berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
                 'success'
@@ -458,11 +458,11 @@ const handleSavePermission = async () => {
             if (errorData.errors) {
                 validationErrors.value = Object.values(errorData.errors).flat();
             } else {
-                Swal.fire('Gagal', errorData.message || 'Gagal menyimpan permission', 'error');
+                toast.fire('Gagal', errorData.message || 'Gagal menyimpan permission', 'error');
             }
         }
     } catch (error) {
-        Swal.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
+        toast.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
     } finally {
         layoutStore.setLoading(false);
     }
@@ -562,7 +562,7 @@ const fetchAllPageData = async () => {
         fetchMenuGroupsAndDetails();
     } catch (error) {
         console.error("Gagal memuat data halaman:", error);
-        Swal.fire('Error', 'Gagal memuat data halaman.', 'error');
+        toast.fire('Error', 'Gagal memuat data halaman.', 'error');
     } finally {
         layoutStore.setLoading(false);
     }
@@ -641,14 +641,14 @@ const deletePermission = async (permissionId) => {
             
             await fetchAllPageData();
 
-            await Swal.fire({
+            toast.fire({
                 title: 'Berhasil!',
                 text: 'Permission berhasil dihapus.',
                 icon: 'success'
             });
 
         } catch (error) {
-            await Swal.fire({
+            toast.fire({
                 title: 'Error',
                 text: error.message,
                 icon: 'error'

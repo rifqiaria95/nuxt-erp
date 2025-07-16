@@ -18,7 +18,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="divisiStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_divisi')" @click="divisiStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
                                         Tambah Divisi
                                     </button>
                                     <p class="mb-0 mt-1">Buat Divisi baru</p>

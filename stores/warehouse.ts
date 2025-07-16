@@ -59,6 +59,7 @@ export const useWarehouseStore = defineStore('warehouse', {
     }),
     actions: {
         async fetchWarehouses() {
+        const toast     = useToast();
           this.loading = true
           const { $api } = useNuxtApp();
           try {
@@ -83,12 +84,17 @@ export const useWarehouseStore = defineStore('warehouse', {
             this.totalRecords = result.meta.total
           } catch (error) {
             console.error('Failed to fetch warehouse:', error)
-            Swal.fire('Error', 'Gagal memuat data gudang', 'error')
+            toast.error({
+              title: 'Error',
+              message: 'Gagal memuat data gudang',
+              color: 'red'
+            })
           } finally {
             this.loading = false
           }
         },
         async fetchAllWarehouses() {
+            const toast     = useToast();
             this.loading = true;
             const { $api } = useNuxtApp();
             try {
@@ -104,12 +110,17 @@ export const useWarehouseStore = defineStore('warehouse', {
                 this.warehouseList = result.data;
             } catch (error) {
                 console.error('Failed to fetch all warehouses:', error);
-                Swal.fire('Error', 'Gagal memuat semua data gudang', 'error');
+                toast.error({
+                  title: 'Error',
+                  message: 'Gagal memuat semua data gudang',
+                  color: 'red'
+                });
             } finally {
                 this.loading = false;
             }
         },
         async fetchStats() {
+            const toast     = useToast();
             const { $api } = useNuxtApp();
             const defaultStats = {
               total: undefined,
@@ -136,6 +147,7 @@ export const useWarehouseStore = defineStore('warehouse', {
             }
         },
         async saveWarehouse() {
+            const toast     = useToast();
             this.loading = true;
             this.validationErrors = [];
             const { $api } = useNuxtApp();
@@ -173,15 +185,24 @@ export const useWarehouseStore = defineStore('warehouse', {
                 this.closeModal();
                 await this.fetchWarehouses();
                 await this.fetchStats();
-                Swal.fire('Berhasil!', `Gudang berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+                toast.success({
+                  title: 'Success',
+                  message: `Gudang berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`,
+                  color: 'green'
+                });
     
             } catch (error: any) {
-                Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+                toast.error({
+                  title: 'Error',
+                  message: error.message || 'Operasi gagal',
+                  color: 'red'
+                });
             } finally {
                 this.loading = false;
             }
         },
         async deleteWarehouse(id: number) {
+          const toast     = useToast();
           this.loading = true;
           const { $api } = useNuxtApp();
     
@@ -221,9 +242,17 @@ export const useWarehouseStore = defineStore('warehouse', {
     
               await this.fetchWarehouses();
               await this.fetchStats();
-              Swal.fire('Berhasil!', 'Gudang berhasil dihapus.', 'success');
+              toast.success({
+                title: 'Success',
+                message: 'Gudang berhasil dihapus.',
+                color: 'green'
+              });
           } catch (error: any) {
-              Swal.fire('Error', error.message || 'Gagal menghapus gudang', 'error');
+              toast.error({
+                title: 'Error',
+                message: error.message || 'Gagal menghapus gudang',
+                color: 'red'
+              });
           } finally {
               this.loading = false;
           }

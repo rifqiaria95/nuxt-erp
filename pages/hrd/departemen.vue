@@ -18,7 +18,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="departemenStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_departemen')" @click="departemenStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
                                         Tambah Departemen
                                     </button>
                                     <p class="mb-0 mt-1">Buat Departemen baru</p>

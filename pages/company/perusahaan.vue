@@ -138,7 +138,7 @@
                         </div>
                         <div class="col-7">
                         <div class="card-body text-sm-end text-center ps-sm-0">
-                            <button
+                            <button v-if="userHasRole('superadmin') || userHasPermission('create_perusahaan')"
                             data-bs-target="#PerusahaanModal"
                             data-bs-toggle="modal"
                             class="btn btn-sm btn-primary mb-4 ml-5 textwrap add-new-pegawai"

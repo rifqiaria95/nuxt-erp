@@ -104,17 +104,17 @@
               <td>{{ formatRupiah(item.subtotal || 0) }}</td>
             </tr>
             <!-- ✅ FALLBACK: jika tidak ada salesInvoiceItems, tampilkan dari salesOrder -->
-            <tr v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && salesInvoice.salesOrder?.salesOrderItems" 
-                v-for="(item, index) in salesInvoice.salesOrder.salesOrderItems" :key="`fallback-${item.id}`">
-              <td>{{ index + 1 }}</td>
-              <td>{{ item.product?.name || '-' }}</td>
-              <td>{{ item.description || '-' }}</td>
-              <td>{{ Number(item.quantity) }}</td>
-              <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
+            <template v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && salesInvoice.salesOrder?.salesOrderItems">
+              <tr v-for="(item, index) in salesInvoice.salesOrder.salesOrderItems" :key="`fallback-${item.id}`">
+                <td>{{ index + 1 }}</td>
+                <td>{{ item.product?.name || '-' }}</td>
+                <td>{{ item.description || '-' }}</td>
+                <td>{{ Number(item.quantity) }}</td>
+                <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
               <td>{{ formatRupiah(item.price || 0) }}</td>
               <td>{{ formatRupiah(item.subtotal || 0) }}</td>
-              <td>-</td>
             </tr>
+            </template>
             <!-- ✅ MESSAGE jika tidak ada items sama sekali -->
             <tr v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && 
                       (!salesInvoice.salesOrder?.salesOrderItems || salesInvoice.salesOrder.salesOrderItems.length === 0)">
@@ -291,7 +291,7 @@
         console.log('🔍 Print Invoice Debug - Sales Invoice Items:', salesInvoice.value?.salesInvoiceItems);
         console.log('🔍 Print Invoice Debug - Items Count:', salesInvoice.value?.salesInvoiceItems?.length || 0);
       } catch (e) {
-        Swal.fire('Error', e.message || 'Gagal memuat detail sales invoice.', 'error');
+        toast.fire('Error', e.message || 'Gagal memuat detail sales invoice.', 'error');
       }
     }
   });

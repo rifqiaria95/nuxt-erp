@@ -318,9 +318,9 @@
                     subtotal: product.priceSell || 0,
                 });
             } else {
-                Swal.fire({
-                    title: 'Produk ini kehabisan stok.',
+                toast.fire({
                     icon: 'warning',
+                    title: 'Produk ini kehabisan stok.',
                 });
             }
         }
@@ -335,7 +335,10 @@
             if (item.quantity < stockQty) {
                 item.quantity++;
             } else {
-                alert('Jumlah melebihi stok yang tersedia.');
+                toast.fire({
+                    icon: 'warning',
+                    title: 'Jumlah melebihi stok yang tersedia.',
+                });
             }
         } else {
             item.quantity++; // Fallback if stock info is not available
@@ -388,17 +391,26 @@
 
     const saveBills = async () => {
         if (!form.value.perusahaanId || !form.value.cabangId || !form.value.warehouseId || !form.value.customerId) {
-            Swal.fire('Error', 'Harap lengkapi pilihan Perusahaan, Cabang, Gudang, dan Pelanggan.', 'error');
+            toast.fire({
+                icon: 'error',
+                title: 'Harap lengkapi pilihan Perusahaan, Cabang, Gudang, dan Pelanggan.',
+            });
             return;
         }
 
         if (!form.value.salesOrderItems || form.value.salesOrderItems.length === 0) {
-            Swal.fire('Error', 'Tidak ada item dalam pesanan.', 'error');
+            toast.fire({
+                icon: 'error',
+                title: 'Tidak ada item dalam pesanan.',
+            });
             return;
         }
         
         if (!form.value.paymentMethod) {
-            Swal.fire('Error', 'Harap pilih metode pembayaran.', 'error');
+            toast.fire({
+                icon: 'error',
+                title: 'Harap pilih metode pembayaran.',
+            });
             return;
         }
 
@@ -417,6 +429,15 @@
             form.value.warehouseId = null;
             form.value.customerId = null;
             form.value.paymentMethod = '';
+            toast.fire({
+                icon: 'success',
+                title: 'Pesanan berhasil disimpan.',
+            });
+        } else {
+            toast.fire({
+                icon: 'error',
+                title: 'Terjadi kesalahan saat menyimpan pesanan.',
+            });
         }
     };
 

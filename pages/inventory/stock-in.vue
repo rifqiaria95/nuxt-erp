@@ -94,7 +94,19 @@
                                         {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString() : '-' }}
                                     </template>
                                 </Column>
-                                <Column field="purchaseOrder.noPo" header="No. PO" :sortable="true" class="text-nowrap"></Column>
+                                <Column field="purchaseOrder.noPo" header="No. PO" :sortable="true" class="text-nowrap">
+                                    <template #body="slotProps">
+                                        <a 
+                                            :href="`/purchasing/purchase-order-detail?id=${slotProps.data.purchaseOrder?.id}`" 
+                                            class="text-primary text-decoration-underline"
+                                            title="Lihat Detail PO"
+                                            v-if="slotProps.data.purchaseOrder && slotProps.data.purchaseOrder.noPo"
+                                        >
+                                            {{ slotProps.data.purchaseOrder.noPo }}
+                                        </a>
+                                        <span v-else>-</span>
+                                    </template>
+                                </Column>
                                 <Column field="status" header="Status" :sortable="true">
                                     <template #body="slotProps">
                                         <span :class="getStatusBadge(slotProps.data.status).class">
@@ -305,27 +317,24 @@ onBeforeUnmount(() => {
 
 const handleSaveStockIn = async () => {
     if (!form.value.noSi) {
-        return Swal.fire('Validasi', 'No SI wajib diisi.', 'warning');
+        toast('warning', 'No SI wajib diisi.');
+        return;
     }
 
     try {
         await stockInStore.saveStockIn();
         await stockInStore.fetchStockInsPaginated();
         stockInStore.closeModal();
-        Swal.fire(
-            'Berhasil!',
-            `Stock In berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-            'success'
-        );
+        toast('success', `Stock In berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`);
     } catch (error) {
         const errorData = error;
         if (errorData.errors) {
             stockInStore.validationErrors = Array.isArray(errorData.errors)
                 ? errorData.errors
                 : Object.values(errorData.errors).flat();
-            Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+            toast('error', 'Terdapat kesalahan validasi data.');
         } else {
-            Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock in`, 'error');
+            toast('error', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock in`);
         }
     }
 };
@@ -334,11 +343,7 @@ const postStockIn = async (id) => {
     try {
         await stockInStore.postStockIn(id);
         await stockInStore.fetchStockInsPaginated();
-        await Swal.fire(
-            'Berhasil!',
-            `Stock In berhasil diposting.`,
-            'success'
-        );
+        toast('success', `Stock In berhasil diposting.`);
     } catch (error) {
         let errorMessage = 'Gagal memposting stock in';
         if (error instanceof Error) {
@@ -354,14 +359,14 @@ const postStockIn = async (id) => {
                  stockInStore.validationErrors = Array.isArray(parsedError.errors)
                     ? parsedError.errors
                     : Object.values(parsedError.errors).flat();
-                return Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+                return toast('error', 'Terdapat kesalahan validasi data.');
             }
              errorMessage = parsedError.message || errorMessage;
         } catch (e) {
             // Biarkan errorMessage seperti apa adanya jika bukan JSON
         }
         
-        await Swal.fire('Error', errorMessage, 'error');
+        toast('error', errorMessage);
     }
 };
 
@@ -371,7 +376,7 @@ const loadLazyData = async () => {
         await stockInStore.fetchStockInsPaginated();
     } catch (error) {
         const error_message = error.message;
-        Swal.fire('Error', `Tidak dapat memuat data stock in: ${error_message}`, 'error');
+        toast('error', `Tidak dapat memuat data stock in: ${error_message}`);
     }
 };
 
@@ -412,18 +417,10 @@ const deleteStockIn = async (id) => {
         try {
             await stockInStore.deleteStockIn(id);
             loadLazyData(); // Muat ulang data
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Stock In berhasil dihapus.',
-                icon: 'success'
-            });
+            toast('success', 'Stock In berhasil dihapus.');
 
         } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
+            toast('error', error.message);
         }
     }
 };

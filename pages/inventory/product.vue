@@ -30,7 +30,7 @@
                                 </div>
                                 <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_product')"
                                     @click="productStore.openModal()"
                                     class="btn btn-primary mb-2 text-nowrap add-new-role"
                                     >
@@ -324,7 +324,9 @@ import InputText from 'primevue/inputtext'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
 import { useFormatRupiah } from '~/composables/formatRupiah';
+import { usePermissions } from '~/composables/usePermissions'
 
+const { userHasPermission, userHasRole } = usePermissions();
 
 const config   = useRuntimeConfig();
 const formatRupiah = useFormatRupiah()

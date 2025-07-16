@@ -267,6 +267,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
       }
     },
     async approveStockTransfer(stockTransferId: string) {
+      const toast = useToast();
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -289,12 +290,20 @@ export const useStockTransferStore = defineStore('stockTransfer', {
           }
 
           await this.fetchStockTransfers();
-          await Swal.fire('Berhasil!', 'Stock Transfer berhasil diapprove.', 'success');
+          await toast.success({
+            title: 'Success',
+            message: 'Stock Transfer berhasil diapprove.',
+            color: 'green'
+          });
 
           return true;
       } catch (error: any) {
           console.error('Error approving stock transfer:', error);
-          await Swal.fire('Error', error.message || 'Gagal mengapprove stock transfer.', 'error');
+          await toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal mengapprove stock transfer.',
+            color: 'red'
+          });
           return false;
       } finally {
           this.loading = false;
@@ -342,6 +351,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
       }
     },
     async openModal(stockTransferData: StockTransfer | null = null) {
+      const toast = useToast();
       this.isEditMode = !!stockTransferData;
       this.validationErrors = [];
 
@@ -351,7 +361,11 @@ export const useStockTransferStore = defineStore('stockTransfer', {
           const detailedData = this.selectedStockTransfer;
 
           if (!detailedData) {
-              console.error("Gagal memuat detail stock transfer.");
+              toast.error({
+                title: 'Error',
+                message: 'Gagal memuat detail stock transfer.',
+                color: 'red'
+              });
               this.closeModal();
               return;
           }
@@ -477,6 +491,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         }
     },
     async fetchProductsByWarehouse(warehouseId: string) {
+      const toast = useToast();
       if (!warehouseId) {
         this.productsInWarehouse = [];
         return;
@@ -502,7 +517,11 @@ export const useStockTransferStore = defineStore('stockTransfer', {
       } catch (error) {
         this.productsInWarehouse = [];
         console.error(error);
-        Swal.fire('Error', 'Gagal memuat daftar produk.', 'error');
+        toast.error({
+          title: 'Error',
+          message: 'Gagal memuat daftar produk.',
+          color: 'red'
+        });
       } finally {
         this.loading = false;
       }

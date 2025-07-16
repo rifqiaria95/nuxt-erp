@@ -169,7 +169,7 @@ const loadLazyData = async () => {
         await stocksStore.fetchStocksPaginated();
     } catch (error) {
         const error_message = error.message;
-        Swal.fire('Error', `Tidak dapat memuat data stock: ${error_message}`, 'error');
+        toast.error(`Tidak dapat memuat data stock: ${error_message}`);
     }
 };
 
@@ -210,18 +210,10 @@ const deleteStockIn = async (id) => {
         try {
             await stocksStore.deleteStockIn(id);
             loadLazyData(); // Muat ulang data
-            await Swal.fire({
-                title: 'Berhasil!',
-                text: 'Stock In berhasil dihapus.',
-                icon: 'success'
-            });
+            toast.success('Stock In berhasil dihapus.');
 
         } catch (error) {
-            await Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error'
-            });
+            toast.error(error.message);
         }
     }
 };

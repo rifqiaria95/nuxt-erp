@@ -175,6 +175,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         attachment      : null,
         customerId     : null,
         salesOrderId   : null,
+        salesInvoiceItems: [],
     },
     isEditMode      : false,
     showModal       : false,
@@ -184,6 +185,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
   },
   actions: {
     async fetchSalesInvoices() {
+      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -230,38 +232,51 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
       } catch (e: any) {
         console.error('Gagal mengambil data salesInvoice:', e)
         this.error = e
-        Swal.fire('Error', `Tidak dapat memuat data Sales Invoice: ${e.message}`, 'error');
+        toast.error({
+          title: 'Error',
+          message: `Tidak dapat memuat data Sales Invoice: ${e.message}`,
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
     },
 
     async fetchSalesInvoiceDetails(invoiceId: string) {
+      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
       try {
         const token = localStorage.getItem('token');
 
-        const response = await fetch($api.getSalesInvoiceDetails(invoiceId), {
+        const resData = await apiFetch($api.salesInvoiceShow(invoiceId), {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           },
           credentials: 'include',
         })
-        if (!response.ok) throw new Error('Gagal mengambil data sales invoice')
-        const result = await response.json()
-        this.salesInvoice = result.data
+        
+        if (resData && resData.data) {
+          this.salesInvoice = resData.data
+        } else {
+          throw new Error('Struktur data tidak valid diterima dari API.')
+        }
       } catch (error) {
         console.error('Error fetching sales invoice:', error)
-        Swal.fire('Error', 'Gagal memuat data sales invoice.', 'error')
+        toast.error({
+          title: 'Error',
+          message: 'Gagal memuat data sales invoice.',
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
     },
 
     async saveSalesInvoice() {
+      const toast     = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -303,6 +318,20 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
             formData.set('total', grandTotal.toString());
             formData.append('remainingAmount', remainingAmount.toString());
 
+            // ✅ ADD: Append sales invoice items to FormData
+            if (this.form.salesInvoiceItems && Array.isArray(this.form.salesInvoiceItems)) {
+                this.form.salesInvoiceItems.forEach((item: any, i: number) => {
+                    if (item.productId && item.quantity > 0) {
+                        Object.keys(item).forEach(itemKey => {
+                            const value = item[itemKey];
+                            if (value !== null && value !== undefined) {
+                                formData.append(`salesInvoiceItems[${i}][${itemKey}]`, value);
+                            }
+                        });
+                    }
+                });
+            }
+
             const method = this.isEditMode ? 'PUT' : 'POST';
             const url = this.isEditMode ? `${$api.salesInvoice()}/${this.form.id}` : $api.salesInvoice();
             
@@ -321,26 +350,39 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
                 const errorData = await response.json();
                 if (response.status === 422) {
                     this.validationErrors = errorData.errors;
-                    Swal.fire('Gagal Validasi', errorData.errors.map((e: any) => e.message).join('<br>'), 'error');
+                    toast.error({
+                      title: 'Error',
+                      message: errorData.errors.map((e: any) => e.message).join('<br>'),
+                      color: 'red'
+                    });
                 } else {
                     throw new Error(errorData.message || 'Gagal menyimpan data salesInvoice');
                 }
             } else {
                 this.closeModal();
                 await this.fetchSalesInvoices();
-                Swal.fire('Berhasil!', `Sales Invoice berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`, 'success');
+                toast.success({
+                  title: 'Success',
+                  message: `Sales Invoice berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`,
+                  color: 'green'
+                });
             }
 
         } catch (error: any) {
             // Clear validation errors on new general error
             this.validationErrors = [];
-            Swal.fire('Gagal', error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Operasi gagal',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
     },
 
     async deleteSalesInvoice(id: string) {
+      const toast     = useToast();
       this.loading = true;
       const { $api } = useNuxtApp();
 
@@ -378,15 +420,24 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
           }
 
           await this.fetchSalesInvoices();
-          Swal.fire('Berhasil!', 'Sales Invoice berhasil dihapus.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Sales Invoice berhasil dihapus.',
+            color: 'green'
+          });
       } catch (error: any) {
-          Swal.fire('Error', error.message || 'Gagal menghapus Sales Invoice', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal menghapus Sales Invoice',
+            color: 'red'
+          });
       } finally {
           this.loading = false;
       }
     },
 
     async openModal(salesInvoiceData: SalesInvoice | null = null) {
+      const toast     = useToast();
       this.isEditMode = !!salesInvoiceData;
       this.validationErrors = [];
 
@@ -395,7 +446,11 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
           const fullData = this.salesInvoice;
 
           if (!fullData) {
-              Swal.fire('Error', 'Tidak dapat memuat data Sales Invoice.', 'error');
+              toast.error({
+                title: 'Error',
+                message: 'Tidak dapat memuat data Sales Invoice.',
+                color: 'red'
+              });
               return;
           }
           this.originalSalesInvoice = JSON.parse(JSON.stringify(fullData));
@@ -442,6 +497,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         status: 'unpaid',
         paidAmount: 0,
         remainingAmount: 0,
+        salesInvoiceItems: [],
       };
     },
 
@@ -470,91 +526,6 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         this.params.search = filters.search || '';
         this.params.first = 0; // reset pagination
         this.fetchSalesInvoices();
-    },
-
-    async getSalesInvoiceDetails(siId: string) {
-      this.loading = true;
-      this.error = null;
-      const { $api } = useNuxtApp();
-      
-      try {
-        const token = localStorage.getItem('token');
-        console.log('🔍 Store Debug - Token exists:', !!token);
-
-        const resData = await apiFetch($api.getSalesInvoiceDetails(siId), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-          credentials: 'include',
-        });
-        
-        console.log('🔍 Store Debug - API Response:', resData);
-        
-        if (resData && resData.data) {
-          this.salesInvoice = resData.data;
-        } else {
-          console.error('❌ Store Debug - Invalid response structure:', resData);
-          throw new Error('Struktur data tidak valid diterima dari API getSalesInvoiceDetails.');
-        }
-      } catch (e: any) {
-        console.error('❌ Store Debug - Error details:', {
-          message: e.message,
-          status: e.status,
-          statusText: e.statusText,
-          data: e.data,
-          response: e.response
-        });
-        
-        // Try fallback with standard show endpoint
-        if (e.status === 404) {
-          console.log('🔄 Store Debug - Trying fallback with standard show endpoint');
-          try {
-            const fallbackUrl = `${$api.salesInvoice()}/${siId}`;
-            console.log('🔍 Store Debug - Fallback URL:', fallbackUrl);
-            
-            const fallbackData = await apiFetch(fallbackUrl, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Accept': 'application/json',
-              },
-              credentials: 'include',
-            });
-            
-            console.log('🔍 Store Debug - Fallback Response:', fallbackData);
-            
-            if (fallbackData && fallbackData.data) {
-              console.log('✅ Store Debug - Fallback successful, setting salesInvoice data:', fallbackData.data);
-              this.salesInvoice = fallbackData.data;
-              return; // Exit successfully
-            }
-          } catch (fallbackError) {
-            console.error('❌ Store Debug - Fallback also failed:', fallbackError);
-          }
-        }
-        
-        this.error = e;
-        
-        // Create more specific error messages
-        let errorMessage = 'Gagal mengambil detail sales invoice';
-        
-        if (e.status === 404) {
-          errorMessage = `Sales Invoice dengan ID ${siId} tidak ditemukan`;
-        } else if (e.status === 401) {
-          errorMessage = 'Tidak memiliki akses untuk melihat Sales Invoice ini';
-        } else if (e.status === 403) {
-          errorMessage = 'Tidak memiliki izin untuk melihat Sales Invoice ini';
-        } else if (e.status === 500) {
-          errorMessage = 'Terjadi kesalahan server, silakan coba lagi';
-        } else if (e.message) {
-          errorMessage = e.message;
-        }
-        
-        // Throw error with more specific message
-        throw new Error(errorMessage);
-      } finally {
-        this.loading = false;
-      }
     },
 
     async fetchSalesInvoiceById(invoiceId: string) {

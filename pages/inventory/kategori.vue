@@ -43,7 +43,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="kategoriStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_kategori')" @click="kategoriStore.openModal()" class="btn btn-primary mb-2 text-nowrap add-new-role">
                                         Tambah Kategori
                                     </button>
                                     <p class="mb-0 mt-1">Buat Kategori baru</p>
@@ -166,6 +166,9 @@ import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
+import { usePermissions } from '~/composables/usePermissions'
+
+const { userHasPermission, userHasRole } = usePermissions();
 
 const myDataTableRef = ref(null)
 const kategoriStore = useKategoriStore()

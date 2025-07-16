@@ -38,6 +38,7 @@
                         :total="stats.resign + ' Pegawai'"
                     />
                     <CardBox
+                        v-if="userHasRole('superadmin') || userHasPermission('create_pegawai')"
                         :isAddButtonCard="true"
                         image-src="/img/illustrations/add-new-role-illustration.png"
                         image-alt="Tambah Pegawai"

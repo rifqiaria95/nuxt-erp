@@ -73,6 +73,9 @@ interface PurchaseOrderState {
     sortOrder: number | null
     draw     : number
     search   : string
+    vendorId?: number | null
+    poType?  : string | null
+    status?  : string | null
   }
   form            : any,
   isEditMode      : boolean
@@ -94,8 +97,25 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         sortOrder: 1,
         draw     : 1,
         search   : '',
+        vendorId : null,
+        poType   : null,
+        status   : null,
     },
     form: {
+        noPo: '',
+        up: '',
+        vendorId: null,
+        perusahaanId: null,
+        cabangId: null,
+        extNamaPerusahaan: '',
+        date: new Date().toISOString().split('T')[0], 
+        dueDate: new Date().toISOString().split('T')[0], 
+        discountPercent: 0, 
+        taxPercent: 0, 
+        description: '',
+        attachment: null, 
+        status: 'draft',
+        poType: 'internal',
         purchaseOrderItems: []
     },
     isEditMode      : false,
@@ -104,6 +124,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
   }),
   actions: {
     async fetchPurchaseOrders() {
+      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -119,6 +140,17 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             search   : this.params.search || '',
             includeItems: 'true', // Include purchaseOrderItems with product relation
         });
+
+        if (this.params.vendorId) {
+            params.append('vendorId', this.params.vendorId.toString());
+          }
+          if (this.params.poType) {
+            params.append('poType', this.params.poType);
+          }
+          if (this.params.status) {
+            params.append('status', this.params.status);
+          }
+
         url.search = params.toString();
 
         const response = await fetch(url, {
@@ -140,13 +172,18 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       } catch (e: any) {
         console.error('Gagal mengambil data purchaseOrder:', e)
         this.error = e
-        Swal.fire('Error', `Tidak dapat memuat data Purchase Order: ${e.message}`, 'error');
+        toast.error({
+          title: 'Error',
+          message: `Tidak dapat memuat data Purchase Order: ${e.message}`,
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
     },
 
     async savePurchaseOrder() {
+      const toast     = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -276,7 +313,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 console.error('Server Error Response:', errorData);
                 if (response.status === 422) {
                     this.validationErrors = errorData.errors;
-                     Swal.fire('Gagal Validasi', errorData.errors.map((e: any) => e.message).join('<br>'), 'error');
+                     toast.error({
+                      title: 'Error',
+                      message: errorData.errors.map((e: any) => e.message).join('<br>'),
+                      color: 'red'
+                    });
                 } else {
                     // Tampilkan detail error jika ada
                     let errorMessage = errorData.message || 'Gagal menyimpan data purchaseOrder';
@@ -291,7 +332,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             } else {
                 this.closeModal();
                 await this.fetchPurchaseOrders();
-                Swal.fire('Berhasil!', `Purchase Order berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`, 'success');
+                toast.success({
+                  title: 'Success',
+                  message: `Purchase Order berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`,
+                  color: 'green'
+                });
             }
 
 
@@ -299,13 +344,18 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             // Clear validation errors on new general error
             this.validationErrors = [];
             console.error('Save Purchase Order Error:', error);
-            Swal.fire('Gagal', error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Operasi gagal',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
     },
 
     async deletePurchaseOrder(id: string) {
+      const toast     = useToast();
         this.loading = true;
         const { $api } = useNuxtApp();
   
@@ -343,15 +393,24 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             }
   
             await this.fetchPurchaseOrders();
-            Swal.fire('Berhasil!', 'Purchase Order berhasil dihapus.', 'success');
+            toast.success({
+              title: 'Success',
+              message: 'Purchase Order berhasil dihapus.',
+              color: 'green'
+            });
         } catch (error: any) {
-            Swal.fire('Error', error.message || 'Gagal menghapus Purchase Order', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Gagal menghapus Purchase Order',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
       },
     
     async approvePurchaseOrder(purchaseOrderId: string) {
+      const toast     = useToast();
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -374,12 +433,19 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           }
 
           await this.fetchPurchaseOrders();
-          await Swal.fire('Berhasil!', 'Purchase Order berhasil diapprove.', 'success');
-
+          toast.success({
+            title: 'Success',
+            message: 'Purchase Order berhasil diapprove.',
+            color: 'green'
+          });
           return true;
       } catch (error: any) {
           console.error('Error approving purchase order:', error);
-          await Swal.fire('Error', error.message || 'Gagal mengapprove purchase order.', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal mengapprove purchase order.',
+            color: 'red'
+          });
           return false;
       } finally {
           this.loading = false;
@@ -387,6 +453,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },
 
     async rejectPurchaseOrder(purchaseOrderId: string) {
+      const toast     = useToast();
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -409,12 +476,20 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           }
 
           await this.fetchPurchaseOrders();
-          await Swal.fire('Berhasil!', 'Purchase Order berhasil direject.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Purchase Order berhasil direject.',
+            color: 'green'
+          });
 
           return true;
       } catch (error: any) {
           console.error('Error rejecting purchase order:', error);
-          await Swal.fire('Error', error.message || 'Gagal mereject purchase order.', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal mereject purchase order.',
+            color: 'red'
+          });
           return false;
       } finally {
           this.loading = false;
@@ -422,6 +497,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },    
 
     async updateStatusPartial(itemId: string, status: boolean, receivedQty: number) {
+      const toast     = useToast();
         this.loading = true;
         this.error = null;
         const { $api } = useNuxtApp();
@@ -459,7 +535,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         } catch (error: any) {
             console.error('Gagal memperbarui status item PO atau PO:', error);
             this.error = error;
-            Swal.fire('Error', error.data?.message || error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.data?.message || error.message || 'Operasi gagal',
+              color: 'red'
+            });
             throw error;
         } finally {
             this.loading = false;
@@ -519,12 +599,22 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     closeModal() {
         this.showModal = false;
         this.isEditMode = false;
-        this.form = { 
-            poType: 'internal',
-            extNamaPerusahaan: '',
+        this.form = {
+            noPo: '',
+            up: '',
+            vendorId: null,
             perusahaanId: null,
             cabangId: null,
-            purchaseOrderItems: [] 
+            extNamaPerusahaan: '',
+            date: new Date().toISOString().split('T')[0], 
+            dueDate: new Date().toISOString().split('T')[0], 
+            discountPercent: 0, 
+            taxPercent: 0, 
+            description: '',
+            attachment: null, 
+            status: 'draft',
+            poType: 'internal',
+            purchaseOrderItems: [],
         };
         this.validationErrors = [];
     },
@@ -555,6 +645,15 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     setSearch(value: string) {
         this.params.search = value;
         this.params.first = 0;
+        this.fetchPurchaseOrders();
+    },
+
+    setFilters(filters: { vendorId?: number | null, poType?: string | null, status?: string | null, search?: string }) {
+        this.params.vendorId = filters.vendorId;
+        this.params.poType = filters.poType;
+        this.params.status = filters.status;
+        this.params.search = filters.search || '';
+        this.params.first = 0; // reset pagination
         this.fetchPurchaseOrders();
     },
 
@@ -595,6 +694,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     },
 
     async fetchPurchaseOrderForEdit(purchaseOrderId: string) {
+      const toast     = useToast();
         this.loading = true;
         this.error = null;
         const { $api } = useNuxtApp();
@@ -621,7 +721,11 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         } catch (e: any) {
             console.error('Error in fetchPurchaseOrderForEdit:', e);
             this.error = e;
-            Swal.fire('Error', 'Gagal mengambil data purchase order untuk edit', 'error');
+            toast.error({
+              title: 'Error',
+              message: 'Gagal mengambil data purchase order untuk edit',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }

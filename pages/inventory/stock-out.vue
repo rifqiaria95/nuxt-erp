@@ -326,14 +326,15 @@ onBeforeUnmount(() => {
 
 const handleSaveStockOut = async () => {
     if (!form.value.noSo) {
-        return Swal.fire('Validasi', 'No SO wajib diisi.', 'warning');
+        toast.fire('Validasi', 'No SO wajib diisi.', 'warning');
+        return;
     }
 
     try {
         await stockOutStore.saveStockOut();
         await stockOutStore.fetchStockOutsPaginated();
         stockOutStore.closeModal();
-        Swal.fire(
+        toast.fire(
             'Berhasil!',
             `Stock Out berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
             'success'
@@ -344,9 +345,9 @@ const handleSaveStockOut = async () => {
             stockOutStore.validationErrors = Array.isArray(errorData.errors)
                 ? errorData.errors
                 : Object.values(errorData.errors).flat();
-            Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+            toast.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
         } else {
-            Swal.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock out`, 'error');
+            toast.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock out`, 'error');
         }
     }
 };
@@ -355,7 +356,7 @@ const postStockOut = async (id) => {
     try {
         await stockOutStore.postStockOut(id);
         await stockOutStore.fetchStockOutsPaginated();
-        await Swal.fire(
+        toast.fire(
             'Berhasil!',
             `Stock Out berhasil diposting.`,
             'success'
@@ -375,14 +376,14 @@ const postStockOut = async (id) => {
                  stockOutStore.validationErrors = Array.isArray(parsedError.errors)
                     ? parsedError.errors
                     : Object.values(parsedError.errors).flat();
-                return Swal.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+                return toast.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
             }
              errorMessage = parsedError.message || errorMessage;
         } catch (e) {
             // Biarkan errorMessage seperti apa adanya jika bukan JSON
         }
         
-        await Swal.fire('Error', errorMessage, 'error');
+        toast.fire('Error', errorMessage, 'error');
     }
 };
 
@@ -392,7 +393,7 @@ const loadLazyData = async () => {
         await stockOutStore.fetchStockOutsPaginated();
     } catch (error) {
         const error_message = error.message;
-        Swal.fire('Error', `Tidak dapat memuat data stock out: ${error_message}`, 'error');
+        toast.fire('Error', `Tidak dapat memuat data stock out: ${error_message}`, 'error');
     }
 };
 
@@ -433,14 +434,14 @@ const deleteStockOut = async (id) => {
         try {
             await stockOutStore.deleteStockOut(id);
             loadLazyData(); // Muat ulang data
-            await Swal.fire({
+            toast.fire({
                 title: 'Berhasil!',
                 text: 'Stock Out berhasil dihapus.',
                 icon: 'success'
             });
 
         } catch (error) {
-            await Swal.fire({
+            toast.fire({
                 title: 'Error',
                 text: error.message,
                 icon: 'error'

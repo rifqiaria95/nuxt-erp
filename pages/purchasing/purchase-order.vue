@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="purchaseOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_purchase_order')" @click="purchaseOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
                                         Tambah Purchase Order
                                     </button>
                                     <p class="mb-0 mt-1">Buat Purchase Order baru</p>
@@ -66,6 +66,24 @@
                 <div class="col-12">
                     <h4 class="mt-6 mb-1">Total Purchase Order</h4>
                     <p class="mb-0">Find all of your company's administrator accounts and their associate Purchase Order.</p>
+                </div>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <v-select v-model="filters.vendorId" :options="vendors || []" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <v-select v-model="filters.poType" :options="poTypeOptions" label="label" :reduce="option => option.value" placeholder="Pilih Tipe PO" class="v-select-style"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-12">
                     <!-- purchaseOrder Table -->
@@ -298,7 +316,7 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <v-select v-model="form.vendorId" :options="vendors" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
+                                        <v-select v-model="form.vendorId" :options="vendors || []" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
@@ -321,7 +339,7 @@
                                     <div class="col-md-6">
                                         <v-select 
                                             v-model="form.perusahaanId" 
-                                            :options="perusahaans" 
+                                            :options="perusahaans || []" 
                                             label="nmPerusahaan" 
                                             :reduce="p => p.id" 
                                             placeholder="Pilih Perusahaan" 
@@ -372,12 +390,12 @@
                                 <div v-for="(item, index) in form.purchaseOrderItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
                                         <div class="col-12">
-                                            <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style"/>
+                                            <v-select v-model="item.warehouseId" :options="warehouses || []" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style"/>
                                         </div>
                                         <div class="col-md-4">
                                             <v-select 
                                                 v-model="item.productId" 
-                                                :options="products" 
+                                                :options="products || []" 
                                                 :get-option-label="p => `${p.name} (${p.unit?.name})`" 
                                                 :reduce="p => p.id" 
                                                 placeholder="Pilih Produk" 
@@ -478,17 +496,23 @@ const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore       = usePermissionsStore()
 
 const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(purchaseOrderStore)
-const { vendors } = storeToRefs(vendorStore)
+const { vendors }     = storeToRefs(vendorStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
-const { cabangs } = storeToRefs(cabangStore)
-const { warehouses } = storeToRefs(warehouseStore)
-const { products } = storeToRefs(productStore)
-const { user } = storeToRefs(userStore)
+const { cabangs }     = storeToRefs(cabangStore)
+const { warehouses }  = storeToRefs(warehouseStore)
+const { products }    = storeToRefs(productStore)
+const { user }        = storeToRefs(userStore)
 const { permissions } = storeToRefs(permissionStore)
 
 // State
 const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
+const filters = ref({
+    search: '',
+    vendorId: null,
+    poType: null,
+    status: null,
+});
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 const modalTitle = computed(() => isEditMode.value ? 'Edit Purchase Order' : 'Tambah Purchase Order');
@@ -497,7 +521,7 @@ const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data pu
 const grandTotal = computed(() => {
   if (!form.value || !form.value.purchaseOrderItems) return 0;
 
-  const totalItems = form.value.purchaseOrderItems.reduce((total, item) => {
+  const totalItems = (form.value.purchaseOrderItems || []).reduce((total, item) => {
     return total + (Number(item.subtotal) || 0);
   }, 0);
 
@@ -517,6 +541,19 @@ const getAttachmentUrl = (attachmentPath) => {
     const baseUrl = (config.public.apiBase || '').replace('/api', '');
     return `${baseUrl}/${attachmentPath}`;
 };
+
+const poTypeOptions = ref([
+    { label: 'Internal', value: 'internal' },
+    { label: 'External', value: 'external' },
+]);
+
+const statusOptions = ref([
+    { label: 'Draft', value: 'draft' },
+    { label: 'Approved', value: 'approved' },
+    { label: 'Received', value: 'received' },
+    { label: 'Rejected', value: 'rejected' },
+    { label: 'Partial', value: 'partial' },
+]);
 
 
 let modalInstance = null;
@@ -539,9 +576,9 @@ onMounted(() => {
 watch(showModal, (newValue) => {
     if (newValue) {
         modalInstance?.show()
-        if (isEditMode.value && form.value.attachment_url) {
+        if (isEditMode.value && form.value?.attachment_url) {
             attachmentPreview.value = form.value.attachment_url
-        } else if (isEditMode.value && form.value.attachment) {
+        } else if (isEditMode.value && form.value?.attachment) {
             attachmentPreview.value = getAttachmentUrl(form.value.attachment)
         } else {
             attachmentPreview.value = null
@@ -556,13 +593,19 @@ watch(products, (newProducts) => {
     }
 })
 
-watch(() => form.value.purchaseOrderItems, (newItems) => {
+watch(filters, (newFilters) => {
+    if (!newFilters) return;
+    const { page, rows, ...restFilters } = newFilters;
+    purchaseOrderStore.setFilters(restFilters);
+}, { deep: true });
+
+watch(() => form.value?.purchaseOrderItems, (newItems) => {
     if (newItems && newItems.length > 0) {
     }
 }, { deep: true })
 
-watch(() => form.value.perusahaanId, (newPerusahaanId) => {
-    if (newPerusahaanId) {
+watch(() => form.value?.perusahaanId, (newPerusahaanId) => {
+    if (newPerusahaanId && form.value) {
         if(!isEditMode.value) {
             form.value.cabangId = null;
         }
@@ -570,31 +613,50 @@ watch(() => form.value.perusahaanId, (newPerusahaanId) => {
 });
 
 const filteredCabangs = computed(() => {
-    if (!form.value.perusahaanId || !cabangs.value) return [];
-    return cabangs.value.filter(c => c.perusahaanId === form.value.perusahaanId);
+    if (!form.value?.perusahaanId || !cabangs.value) return [];
+    return (cabangs.value || []).filter(c => c.perusahaanId === form.value.perusahaanId);
 });
 
 const isExternalPO = computed(() => {
-    return form.value.poType === 'external';
+    return form.value?.poType === 'external';
 });
 
 const debouncedSearch = useDebounceFn(() => {
-    purchaseOrderStore.setSearch(globalFilterValue.value)
+    if (globalFilterValue.value !== undefined) {
+        purchaseOrderStore.setSearch(globalFilterValue.value)
+    }
 }, 500)
-watch(globalFilterValue, debouncedSearch);
+watch(globalFilterValue, (newValue) => {
+    if (newValue !== undefined) {
+        debouncedSearch();
+    }
+});
 
-const onPage = (event) => purchaseOrderStore.setPagination(event);
+const onPage = (event) => {
+    if (event) {
+        purchaseOrderStore.setPagination(event);
+    }
+};
 const handleRowsChange = () => {
+    if (!params.value) return;
     params.value.first = 0;
     purchaseOrderStore.fetchPurchaseOrders();
 };
-const onSort = (event) => purchaseOrderStore.setSort(event);
+const onSort = (event) => {
+    if (event) {
+        purchaseOrderStore.setSort(event);
+    }
+};
 
 const exportData = (format) => {
-    if (format === 'csv') myDataTableRef.value.exportCSV();
+    if (format === 'csv' && myDataTableRef.value) {
+        myDataTableRef.value.exportCSV();
+    }
 };
 
 function onFileChange(e) {
+  if (!form.value) return;
+  
   const file = e.target.files[0];
   if (file) {
     form.value.attachment = file;
@@ -606,8 +668,10 @@ function onFileChange(e) {
 }
 
 const onProductChange = (index) => {
+  if (!form.value || !form.value.purchaseOrderItems) return;
+  
   const selectedProductId = form.value.purchaseOrderItems[index].productId;
-  const selectedProduct = products.value.find(p => p.id === selectedProductId);
+  const selectedProduct = (products.value || []).find(p => p.id === selectedProductId);
 
   if (selectedProduct) {
     const item = form.value.purchaseOrderItems[index];
@@ -617,11 +681,16 @@ const onProductChange = (index) => {
 };
 
 const onQuantityChange = (index) => {
+  if (!form.value || !form.value.purchaseOrderItems) return;
   calculateSubtotal(index);
 };
 
 const calculateSubtotal = (index) => {
+  if (!form.value || !form.value.purchaseOrderItems) return;
+  
   const item = form.value.purchaseOrderItems[index];
+  if (!item) return;
+  
   const quantity = Number(item.quantity) || 0;
   const price = Number(item.price) || 0;
   
@@ -629,10 +698,13 @@ const calculateSubtotal = (index) => {
 };
 
 const viewPurchaseOrderDetails = (purchaseOrderId) => {
+    if (!purchaseOrderId) return;
     router.push({ path: `/purchasing/purchase-order-detail`, query: { id: purchaseOrderId } });
 };
 
 const getStatusBadge = (status) => {
+    if (!status) return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    
     switch (status) {
         case 'draft': return { text: 'Draft', class: 'badge rounded-pill bg-label-secondary' };
         case 'approved': return { text: 'Approved', class: 'badge rounded-pill bg-label-primary' };
@@ -644,6 +716,8 @@ const getStatusBadge = (status) => {
 };
 
 const getPoTypeBadge = (poType) => {
+    if (!poType) return { text: '-', class: 'badge rounded-pill bg-label-light' };
+    
     switch (poType) {
         case 'internal': return { text: 'Internal', class: 'badge rounded-pill bg-label-info' };
         case 'external': return { text: 'External', class: 'badge rounded-pill bg-label-dark' };
@@ -652,6 +726,8 @@ const getPoTypeBadge = (poType) => {
 };
 
 const handlePoTypeChange = (selectedType) => {
+    if (!form.value) return;
+    
     // Jika checkbox yang diklik sudah dipilih, tidak perlu mengubah apapun
     if (form.value.poType === selectedType) {
         return;

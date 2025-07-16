@@ -113,10 +113,10 @@ onMounted(async () => {
     try {
       await stockTransferStore.fetchStockTransferById(stockTransferId);
     } catch (e) {
-      Swal.fire('Error', e.message || 'Gagal memuat detail stock transfer.', 'error');
+      toast.fire('Error', e.message || 'Gagal memuat detail stock transfer.', 'error');
     }
   } else {
-    Swal.fire('Error', 'ID Stock Transfer tidak ditemukan di URL.', 'error');
+    toast.fire('Error', 'ID Stock Transfer tidak ditemukan di URL.', 'error');
   }
 });
 
@@ -139,7 +139,7 @@ const cetakStockTransfer = (stockTransferId) => {
         const url = `${baseUrl}/inventory/cetak-stock-transfer?id=${stockTransferId}`;
         window.open(url, '_blank');
     } else {
-        Swal.fire('Error', 'ID Stock Transfer tidak ditemukan.', 'error');
+        toast.fire('Error', 'ID Stock Transfer tidak ditemukan.', 'error');
     }
 }
 </script> 

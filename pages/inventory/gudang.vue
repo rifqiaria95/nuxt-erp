@@ -16,6 +16,7 @@
                     :column-class="cardBoxColumnClass"
                 />
                 <CardBox
+                    v-if="userHasRole('superadmin') || userHasPermission('create_gudang')"
                     :isAddButtonCard="true"
                     image-src="/img/illustrations/add-new-role-illustration.png"
                     image-alt="Tambah Gudang"
@@ -196,6 +197,9 @@ import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
+import { usePermissions } from '~/composables/usePermissions'
+
+const { userHasPermission, userHasRole } = usePermissions();
 
 const myDataTableRef = ref(null)
 const warehouseStore = useWarehouseStore()

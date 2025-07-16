@@ -40,7 +40,7 @@
               </div>
             </div>
             <div class="card-info mt-5">
-              <h5 class="mb-1">155k</h5>
+              <h5 class="mb-1">{{ salesOrderStore.stats.deliveredLast4Months }}</h5>
               <p>Total Orders</p>
               <div class="badge bg-label-secondary rounded-pill">Last 4 Month</div>
             </div>
@@ -730,6 +730,7 @@
 <script setup>
 import { useUserStore } from '~/stores/user'
 import { useDashboardStore } from '~/stores/dashboard'
+import { useSalesOrderStore } from '~/stores/sales-order'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 
@@ -740,11 +741,13 @@ definePageMeta({
 
 const userStore = useUserStore()
 const dashboardStore = useDashboardStore()
+const salesOrderStore = useSalesOrderStore()
 
 const { chartData, chartOptions } = storeToRefs(dashboardStore)
 
 onMounted(async () => {
   userStore.loadUser();
+  await salesOrderStore.fetchStats();
   await dashboardStore.fetchAssociationRules();
 })
 </script>

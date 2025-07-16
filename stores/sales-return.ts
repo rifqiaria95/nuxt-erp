@@ -146,6 +146,7 @@ export const useSalesReturnStore = defineStore('salesReturn', {
   },
   actions: {
     async fetchSalesReturns() {
+      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -192,13 +193,18 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       } catch (e: any) {
         console.error('Gagal mengambil data salesReturn:', e)
         this.error = e
-        Swal.fire('Error', `Tidak dapat memuat data Sales Return: ${e.message}`, 'error');
+        toast.error({
+          title: 'Error',
+          message: `Tidak dapat memuat data Sales Return: ${e.message}`,
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
     },
 
     async fetchSalesOrdersByCustomer(customerId: number) {
+      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -222,7 +228,11 @@ export const useSalesReturnStore = defineStore('salesReturn', {
       } catch (error) {
         console.error('Error fetching sales order for customer:', error)
         this.salesOrders = [] 
-        Swal.fire('Error', 'Gagal memuat sales order untuk customer yang dipilih.', 'error')
+        toast.error({
+          title: 'Error',
+          message: 'Gagal memuat sales order untuk customer yang dipilih.',
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
@@ -255,6 +265,7 @@ export const useSalesReturnStore = defineStore('salesReturn', {
     },
 
     async saveSalesReturn() {
+      const toast     = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -288,13 +299,21 @@ export const useSalesReturnStore = defineStore('salesReturn', {
                     const errorMessage = `Stok untuk produk "${productName}" tidak mencukupi. Stok tersedia: ${Math.floor(Number(invalidItem.availableStock))}, kuantitas diminta: ${invalidItem.requestedQuantity}.`;
                     
                     this.validationErrors = [{ message: errorMessage, field: 'quantity' }];
-                    Swal.fire('Stok Tidak Cukup', errorMessage, 'error');
+                    toast.error({
+                      title: 'Error',
+                      message: errorMessage,
+                      color: 'red'
+                    });
                     this.loading = false;
                     return; // Hentikan proses
                 }
             } catch (error) {
                 console.error('Gagal memvalidasi stok:', error);
-                Swal.fire('Error', 'Tidak dapat memvalidasi stok untuk produk.', 'error');
+                toast.error({
+                  title: 'Error',
+                  message: 'Gagal memvalidasi stok untuk produk.',
+                  color: 'red'
+                });
                 this.loading = false;
                 return;
             }
@@ -376,27 +395,40 @@ export const useSalesReturnStore = defineStore('salesReturn', {
                 const errorData = await response.json();
                 if (response.status === 422) {
                     this.validationErrors = errorData.errors;
-                    Swal.fire('Gagal Validasi', errorData.message || 'Terdapat kesalahan validasi data', 'error');
+                    toast.error({
+                      title: 'Error',
+                      message: errorData.message || 'Terdapat kesalahan validasi data',
+                      color: 'red'
+                    });
                 } else {
                     throw new Error(errorData.message || 'Gagal menyimpan data salesReturn');
                 }
             } else {
                 this.closeModal();
                 await this.fetchSalesReturns();
-                Swal.fire('Berhasil!', `Sales Return berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`, 'success');
+                toast.success({
+                  title: 'Success',
+                  message: `Sales Return berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`,
+                  color: 'green'
+                });
             }
 
 
         } catch (error: any) {
             // Clear validation errors on new general error
             this.validationErrors = [];
-            Swal.fire('Gagal', error.message || 'Operasi gagal', 'error');
+            toast.error({
+              title: 'Error',
+              message: error.message || 'Operasi gagal',
+              color: 'red'
+            });
         } finally {
             this.loading = false;
         }
     },
 
     async deleteSalesReturn(id: string) {
+      const toast     = useToast();
       this.loading = true;
       const { $api } = useNuxtApp();
 
@@ -434,15 +466,24 @@ export const useSalesReturnStore = defineStore('salesReturn', {
           }
 
           await this.fetchSalesReturns();
-          Swal.fire('Berhasil!', 'Sales Return berhasil dihapus.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Sales Return berhasil dihapus.',
+            color: 'green'
+          });
       } catch (error: any) {
-          Swal.fire('Error', error.message || 'Gagal menghapus Sales Return', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal menghapus Sales Return',
+            color: 'red'
+          });
       } finally {
           this.loading = false;
       }
     },
     
     async approveSalesReturn(salesReturnId: string) {
+      const toast     = useToast();
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -465,12 +506,20 @@ export const useSalesReturnStore = defineStore('salesReturn', {
           }
 
           await this.fetchSalesReturns();
-          await Swal.fire('Berhasil!', 'Sales Return berhasil diapprove.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Sales Return berhasil diapprove.',
+            color: 'green'
+          });
 
           return true;
       } catch (error: any) {
           console.error('Error approving sales return:', error);
-          await Swal.fire('Error', error.message || 'Gagal mengapprove sales return.', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal mengapprove sales return.',
+            color: 'red'
+          });
           return false;
       } finally {
           this.loading = false;
@@ -478,6 +527,7 @@ export const useSalesReturnStore = defineStore('salesReturn', {
     },
 
     async rejectSalesReturn(salesReturnId: string) {
+      const toast     = useToast();
       this.loading = true;
       this.error = null;
       const { $api } = useNuxtApp();
@@ -500,12 +550,20 @@ export const useSalesReturnStore = defineStore('salesReturn', {
           }
 
           await this.fetchSalesReturns();
-          await Swal.fire('Berhasil!', 'Sales Return berhasil direject.', 'success');
+          toast.success({
+            title: 'Success',
+            message: 'Sales Return berhasil direject.',
+            color: 'green'
+          });
 
           return true;
       } catch (error: any) {
           console.error('Error rejecting sales return:', error);
-          await Swal.fire('Error', error.message || 'Gagal mereject sales return.', 'error');
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal mereject sales return.',
+            color: 'red'
+          });
           return false;
       } finally {
           this.loading = false;
@@ -513,6 +571,7 @@ export const useSalesReturnStore = defineStore('salesReturn', {
     },
 
     async openModal(salesReturnData: SalesReturn | null = null) {
+      const toast     = useToast();
       this.isEditMode = !!salesReturnData;
       this.validationErrors = [];
 
@@ -521,7 +580,11 @@ export const useSalesReturnStore = defineStore('salesReturn', {
           const fullData = this.salesReturn;
 
           if (!fullData) {
-              Swal.fire('Error', 'Tidak dapat memuat data Sales Order.', 'error');
+              toast.error({
+                title: 'Error',
+                message: 'Tidak dapat memuat data Sales Return.',
+                color: 'red'
+              });
               return;
           }
           this.originalSalesReturn = JSON.parse(JSON.stringify(fullData));

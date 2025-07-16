@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="salesReturnStore.openModal(null)" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_sales_return')" @click="salesReturnStore.openModal(null)" class="btn btn-primary mb-2 text-wrap add-new-role">
                                         Tambah Sales Return
                                     </button>
                                     <p class="mb-0 mt-1">Buat Sales Return baru</p>

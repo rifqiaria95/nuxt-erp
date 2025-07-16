@@ -51,7 +51,7 @@
                             </div>
                             <div class="col-sm-7">
                                 <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button @click="salesInvoiceStore.openModal(null, 'admin')" class="btn btn-primary mb-2 text-wrap add-new-role">
+                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_sales_invoice')" @click="salesInvoiceStore.openModal(null, 'admin')" class="btn btn-primary mb-2 text-wrap add-new-role">
                                         Tambah Sales Invoice
                                     </button>
                                     <p class="mb-0 mt-1">Buat Sales Invoice baru</p>
@@ -139,8 +139,16 @@
                                     </Column>
                                     <Column field="salesOrder.noSo" header="No. SO" :sortable="true">
                                         <template #body="slotProps">
-                                            <span>
-                                                {{ slotProps.data.salesOrder?.noSo || '-' }}
+                                            <span v-if="slotProps.data.salesOrder?.noSo && slotProps.data.salesOrder?.id">
+                                                <a :href="`/sales/sales-order-detail?id=${slotProps.data.salesOrder.id}`" class="text-primary"
+                                                style="text-decoration: underline;"
+                                                title="Lihat Sales Order"
+                                                >
+                                                    {{ slotProps.data.salesOrder.noSo }}
+                                                </a>
+                                            </span>
+                                            <span v-else>
+                                                -
                                             </span>
                                         </template>
                                     </Column>
@@ -230,6 +238,12 @@
                                         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#form-tabs-info" role="tab" aria-selected="true" type="button">
                                             <span class="ri-user-line ri-20px d-sm-none"></span>
                                             <span class="d-none d-sm-block">Informasi Sales Invoice</span>
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#form-tabs-items" role="tab" aria-selected="false" type="button">
+                                            <span class="ri-folder-user-line ri-20px d-sm-none"></span>
+                                            <span class="d-none d-sm-block">List Product</span>
                                         </button>
                                     </li>
                                 </ul>
@@ -413,6 +427,63 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
+                                <div v-for="(item, index) in (form.salesInvoiceItems || [])" :key="index" class="repeater-item mb-4">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <v-select v-model="item.productId" :options="customerProducts || []" :get-option-label="p => `${p.name} (${p.unit?.name || 'No Unit'})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style" @update:modelValue="updateStockInfo(index)"/>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty" step="1" min="0">
+                                                <label>Jumlah</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="number" v-model.number="item.deliveredQty" @input="onDeliveredQtyChange(index)" class="form-control" placeholder="Delivered Qty" step="1" min="0">
+                                                <label>Delivered Qty</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" :value="formatRupiah(item.price)" class="form-control" placeholder="Harga" readonly>
+                                                <label>Harga Jual</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" :value="formatRupiah(item.subtotal)" class="form-control" placeholder="Subtotal" readonly>
+                                                <label>Subtotal</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-9">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item">
+                                                <label>Deskripsi</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 d-flex align-items-center">
+                                            <button @click.prevent="removeSalesInvoiceItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
+                                        </div>
+                                    </div>
+                                    <hr class="my-4">
+                                </div>
+                                <div class="mt-4">
+                                    <button @click.prevent="addSalesInvoiceItem()" class="btn btn-primary">Tambah Item</button>
+                                </div>
+                                <div class="d-flex justify-content-end mt-4">
+                                    <div class="text-end">
+                                        <div class="mb-2">
+                                            <span class="fw-medium">Subtotal Items: {{ formatRupiah(salesInvoiceItemsTotal) }}</span>
+                                        </div>
+                                        <div class="fw-bold fs-5">Grand Total: {{ formatRupiah(grandTotal) }}</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="modal-footer mt-6">
                              <button type="button" class="btn btn-outline-secondary" @click="salesInvoiceStore.closeModal()">Tutup</button>
@@ -473,7 +544,8 @@ const salesOrderStore       = useSalesOrderStore()
 
 const { salesInvoices, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(salesInvoiceStore)
 const { customers }   = storeToRefs(customerStore)
-const { salesOrders } = storeToRefs(salesOrderStore)
+const { salesOrders, customerProducts } = storeToRefs(salesOrderStore)
+const { warehouses }  = storeToRefs(warehouseStore)
 
 // State
 const filters = ref({
@@ -531,7 +603,9 @@ const paymentStatusClass = computed(() => {
 const discountAmount = computed(() => {
   const total = Number(form.value.total) || 0;
   const discountPercent = Number(form.value.discountPercent) || 0;
-  return total * (discountPercent / 100);
+  const result = total * (discountPercent / 100);
+  // Bulatkan ke integer untuk menghindari desimal
+  return Math.round(result);
 });
 
 // Computed untuk tax amount dalam rupiah
@@ -542,7 +616,9 @@ const taxAmount = computed(() => {
   
   // Tax dihitung setelah discount
   const totalAfterDiscount = total - (total * (discountPercent / 100));
-  return totalAfterDiscount * (taxPercent / 100);
+  const result = totalAfterDiscount * (taxPercent / 100);
+  // Bulatkan ke integer untuk menghindari desimal
+  return Math.round(result);
 });
 
 // Computed untuk grand total (total + tax - discount)
@@ -550,7 +626,34 @@ const grandTotal = computed(() => {
   const total = Number(form.value.total) || 0;
   const discount = discountAmount.value;
   const tax = taxAmount.value;
-  return total - discount + tax;
+  const result = total - discount + tax;
+  // Bulatkan ke integer untuk menghindari desimal
+  return Math.round(result);
+});
+
+// ✅ NEW: Computed untuk menghitung total dari sales invoice items
+const salesInvoiceItemsTotal = computed(() => {
+  if (!form.value.salesInvoiceItems || !Array.isArray(form.value.salesInvoiceItems) || form.value.salesInvoiceItems.length === 0) {
+    return 0;
+  }
+  
+  const result = form.value.salesInvoiceItems.reduce((total, item) => {
+    if (!item) return total;
+    const quantity = Number(item.quantity) || 0;
+    const unitPrice = Number(item.price) || 0;
+    return total + (quantity * unitPrice);
+  }, 0);
+  
+  // Bulatkan ke integer untuk menghindari desimal
+  return Math.round(result);
+});
+
+// ✅ NEW: Watcher untuk mengupdate total form berdasarkan sales invoice items
+watch(salesInvoiceItemsTotal, (newTotal) => {
+  // Hanya update jika tidak ada sales order yang dipilih (manual input)
+  if (!form.value.salesOrderId) {
+    form.value.total = Math.round(newTotal);
+  }
 });
 
 const statusOptions = ref([
@@ -573,6 +676,7 @@ onMounted(() => {
     salesInvoiceStore.fetchSalesInvoices();
     customerStore.fetchCustomers();
     salesOrderStore.fetchSalesOrders();
+    warehouseStore.fetchWarehouses();
     permissionStore.fetchPermissions();
 
     const modalElement = document.getElementById('SalesInvoiceModal')
@@ -616,7 +720,7 @@ watch(() => form.value.perusahaanId, (newPerusahaanId) => {
 });
 
 // Watcher untuk salesOrderId - auto fill data ketika dipilih
-watch(() => form.value.salesOrderId, (newSalesOrderId, oldSalesOrderId) => {
+watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) => {
   if (newSalesOrderId && newSalesOrderId !== oldSalesOrderId) {
     const selectedSalesOrder = salesOrders.value?.find(so => so.id === newSalesOrderId);
     
@@ -627,7 +731,7 @@ watch(() => form.value.salesOrderId, (newSalesOrderId, oldSalesOrderId) => {
       form.value.customerId = selectedSalesOrder.customerId || selectedSalesOrder.customer?.id;
       form.value.discountPercent = selectedSalesOrder.discountPercent || 0;
       form.value.taxPercent = selectedSalesOrder.taxPercent || 0;
-      form.value.total = selectedSalesOrder.total || 0;
+      form.value.total = Math.round(Number(selectedSalesOrder.total)) || 0;
       
       // Jika ada data perusahaan dan cabang di sales order
       if (selectedSalesOrder.perusahaanId) {
@@ -657,19 +761,83 @@ watch(() => form.value.salesOrderId, (newSalesOrderId, oldSalesOrderId) => {
       // Set paid amount default
       if (!form.value.paidAmount) {
         form.value.paidAmount = 0;
+      } else {
+        // Pastikan paid amount juga integer
+        form.value.paidAmount = Math.round(Number(form.value.paidAmount));
+      }
+      
+      // ✅ AUTO FILL SALES ORDER ITEMS - HANYA JIKA BUKAN EDIT MODE
+      if (!isEditMode.value) {
+        try {
+          // Fetch detail sales order dengan items
+          await salesOrderStore.getSalesOrderDetails(newSalesOrderId);
+          const detailedSalesOrder = salesOrderStore.salesOrder;
+          
+          if (detailedSalesOrder && detailedSalesOrder.salesOrderItems) {
+            console.log('🔍 Auto filling sales order items:', detailedSalesOrder.salesOrderItems);
+            
+            // Pastikan salesInvoiceItems selalu ada
+            if (!form.value.salesInvoiceItems) {
+              form.value.salesInvoiceItems = [];
+            }
+            
+            // Clear existing items
+            form.value.salesInvoiceItems = [];
+            
+            // Auto fill items dari sales order
+            detailedSalesOrder.salesOrderItems.forEach((soItem, index) => {
+              const invoiceItem = {
+                productId: soItem.productId,
+                warehouseId: soItem.warehouseId,
+                quantity: Math.floor(Number(soItem.quantity)) || 0,
+                price: soItem.price,
+                subtotal: Math.round(Number(soItem.subtotal)) || 0,
+                description: soItem.description || '',
+                deliveredQty: Math.floor(Number(soItem.deliveredQty || soItem.quantity)) || 0,
+                isReturned: false,
+                // Include product info if available
+                product: soItem.product ? {
+                  id: soItem.product.id,
+                  name: soItem.product.name,
+                  sku: soItem.product.sku,
+                  priceSell: soItem.product.priceSell,
+                  unit: soItem.product.unit
+                } : null,
+                // Include warehouse info if available
+                warehouse: soItem.warehouse ? {
+                  id: soItem.warehouse.id,
+                  name: soItem.warehouse.name
+                } : null,
+                // Reference to sales order item
+                salesOrderItemId: soItem.id
+              };
+              
+              form.value.salesInvoiceItems.push(invoiceItem);
+            });
+        
+            console.log('✅ Auto filled sales invoice items:', form.value.salesInvoiceItems);
+          }
+        } catch (error) {
+          console.error('❌ Error fetching sales order details for auto fill:', error);
+          // Fallback: create empty items array
+          form.value.salesInvoiceItems = [];
+        }
+      } else {
+        console.log('🔒 Edit mode detected - preserving existing sales invoice items');
       }
       
       console.log('✅ Auto filled form data:', {
-        customerId: form.value.customerId,
+        customerId     : form.value.customerId,
         discountPercent: form.value.discountPercent,
-        taxPercent: form.value.taxPercent,
-        total: form.value.total,
-        perusahaanId: form.value.perusahaanId,
-        cabangId: form.value.cabangId,
-        date: form.value.date,
-        dueDate: form.value.dueDate,
-        status: form.value.status,
-        paidAmount: form.value.paidAmount
+        taxPercent     : form.value.taxPercent,
+        total          : form.value.total,
+        perusahaanId   : form.value.perusahaanId,
+        cabangId       : form.value.cabangId,
+        date           : form.value.date,
+        dueDate        : form.value.dueDate,
+        status         : form.value.status,
+        paidAmount     : form.value.paidAmount,
+        itemsCount     : form.value.salesInvoiceItems?.length || 0
       });
     }
   } else if (!newSalesOrderId && oldSalesOrderId) {
@@ -684,6 +852,12 @@ watch(() => form.value.salesOrderId, (newSalesOrderId, oldSalesOrderId) => {
       form.value.total = 0;
       form.value.paidAmount = 0;
       form.value.status = 'unpaid';
+      // Clear sales invoice items
+      if (!form.value.salesInvoiceItems) {
+        form.value.salesInvoiceItems = [];
+      } else {
+        form.value.salesInvoiceItems = [];
+      }
     }
   }
 });
@@ -697,14 +871,11 @@ watch(() => form.value.status, (newStatus, oldStatus) => {
     
     if (newStatus === 'paid') {
       // Jika status paid, paid amount harus sama dengan grand total
-      form.value.paidAmount = totalAmount;
+      form.value.paidAmount = Math.round(totalAmount);
     } else if (newStatus === 'unpaid') {
       // Jika status unpaid, paid amount harus 0
       form.value.paidAmount = 0;
     }
-    // Untuk status 'partial', biarkan user input manual
-    
-    console.log('💰 Status changed to:', newStatus, 'Paid Amount:', form.value.paidAmount);
     
     // Reset flag setelah update selesai
     nextTick(() => {
@@ -716,8 +887,7 @@ watch(() => form.value.status, (newStatus, oldStatus) => {
 // Watcher untuk grand total - adjust paid amount jika status paid
 watch(() => grandTotal.value, (newGrandTotal, oldGrandTotal) => {
   if (form.value.status === 'paid' && newGrandTotal !== oldGrandTotal) {
-    form.value.paidAmount = newGrandTotal;
-    console.log('💰 Grand Total changed, adjusting paid amount for paid status:', form.value.paidAmount);
+    form.value.paidAmount = Math.round(newGrandTotal);
   }
 });
 
@@ -737,7 +907,7 @@ watch(() => form.value.paidAmount, (newPaidAmount, oldPaidAmount) => {
       newStatus = 'paid';
       // Batasi paid amount tidak boleh lebih dari grand total
       if (paidAmount > totalAmount) {
-        form.value.paidAmount = totalAmount;
+        form.value.paidAmount = Math.round(totalAmount);
       }
     } else if (paidAmount > 0 && paidAmount < totalAmount) {
       newStatus = 'partial';
@@ -745,7 +915,6 @@ watch(() => form.value.paidAmount, (newPaidAmount, oldPaidAmount) => {
     
     if (newStatus !== form.value.status) {
       form.value.status = newStatus;
-      console.log('🔄 Status auto-changed to:', newStatus, 'based on paid amount:', paidAmount);
     }
     
     // Reset flag setelah update selesai
@@ -755,10 +924,24 @@ watch(() => form.value.paidAmount, (newPaidAmount, oldPaidAmount) => {
   }
 });
 
-watch(() => salesInvoiceStore.customerProducts, (newProducts) => {
-  if (form.value.salesInvoiceItems && newProducts) {
+// ✅ NEW: Watcher untuk customerId - fetch products untuk customer yang dipilih
+watch(() => form.value.customerId, (newCustomerId, oldCustomerId) => {
+  if (newCustomerId && newCustomerId !== oldCustomerId) {
+    // Hanya fetch jika customerId valid dan berubah
+    if (typeof newCustomerId === 'number' || typeof newCustomerId === 'string') {
+      salesOrderStore.fetchProductsForCustomer(newCustomerId);
+    }
+  } else if (!newCustomerId) {
+    // Reset customer products jika customer dihapus
+    salesOrderStore.customerProducts = [];
+  }
+});
+
+watch(() => customerProducts, (newProducts) => {
+  if (form.value.salesInvoiceItems && Array.isArray(form.value.salesInvoiceItems) && newProducts && Array.isArray(newProducts)) {
     form.value.salesInvoiceItems.forEach(item => {
-      const productExists = newProducts.some(p => p.id === item.productId);
+      if (!item) return;
+      const productExists = newProducts.some(p => p && p.id === item.productId);
       if (!productExists) {
         item.productId = null;
         item.price = 0;
@@ -799,6 +982,11 @@ const exportData = (format) => {
 
 
 const onQuantityChange = (index) => {
+  // Pastikan quantity selalu integer
+  const item = form.value.salesInvoiceItems[index];
+  if (item && item.quantity !== null && item.quantity !== undefined) {
+    item.quantity = Math.floor(Number(item.quantity)) || 0;
+  }
   calculateSubtotal(index);
 };
 
@@ -806,7 +994,82 @@ const calculateSubtotal = (index) => {
   const item = form.value.salesInvoiceItems[index];
   const quantity = Number(item.quantity) || 0;
   const unitPrice = Number(item.price) || 0;
-  item.subtotal = quantity * unitPrice;
+  const result = quantity * unitPrice;
+  // Bulatkan ke integer untuk menghindari desimal
+  item.subtotal = Math.round(result);
+};
+
+// ✅ NEW: Function untuk menangani perubahan produk pada sales invoice items
+const onProductChange = (index) => {
+  const selectedProductId = form.value.salesInvoiceItems[index].productId;
+  const selectedProduct = customerProducts.value && Array.isArray(customerProducts.value) 
+    ? customerProducts.value.find(p => p && p.id === selectedProductId)
+    : null;
+
+  if (selectedProduct) {
+    const item = form.value.salesInvoiceItems[index];
+    item.price = Number(selectedProduct.priceSell) || 0;
+    calculateSubtotal(index);
+    updateStockInfo(index);
+  }
+};
+
+// ✅ NEW: Function untuk update stock info
+const updateStockInfo = async (index) => {
+  const item = form.value.salesInvoiceItems[index];
+  if (item.productId && item.warehouseId) {
+    try {
+      const stockStore = useStocksStore();
+      stockStore.params.search = ''; // Reset search if any
+      stockStore.params.rows = 1; // We only need one record
+      const response = await stockStore.fetchStocksPaginated({
+        productId: item.productId,
+        warehouseId: item.warehouseId,
+      });
+      if (response && response.data && response.data.length > 0) {
+        item.stock = response.data[0];
+      } else {
+        item.stock = { quantity: 0 };
+      }
+    } catch (error) {
+      console.error('Failed to fetch stock info:', error);
+      item.stock = { quantity: 0 };
+    }
+  } else {
+    item.stock = { quantity: 0 };
+  }
+};
+
+// ✅ NEW: Function untuk menambah item sales invoice
+const addSalesInvoiceItem = () => {
+  // Pastikan salesInvoiceItems selalu ada
+  if (!form.value.salesInvoiceItems) {
+    form.value.salesInvoiceItems = [];
+  }
+  form.value.salesInvoiceItems.push({
+    productId: null,
+    warehouseId: null,
+    quantity: 1,
+    price: 0,
+    description: '',
+    subtotal: 0,
+    deliveredQty: 0,
+    isReturned: false,
+    stock: { quantity: 0 },
+  });
+};
+
+// ✅ NEW: Function untuk menghapus item sales invoice
+const removeSalesInvoiceItem = (index) => {
+  form.value.salesInvoiceItems.splice(index, 1);
+};
+
+// ✅ NEW: Function untuk handle perubahan delivered quantity
+const onDeliveredQtyChange = (index) => {
+  const item = form.value.salesInvoiceItems[index];
+  if (item && item.deliveredQty !== null && item.deliveredQty !== undefined) {
+    item.deliveredQty = Math.floor(Number(item.deliveredQty)) || 0;
+  }
 };
 
 // Function to convert formatted rupiah back to number
@@ -821,7 +1084,7 @@ const updateTotalFromInput = (event) => {
   if (!form.value.salesOrderId) { // Only allow manual input if no sales order selected
     const inputValue = event.target.value;
     const numericValue = parseRupiahToNumber(inputValue);
-    form.value.total = numericValue;
+    form.value.total = Math.round(numericValue);
   }
 };
 
@@ -829,16 +1092,14 @@ const updateTotalFromInput = (event) => {
 const updatePaidAmountFromInput = (event) => {
   const inputValue = event.target.value;
   const numericValue = parseRupiahToNumber(inputValue);
-  form.value.paidAmount = numericValue;
+  form.value.paidAmount = Math.round(numericValue);
 };
 
 const viewSalesInvoiceDetails = (salesInvoiceId) => {
-    console.log('🔍 Page Debug - viewSalesInvoiceDetails called with ID:', salesInvoiceId);
-    console.log('🔍 Page Debug - ID type:', typeof salesInvoiceId);
     
     if (!salesInvoiceId) {
         console.error('❌ Page Debug - No salesInvoiceId provided');
-        Swal.fire({
+        toast.fire({
             icon: 'error',
             title: 'Parameter Tidak Valid',
             text: 'ID Sales Invoice tidak valid.',
@@ -847,7 +1108,6 @@ const viewSalesInvoiceDetails = (salesInvoiceId) => {
         return;
     }
     
-    console.log('🔍 Page Debug - Navigating to sales-invoice-detail with ID:', salesInvoiceId);
     router.push({ path: `/sales/sales-invoice-detail`, query: { id: salesInvoiceId } });
 };
 
@@ -861,12 +1121,10 @@ const getStatusBadge = (status) => {
 };
 
 const printSalesInvoice = (salesInvoiceId) => {
-    console.log('🔍 Page Debug - printSalesInvoice called with ID:', salesInvoiceId);
-    console.log('🔍 Page Debug - ID type:', typeof salesInvoiceId);
     
     if (!salesInvoiceId) {
         console.error('❌ Page Debug - No salesInvoiceId provided');
-        Swal.fire({
+        toast.fire({
             icon: 'error',
             title: 'Parameter Tidak Valid',
             text: 'ID Sales Invoice tidak valid.',
@@ -875,7 +1133,6 @@ const printSalesInvoice = (salesInvoiceId) => {
         return;
     }
     
-    console.log('🔍 Page Debug - Navigating to cetak-invoice with ID:', salesInvoiceId);
     router.push({ path: `/sales/cetak-invoice`, query: { id: salesInvoiceId } });
 };
 
@@ -887,9 +1144,9 @@ const getSalesOrderLabel = (option) => {
 const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('id-ID', { 
-        day: '2-digit', 
-        month: '2-digit', 
-        year: 'numeric' 
+        day  : '2-digit',
+        month: '2-digit',
+        year : 'numeric'
     });
 };
 

@@ -36,6 +36,7 @@
                     :total="stats.general_manager + ' Orang'"
                 />
                 <CardBox
+                    v-if="userHasRole('superadmin') || userHasPermission('create_jabatan')"
                     :isAddButtonCard="true"
                     image-src="/img/illustrations/add-new-role-illustration.png"
                     image-alt="Tambah Jabatan"

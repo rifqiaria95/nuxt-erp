@@ -146,7 +146,7 @@
       try {
         await stockTransferStore.fetchStockTransferById(stockTransferId);
       } catch (e) {
-        Swal.fire('Error', e.message || 'Gagal memuat detail stock transfer.', 'error');
+        toast('Error', e.message || 'Gagal memuat detail stock transfer.', 'error');
       }
     }
   });
