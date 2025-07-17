@@ -5,84 +5,76 @@
       </div>
     </div>
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
-    <div v-else-if="salesInvoice" class="p-6">
+    <div v-else-if="purchaseOrder" class="p-6">
       <div class="d-flex justify-content-between flex-row">
-        <div v-if="salesInvoice.salesOrder?.perusahaan">
+         <div v-if="purchaseOrder.perusahaan">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
-               <img v-if="salesInvoice.salesOrder.perusahaan.logoPerusahaan"
-               :src="getLogoUrl(salesInvoice.salesOrder.perusahaan.logoPerusahaan)"
+               <img v-if="purchaseOrder.perusahaan.logoPerusahaan"
+               :src="getLogoUrl(purchaseOrder.perusahaan.logoPerusahaan)"
                alt="Logo Perusahaan"
                style="width: 200px;">
             </span>
           </div>
-          <h4 class="mb-2 text-primary">{{ salesInvoice.salesOrder.perusahaan.nmPerusahaan }}</h4>
-          <p class="mb-1">{{ salesInvoice.salesOrder.perusahaan.alamatPerusahaan }}</p>
-          <p class="mb-0">{{ salesInvoice.salesOrder.perusahaan.tlpPerusahaan }}</p>
-          <p class="mb-0">{{ salesInvoice.salesOrder.perusahaan.emailPerusahaan }}</p>
+          <h5 class="mb-2 text-primary fw-bold">{{ purchaseOrder.perusahaan.nmPerusahaan }}</h5>
+          <p class="mb-1">{{ purchaseOrder.perusahaan.alamatPerusahaan }}</p>
+          <p class="mb-0">{{ purchaseOrder.perusahaan.tlpPerusahaan }}</p>
+          <p class="mb-0">{{ purchaseOrder.perusahaan.emailPerusahaan }}</p>
         </div>
         <div>
-          <h5 class="mb-6 text-capitalize text-end">INVOICE #{{ salesInvoice.noInvoice }}</h5>
-          <table class="table table-borderless">
-            <tr>
-              <td class="text-start w-90">Customer</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.name || salesInvoice.salesOrder?.customer?.name || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Address</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.address || salesInvoice.salesOrder?.customer?.address || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">NPWP</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.npwp || salesInvoice.salesOrder?.customer?.npwp || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Email</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.email || salesInvoice.salesOrder?.customer?.email || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Phone</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.phone || salesInvoice.salesOrder?.customer?.phone || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Payment Term</td>
-              <td class="w-10">:</td>
-              <td class="text-start">30 Days</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Order No</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.salesOrder?.noSo || '-' }}</td>
-            </tr>
-          </table>
+          <h6 class="mb-6 text-capitalize text-end fw-bold">PURCHASE ORDER #{{ purchaseOrder.noPo }}</h6>
+          <div style="margin-left: 32px;">
+            <table class="table table-borderless" style="font-size: 12px; width: auto;">
+              <tr>
+                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Supplier/Vendor</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.name || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Address</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.address || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">NPWP</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.npwp || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Email</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.email || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Phone</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.phone || '-' }}</td>
+              </tr>
+            </table>
+          </div>
         </div>
       </div>
 
       <hr class="my-6" />
 
       <!-- ✅ INFO SECTION -->
-      <div v-if="salesInvoice.salesInvoiceItems && salesInvoice.salesInvoiceItems.length > 0" 
+      <div v-if="purchaseOrder.purchaseOrderItems && purchaseOrder.purchaseOrderItems.length > 0" 
            class="alert alert-info d-flex align-items-center mb-4" role="alert">
         <i class="ri-information-line me-2"></i>
         <div>
-          <strong>Invoice Items:</strong> Menampilkan {{ salesInvoice.salesInvoiceItems.length }} item dari Sales Invoice Items
+          <strong>Purchase Order Items:</strong> Menampilkan {{ purchaseOrder.purchaseOrderItems.length }} item dari Purchase Order Items
         </div>
       </div>
-      <div v-else-if="salesInvoice.salesOrder?.salesOrderItems && salesInvoice.salesOrder.salesOrderItems.length > 0" 
+      <div v-else-if="purchaseOrder.purchaseOrderItems && purchaseOrder.purchaseOrderItems.length > 0" 
            class="alert alert-warning d-flex align-items-center mb-4" role="alert">
         <i class="ri-alert-line me-2"></i>
         <div>
-          <strong>Fallback Mode:</strong> Menampilkan {{ salesInvoice.salesOrder.salesOrderItems.length }} item dari Sales Order (Invoice Items belum dibuat)
+          <strong>Fallback Mode:</strong> Menampilkan {{ purchaseOrder.purchaseOrderItems.length }} item dari Purchase Order Items
         </div>
       </div>
 
       <div class="table-responsive border border-bottom-0 rounded">
-        <table class="table m-0">
+        <table class="table m-0" style="font-size: 12px;">
           <thead>
             <tr>
               <th>No</th>
@@ -96,7 +88,7 @@
           </thead>
           <tbody>
             <!-- ✅ GUNAKAN SALES INVOICE ITEMS, bukan sales order items -->
-            <tr v-for="(item, index) in salesInvoice.salesInvoiceItems" :key="item.id">
+            <tr v-for="(item, index) in purchaseOrder.purchaseOrderItems" :key="item.id">
               <td>{{ index + 1 }}</td>
               <td>{{ item.product?.sku || '-' }}</td>
               <td>{{ item.product?.name || '-' }}</td>
@@ -106,21 +98,20 @@
               <td>{{ formatRupiah(item.subtotal || 0) }}</td>
             </tr>
             <!-- ✅ FALLBACK: jika tidak ada salesInvoiceItems, tampilkan dari salesOrder -->
-            <template v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && salesInvoice.salesOrder?.salesOrderItems">
-              <tr v-for="(item, index) in salesInvoice.salesOrder.salesOrderItems" :key="`fallback-${item.id}`">
+            <template v-if="(!purchaseOrder.purchaseOrderItems || purchaseOrder.purchaseOrderItems.length === 0)">
+              <tr v-for="(item, index) in purchaseOrder.purchaseOrderItems" :key="`fallback-${item.id}`">
                 <td>{{ index + 1 }}</td>
                 <td>{{ item.product?.sku || '-' }}</td>
                 <td>{{ item.product?.name || '-' }}</td>
                 <td>{{ item.description || '-' }}</td>
                 <td>{{ Number(item.quantity) }}</td>
-                <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
               <td>{{ formatRupiah(item.price || 0) }}</td>
               <td>{{ formatRupiah(item.subtotal || 0) }}</td>
             </tr>
             </template>
             <!-- ✅ MESSAGE jika tidak ada items sama sekali -->
-            <tr v-if="(!salesInvoice.salesInvoiceItems || salesInvoice.salesInvoiceItems.length === 0) && 
-                      (!salesInvoice.salesOrder?.salesOrderItems || salesInvoice.salesOrder.salesOrderItems.length === 0)">
+            <tr v-if="(!purchaseOrder.purchaseOrderItems || purchaseOrder.purchaseOrderItems.length === 0) && 
+                      (!purchaseOrder.purchaseOrderItems || purchaseOrder.purchaseOrderItems.length === 0)">
               <td colspan="8" class="text-center py-4 text-muted">
                 <em>Tidak ada item untuk ditampilkan</em>
               </td>
@@ -130,15 +121,15 @@
       </div>
       
       <div class="table-responsive">
-        <table class="table mt-2 table-borderless">
+        <table class="table mt-2 table-borderless" style="font-size: 12px;">
           <tbody>
-            <tr v-if="salesInvoice.description">
+            <tr v-if="purchaseOrder.description">
               <td colspan="2" class="px-0 pt-6 align-top" style="max-width: 320px; width: 320px; min-width: 220px;">
                 <p class="mb-2">
                   <span class="fw-medium text-heading">Catatan:</span>
                 </p>
                 <p class="mb-0" style="white-space: pre-line; word-break: break-word; max-width: 320px;">
-                  {{ salesInvoice.description }}
+                  {{ purchaseOrder.description }}
                 </p>
               </td>
               <td colspan="4" class="px-0 pt-6 align-top">
@@ -149,17 +140,17 @@
                   </div>
                   <div class="mb-2">
                     <span class="fw-medium text-heading">
-                      Discount ({{ Number(salesInvoice.discountPercent) }}%):
+                      Discount ({{ Number(purchaseOrder.discountPercent) }}%):
                     </span>
-                    <span v-if="Number(salesInvoice.discountPercent) > 0" class="fw-semibold">-{{ formatRupiah(calculateDiscount()) || 0 }}</span>
+                    <span v-if="Number(purchaseOrder.discountPercent) > 0" class="fw-semibold">-{{ formatRupiah(calculateDiscount()) || 0 }}</span>
                   </div>
                   <div class="mb-2">
                     <span class="fw-medium text-heading">
-                      Tax ({{ Number(salesInvoice.taxPercent) }}%):
+                      Tax ({{ Number(purchaseOrder.taxPercent) }}%):
                     </span>
-                    <span v-if="Number(salesInvoice.taxPercent) > 0" class="fw-semibold">{{ formatRupiah(calculateTax()) || 0 }}</span>
+                    <span v-if="Number(purchaseOrder.taxPercent) > 0" class="fw-semibold">{{ formatRupiah(calculateTax()) || 0 }}</span>
                   </div>
-                  <div>
+                  <div class="fw-bold border-top border-dark pt-2">
                     <span class="fw-medium text-heading">Total: </span>
                     <span class="fw-semibold">{{ formatRupiah(calculateGrandTotal()) || 0 }}</span>
                   </div>
@@ -176,8 +167,8 @@
                   <span class="fw-medium text-heading">
                     Jakarta, 
                     {{
-                      salesInvoice.date
-                        ? new Date(salesInvoice.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                      purchaseOrder.date
+                        ? new Date(purchaseOrder.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
                         : '-'
                     }}
                   </span>
@@ -206,7 +197,7 @@
       </div>
     </div>
     <div v-else class="alert alert-danger m-6" role="alert">
-      Sales Invoice tidak ditemukan.
+        Purchase Order tidak ditemukan.
     </div>
 </template>
 
@@ -215,17 +206,17 @@
     layout: 'cetak',
   })
   import { onMounted, computed } from 'vue';
-  import { useSalesInvoiceStore } from '~/stores/sales-invoice';
+  import { usePurchaseOrderStore } from '~/stores/purchaseOrder';
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
-  import Swal from 'sweetalert2';
   
-  const config = useRuntimeConfig();
-  const salesInvoiceStore = useSalesInvoiceStore();
-  const route = useRoute();
-  const formatRupiah = useFormatRupiah();
+  const config             = useRuntimeConfig();
+  const purchaseOrderStore = usePurchaseOrderStore();
+  const route              = useRoute();
+  const formatRupiah       = useFormatRupiah();
+  const toast              = useToast();
 
-  const { selectedSalesInvoice: salesInvoice, loading, error } = storeToRefs(salesInvoiceStore);
+  const { purchaseOrder, loading, error } = storeToRefs(purchaseOrderStore);
 
   const getLogoUrl = (logoPath) => {
     if (!logoPath || typeof logoPath !== 'string') {
@@ -243,18 +234,18 @@
   };
 
   const calculateSubtotal = () => {
-    if (!salesInvoice.value) return 0;
+    if (!purchaseOrder.value) return 0;
     
     // ✅ PRIORITAS: Gunakan salesInvoiceItems jika ada
-    if (salesInvoice.value.salesInvoiceItems && salesInvoice.value.salesInvoiceItems.length > 0) {
-      return salesInvoice.value.salesInvoiceItems.reduce((total, item) => {
+    if (purchaseOrder.value.purchaseOrderItems && purchaseOrder.value.purchaseOrderItems.length > 0) {
+      return purchaseOrder.value.purchaseOrderItems.reduce((total, item) => {
         return total + (Number(item.subtotal) || 0);
       }, 0);
     }
     
     // ✅ FALLBACK: Gunakan salesOrderItems jika salesInvoiceItems tidak ada
-    if (salesInvoice.value.salesOrder?.salesOrderItems) {
-      return salesInvoice.value.salesOrder.salesOrderItems.reduce((total, item) => {
+    if (purchaseOrder.value.salesOrder?.salesOrderItems) {
+      return purchaseOrder.value.salesOrder.salesOrderItems.reduce((total, item) => {
         return total + (Number(item.subtotal) || 0);
       }, 0);
     }
@@ -263,17 +254,17 @@
   };
 
   const calculateDiscount = () => {
-    if (!salesInvoice.value || !salesInvoice.value.discountPercent) return 0;
+    if (!purchaseOrder.value || !purchaseOrder.value.discountPercent) return 0;
     const subtotal = calculateSubtotal();
-    return subtotal * (Number(salesInvoice.value.discountPercent) / 100);
+    return subtotal * (Number(purchaseOrder.value.discountPercent) / 100);
   };
 
   const calculateTax = () => {
-    if (!salesInvoice.value || !salesInvoice.value.taxPercent) return 0;
+    if (!purchaseOrder.value || !purchaseOrder.value.taxPercent) return 0;
     const subtotal = calculateSubtotal();
     const discount = calculateDiscount();
     const afterDiscount = subtotal - discount;
-    return afterDiscount * (Number(salesInvoice.value.taxPercent) / 100);
+    return afterDiscount * (Number(purchaseOrder.value.taxPercent) / 100);
   };
 
   const calculateGrandTotal = () => {
@@ -284,17 +275,24 @@
   };
 
   onMounted(async () => {
-    const salesInvoiceId = route.query.id;
-    if (salesInvoiceId) {
+    const purchaseOrderId = route.query.id;
+    if (purchaseOrderId) {
       try {
-        await salesInvoiceStore.fetchSalesInvoiceById(salesInvoiceId);
+        await purchaseOrderStore.getPurchaseOrderDetails(purchaseOrderId);
         
-        // ✅ DEBUG: Log data untuk memastikan salesInvoiceItems dimuat
-        console.log('🔍 Print Invoice Debug - Sales Invoice Data:', salesInvoice.value);
-        console.log('🔍 Print Invoice Debug - Sales Invoice Items:', salesInvoice.value?.salesInvoiceItems);
-        console.log('🔍 Print Invoice Debug - Items Count:', salesInvoice.value?.salesInvoiceItems?.length || 0);
+        // ✅ DEBUG: Log data untuk memastikan purchaseOrderItems dimuat
+        console.log('🔍 Print Invoice Debug - Purchase Order Data:', purchaseOrder.value);
+        console.log('🔍 Print Invoice Debug - Purchase Order Items:', purchaseOrder.value?.purchaseOrderItems);
+        console.log('🔍 Print Invoice Debug - Items Count:', purchaseOrder.value?.purchaseOrderItems?.length || 0);
       } catch (e) {
-        toast.fire('Error', e.message || 'Gagal memuat detail sales invoice.', 'error');
+        toast.error({
+          title: 'Gagal!',
+          icon: 'ri-close-line',
+          message: e.message || 'Gagal memuat detail purchase order.',
+          timeout: 3000,
+          position: 'topRight',
+          layout: 2,
+        })
       }
     }
   });

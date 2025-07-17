@@ -195,10 +195,10 @@
                     <div class="card-body">
                         <button
                         class="btn btn-primary d-grid w-100 mb-4"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#sendInvoiceOffcanvas">
+                        @click="printSuratJalan(salesOrder.id)"
+                        >
                         <span class="d-flex align-items-center justify-content-center text-nowrap"
-                            ><i class="ri-send-plane-line ri-16px scaleX-n1-rtl me-2"></i>Send Invoice</span
+                            ><i class="ri-printer-line ri-16px scaleX-n1-rtl me-2"></i>Print Surat Jalan</span
                         >
                         </button>
                         <button class="btn btn-outline-secondary d-grid w-100 mb-4">Download</button>
@@ -234,7 +234,8 @@
                     type="button"
                     class="btn-close text-reset"
                     data-bs-dismiss="offcanvas"
-                    aria-label="Close"></button>
+                    aria-label="Close">
+                    </button>
                 </div>
                 <div class="offcanvas-body flex-grow-1">
                     <form>
@@ -362,18 +363,27 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useSalesOrderStore } from '~/stores/sales-order'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
 const salesOrderStore = useSalesOrderStore()
 const route           = useRoute()
+const router          = useRouter()
 const toast           = useToast();
 const formatRupiah    = useFormatRupiah()
 
 const { salesOrder, loading } = storeToRefs(salesOrderStore)
 const soId = route.query.id
+
+// ✅ ACTION METHODS
+const printSuratJalan = (id) => {
+  router.push({
+    path: '/sales/cetak-surat-jalan',
+    query: { id: id, print: true }
+  })
+}
 
 const isReturned = (item) => {
     // Add safety check for salesReturnItems availability

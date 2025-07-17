@@ -235,6 +235,7 @@ import InputText from 'primevue/inputtext'
 import { FilterMatchMode } from '@primevue/core/api'
 
 const { $api } = useNuxtApp()
+const toast     = useToast();
 
 const myDataTableRef = ref(null)
 const globalFilterValue = ref('')
@@ -418,7 +419,14 @@ const handleSavePermission = async () => {
         if (isEditMode.value) {
             const permissionIdToUpdate = formPermission.value.id;
             if (!permissionIdToUpdate) {
-                toast.fire('Error', 'ID Permission tidak ditemukan untuk update.', 'error');
+                toast.error({
+                    title: 'Gagal!',
+                    icon: 'ri-close-line',
+                    message: 'ID Permission tidak ditemukan untuk update.',
+                    timeout: 3000,
+                    position: 'topRight',
+                    layout: 2,
+                })
                 return;
             }
             url = $api.permissionUpdate(permissionIdToUpdate);
@@ -448,21 +456,38 @@ const handleSavePermission = async () => {
             await fetchAllPageData();
             handleCloseModal();
             permissionsStore.fetchPermissions();
-            toast.fire(
-                'Berhasil!',
-                `Permission berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-                'success'
-            );
+            toast.success({
+                title: 'Berhasil!',
+                icon: 'ri-check-line',
+                message: 'Permission berhasil disimpan',
+                timeout: 3000,
+                position: 'bottomRight',
+                layout: 2,
+            })
         } else {
             const errorData = await response.json();
             if (errorData.errors) {
                 validationErrors.value = Object.values(errorData.errors).flat();
             } else {
-                toast.fire('Gagal', errorData.message || 'Gagal menyimpan permission', 'error');
+                toast.error({
+                    title: 'Gagal!',
+                    icon: 'ri-close-line',
+                    message: errorData.message || 'Gagal menyimpan permission',
+                    timeout: 3000,
+                    position: 'bottomRight',
+                    layout: 2,
+                })
             }
         }
     } catch (error) {
-        toast.fire('Error', error.message || 'Terjadi kesalahan saat menyimpan data.', 'error');
+        toast.error({
+            title: 'Gagal!',
+            icon: 'ri-close-line',
+            message: error.message || 'Terjadi kesalahan saat menyimpan data.',
+            timeout: 3000,
+            position: 'bottomRight',
+            layout: 2,
+        })
     } finally {
         layoutStore.setLoading(false);
     }

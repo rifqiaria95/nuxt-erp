@@ -110,6 +110,7 @@ export const useMenuDetailStore = defineStore('menu-detail', {
     },
 
     async saveMenuDetail() {
+      const toast = useToast();
       this.loading = true;
       this.validationErrors = [];
       const { $api } = useNuxtApp();
@@ -153,11 +154,25 @@ export const useMenuDetailStore = defineStore('menu-detail', {
         const menuGroupStore = useMenuGroupStore();
         await menuGroupStore.fetchAllMenuGroups();
         
-        Swal.fire('Berhasil!', `Menu detail berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+        toast.success({
+            title: 'Berhasil!',
+            icon: 'ri-check-line',
+            message: `Menu detail berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`,
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
 
       } catch (error: any) {
         if (error.message !== 'Data validasi tidak valid') {
-            Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+            toast.error({
+                title: 'Gagal!',
+                icon: 'ri-close-line',
+                message: error.message || 'Operasi gagal',
+                timeout: 3000,
+                position: 'topRight',
+                layout: 2,
+            })
         }
       } finally {
         this.loading = false;
@@ -167,7 +182,7 @@ export const useMenuDetailStore = defineStore('menu-detail', {
     async deleteMenuDetail(id: number) {
       this.loading = true;
       const { $api } = useNuxtApp();
-
+      const toast = useToast();
       const result = await Swal.fire({
           title: 'Apakah Anda yakin?',
           text: "Data menu detail yang dihapus tidak dapat dikembalikan!",
@@ -205,10 +220,24 @@ export const useMenuDetailStore = defineStore('menu-detail', {
           const menuGroupStore = useMenuGroupStore();
           await menuGroupStore.fetchAllMenuGroups();
 
-          Swal.fire('Berhasil!', 'Menu detail berhasil dihapus.', 'success');
+          toast.success({
+            title: 'Berhasil!',
+            icon: 'ri-check-line',
+            message: 'Menu detail berhasil dihapus.',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+          })
       } catch (error: any) {
           console.error('Gagal menghapus menu detail:', error);
-          Swal.fire('Error', error.message || 'Gagal menghapus menu detail', 'error');
+          toast.error({
+            title: 'Gagal!',
+            icon: 'ri-close-line',
+            message: error.message || 'Gagal menghapus menu detail',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+          })
       } finally {
           this.loading = false;
       }

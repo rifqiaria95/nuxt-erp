@@ -154,10 +154,10 @@
                     <div class="card-body">
                         <button
                         class="btn btn-primary d-grid w-100 mb-4"
-                        data-bs-toggle="offcanvas"
-                        data-bs-target="#sendInvoiceOffcanvas">
+                        @click="printPurchaseOrder(purchaseOrder.id)"
+                        >
                         <span class="d-flex align-items-center justify-content-center text-nowrap"
-                            ><i class="ri-send-plane-line ri-16px scaleX-n1-rtl me-2"></i>Send Invoice</span
+                            ><i class="ri-printer-line ri-16px scaleX-n1-rtl me-2"></i>Print PO</span
                         >
                         </button>
                         <button class="btn btn-outline-secondary d-grid w-100 mb-4">Download</button>
@@ -321,17 +321,25 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import Swal from 'sweetalert2'
-import 'sweetalert2/dist/sweetalert2.min.css'
 
 const purchaseOrderStore = usePurchaseOrderStore()
 const route              = useRoute()
+const router             = useRouter()
 const formatRupiah       = useFormatRupiah()
+const toast              = useToast()
 
 const { purchaseOrder, loading } = storeToRefs(purchaseOrderStore)
 const poId = route.query.id
+
+// ✅ ACTION METHODS
+const printPurchaseOrder = (id) => {
+  router.push({
+    path: '/purchasing/cetak-po',
+    query: { id: id, print: true }
+  })
+}
 
 async function refreshPurchaseOrderDetails() {
     const poIdToFetch = Array.isArray(poId) ? poId[0] : poId;
@@ -367,20 +375,18 @@ async function updateStatusPartial(itemId, status, receivedQty) {
     }
 
     if (status && (receivedQty == 0 || receivedQty == null)) {
-        toast({
-            icon: 'error',
+        toast.error({
             title: 'Validasi Gagal',
-            text: 'Jumlah yang diterima tidak boleh 0!',
+            message: 'Jumlah yang diterima tidak boleh 0!',
         })
         await refreshPurchaseOrderDetails()
         return
     }
 
     if (receivedQty > item.quantity) {
-        toast({
-            icon: 'error',
+        toast.error({
             title: 'Validasi Gagal',
-            text: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
+            message: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
         })
         await refreshPurchaseOrderDetails()
         return
@@ -391,10 +397,9 @@ async function updateStatusPartial(itemId, status, receivedQty) {
         await refreshPurchaseOrderDetails()
     } catch (error) {
         console.error('Failed to update status:', error)
-        toast({
-            icon: 'error',
+        toast.error({
             title: 'Update Gagal',
-            text: 'Terjadi kesalahan saat memperbarui status item.',
+            message: 'Terjadi kesalahan saat memperbarui status item.',
         })
     }
 }
