@@ -381,9 +381,13 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             delete dataToAppend.approvedByUser;
             delete dataToAppend.deliveredByUser;
             delete dataToAppend.rejectedByUser;
+
             Object.keys(dataToAppend).forEach(key => {
                 const value = dataToAppend[key];
-                if (value !== null && value !== undefined) {
+                // Khusus untuk field source, selalu kirim meskipun null/undefined
+                if (key === 'source') {
+                    formData.append(key, value ?? '');
+                } else if (value !== null && value !== undefined) {
                     formData.append(key, value);
                 }
             });
@@ -699,8 +703,12 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           });
 
           this.form = formData;
+          // Selalu set source, baik untuk edit maupun create
           if (source) {
             this.form.source = source;
+          } else if (!this.form.source) {
+            // Default ke 'admin' jika tidak ada source
+            this.form.source = 'admin';
           }
 
           // Wait for products to be fetched before showing modal
@@ -723,6 +731,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       } else {
           this.resetForm(source);
           this.addItem(); // Tambahkan satu item default untuk SO baru
+          
       }
       this.showModal = true;
     },
@@ -736,6 +745,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     },
     
     resetForm(source: 'admin' | 'pos' | null = null) {
+      
       this.form = {
         noSo: '',
         noPo: '',
@@ -754,6 +764,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         source: source,
         salesOrderItems: [],
       };
+      
     },
 
     addItem() {
@@ -809,7 +820,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       
       try {
         const token = localStorage.getItem('token');
-        console.log('🔍 Store Debug - Token exists:', !!token);
 
         const resData = await apiFetch($api.getSalesOrderDetails(soId), {
           headers: {
@@ -819,12 +829,10 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           credentials: 'include',
         });
         
-        console.log('🔍 Store Debug - API Response:', resData);
         
         if (resData && resData.data) {
           this.salesOrder = resData.data;
         } else {
-          console.error('❌ Store Debug - Invalid response structure:', resData);
           throw new Error('Struktur data tidak valid diterima dari API getSalesOrderDetails.');
         }
       } catch (e: any) {
@@ -838,10 +846,8 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         
         // Try fallback with standard show endpoint
         if (e.status === 404) {
-          console.log('🔄 Store Debug - Trying fallback with standard show endpoint');
           try {
             const fallbackUrl = `${$api.salesOrder()}/${soId}`;
-            console.log('🔍 Store Debug - Fallback URL:', fallbackUrl);
             
             const fallbackData = await apiFetch(fallbackUrl, {
               headers: {
@@ -851,10 +857,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
               credentials: 'include',
             });
             
-            console.log('🔍 Store Debug - Fallback Response:', fallbackData);
-            
             if (fallbackData && fallbackData.data) {
-              console.log('✅ Store Debug - Fallback successful, setting salesOrder data:', fallbackData.data);
               this.salesOrder = fallbackData.data;
               return; // Exit successfully
             }

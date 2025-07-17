@@ -131,7 +131,6 @@ import { useStocksStore } from '~/stores/stocks'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { usePermissionsStore } from '~/stores/permissions'
-import { useUserStore } from '~/stores/user'
 import { usePermissions } from '~/composables/usePermissions'
 
 const { $api } = useNuxtApp()

@@ -356,7 +356,6 @@ import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
-import { useUserStore } from '~/stores/user'
 
 const { $api } = useNuxtApp()
 

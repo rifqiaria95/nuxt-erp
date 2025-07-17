@@ -46,7 +46,7 @@
                     image-alt="Tambah Sales Order"
                     button-text="Tambah Sales Order"
                     modal-target="#SalesOrderModal" 
-                    @button-click="salesOrderStore.openModal()"
+                    @button-click="salesOrderStore.openModal(null, 'admin')"
                     :column-class="cardBoxColumnClass"
                 />
             </div>
@@ -247,7 +247,7 @@
                 :validation-errors-from-parent="validationErrors"
             >
                 <template #default>
-                    <form @submit.prevent="salesOrderStore.saveSalesOrder()">
+                    <form @submit.prevent="handleSubmit">
                          <div class="row">
                             <div class="col">
                                 <ul class="nav nav-tabs" role="tablist">
@@ -549,6 +549,9 @@ onMounted(() => {
 
 watch(showModal, (newValue) => {
     if (newValue) {
+        // DEBUG: Log source saat modal dibuka
+        console.log('🔍 DEBUG ADMIN - Form source when modal opens:', form.value.source);
+        
         modalInstance?.show()
         if (isEditMode.value) {
             if (form.value.attachment_url) {
@@ -640,6 +643,14 @@ const onSort = (event) => {
 
 const exportData = (format) => {
     if (format === 'csv') myDataTableRef.value.exportCSV();
+};
+
+const handleSubmit = () => {
+    // DEBUG: Log source sebelum submit
+    console.log('🔍 DEBUG ADMIN - Form source before submit:', form.value.source);
+    console.log('🔍 DEBUG ADMIN - Full form before submit:', form.value);
+    
+    salesOrderStore.saveSalesOrder();
 };
 
 function onFileChange(e) {
