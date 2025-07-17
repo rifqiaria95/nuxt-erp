@@ -673,6 +673,7 @@ const paymentMethodOptions = ref([
 
 let modalInstance = null;
 onMounted(() => {
+    userStore.loadUser();
     salesInvoiceStore.fetchSalesInvoices();
     customerStore.fetchCustomers();
     salesOrderStore.fetchSalesOrders();

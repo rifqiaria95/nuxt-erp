@@ -83,8 +83,8 @@
                                 <Column field="email" header="Email Gudang" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="warehouseStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="warehouseStore.deleteWarehouse(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('edit_gudang')" @click="warehouseStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('delete_gudang')" @click="warehouseStore.deleteWarehouse(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -198,11 +198,15 @@ import InputText from 'primevue/inputtext'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
 import { usePermissions } from '~/composables/usePermissions'
+import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 
 const { userHasPermission, userHasRole } = usePermissions();
 
 const myDataTableRef = ref(null)
 const warehouseStore = useWarehouseStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
 const { warehouses, loading, stats, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(warehouseStore)
 
 const globalFilterValue = ref('')
@@ -219,6 +223,9 @@ let modalInstance = null
 onMounted(() => {
     warehouseStore.fetchWarehouses()
     warehouseStore.fetchStats()
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
+
     const modalElement = document.getElementById('Modal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

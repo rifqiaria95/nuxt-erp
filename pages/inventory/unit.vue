@@ -56,8 +56,8 @@
                                 <Column field="symbol" header="Simbol" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="unitStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
-                                        <button @click="unitStore.deleteUnit(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('edit_unit')" @click="unitStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('delete_unit')" @click="unitStore.deleteUnit(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -131,11 +131,15 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
 import { usePermissions } from '~/composables/usePermissions'
+import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 
 const { userHasPermission, userHasRole } = usePermissions();
 
 const myDataTableRef = ref(null)
 const unitStore = useUnitStore()
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
 const { units, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(unitStore)
 
 const globalFilterValue = ref('')
@@ -146,6 +150,8 @@ const modalDescription = computed(() => isEditMode.value ? 'Ubah detail satuan.'
 let modalInstance = null
 onMounted(() => {
     unitStore.fetchUnit();
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
     const modalElement = document.getElementById('UnitModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

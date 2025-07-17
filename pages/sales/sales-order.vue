@@ -203,7 +203,7 @@
                                                 <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                                 </a>
                                                 <ul class="dropdown-menu">
-                                                    <li v-if="userHasPermission('approve_purchase_order') && slotProps.data.status == 'draft'">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('approve_sales_order') && slotProps.data.status == 'draft')">
                                                         <a class="dropdown-item" href="javascript:void(0)" @click="salesOrderStore.approveSalesOrder(slotProps.data.id)">
                                                             <i class="ri-check-line me-2"></i> Approve
                                                         </a>

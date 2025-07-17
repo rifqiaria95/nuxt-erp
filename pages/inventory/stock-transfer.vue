@@ -140,22 +140,22 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li v-if="userHasPermission('approve_stock_transfer') && slotProps.data.status == 'draft'">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('approve_stock_transfer') && slotProps.data.status == 'draft')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="approveStockTransfer(slotProps.data.id)">
                                                         <i class="ri-check-line me-2"></i> Approve
                                                     </a>
                                                 </li>
-                                                <li v-if="userHasPermission('show_stock_transfer') && slotProps.data.status == 'approved'">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('view_stock_transfer') && slotProps.data.status == 'approved')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewStockTransferDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li v-if="userHasPermission('edit_stock_transfer') && slotProps.data.status == 'draft'">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('edit_stock_transfer') && slotProps.data.status == 'draft')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="stockTransferStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li v-if="userHasRole('superadmin') || userHasPermission('delete_stock_transfer') && slotProps.data.status == 'draft'">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('delete_stock_transfer') && slotProps.data.status == 'draft')">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteStockTransfer(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -356,6 +356,7 @@ import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
+import { useUserStore } from '~/stores/user'
 
 const { $api } = useNuxtApp()
 

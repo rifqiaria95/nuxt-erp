@@ -91,8 +91,8 @@
                                 <Column field="description" header="Deskripsi" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="kategoriStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
-                                        <button @click="kategoriStore.deleteKategori(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('edit_kategori')" @click="kategoriStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('delete_kategori')" @click="kategoriStore.deleteKategori(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -167,11 +167,15 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
 import { usePermissions } from '~/composables/usePermissions'
+import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 
 const { userHasPermission, userHasRole } = usePermissions();
 
-const myDataTableRef = ref(null)
-const kategoriStore = useKategoriStore()
+const myDataTableRef  = ref(null)
+const kategoriStore   = useKategoriStore()
+const permissionStore = usePermissionsStore()
+const userStore       = useUserStore()
 const { kategori, loading, stats, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(kategoriStore)
 
 const globalFilterValue = ref('')
@@ -181,8 +185,10 @@ const modalDescription = computed(() => isEditMode.value ? 'Ubah detail kategori
 
 let modalInstance = null
 onMounted(() => {
-    kategoriStore.fetchKategori();
-    kategoriStore.fetchStats();
+    kategoriStore.fetchKategori()
+    kategoriStore.fetchStats()
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
     const modalElement = document.getElementById('KategoriModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

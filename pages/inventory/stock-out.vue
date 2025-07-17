@@ -131,22 +131,22 @@
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li v-if="userisAdmin || userisSuperAdmin && slotProps.data.status == 'draft'">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('approve_stock_out') && slotProps.data.status == 'draft')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="postStockOut(slotProps.data.id)">
                                                         <i class="ri-upload-2-line me-2"></i> Post
                                                     </a>
                                                 </li>
-                                                <li v-if="slotProps.data.status == 'posted'">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('view_stock_out') && slotProps.data.status == 'posted')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewStockOutDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'draft')">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('edit_stock_out') && slotProps.data.status == 'draft')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="stockOutStore.openModal(slotProps.data)">
                                                         <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
-                                                <li v-if="userisSuperAdmin || (!userisSuperAdmin && slotProps.data.status == 'Received')">
+                                                <li v-if="userHasRole('superadmin') || (userHasPermission('delete_stock_out') && slotProps.data.status == 'Received')">
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteStockOut(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>
@@ -262,11 +262,15 @@ import InputText from 'primevue/inputtext'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
+import { usePermissions } from '~/composables/usePermissions'
+import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 
 const { $api } = useNuxtApp()
 
 const myDataTableRef            = ref(null)
 const userStore                 = useUserStore()
+const permissionStore           = usePermissionsStore()
 const stockOutStore             = useStockOutStore()
 const warehouseStore            = useWarehouseStore()
 const { stockOuts, totalRecords, stats, params, form, isEditMode, showModal, validationErrors } = storeToRefs(stockOutStore)
@@ -275,6 +279,8 @@ const selectedStockOut          = ref(null);
 const loading                   = ref(false);
 const globalFilterValue         = ref('');
 const router                    = useRouter()
+
+const { userHasPermission, userHasRole } = usePermissions();
 
 const userisSuperAdmin = computed(() => {
     return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
@@ -401,6 +407,8 @@ onMounted(() => {
     loadLazyData();
     stockOutStore.fetchStats();
     warehouseStore.fetchWarehouses();
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
 });
 
 const exportData = (format) => {

@@ -212,8 +212,8 @@
                                 <Column field="phone" header="Phone Vendor" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
-                                        <button @click="vendorStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
-                                        <button @click="vendorStore.deleteVendor(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('edit_vendor')" @click="vendorStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line ri-20px"></i></button>
+                                        <button v-if="userHasRole('superadmin') || userHasPermission('delete_vendor')" @click="vendorStore.deleteVendor(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line ri-20px"></i></button>
                                     </template>
                                 </Column>
                         </MyDataTable>
@@ -331,11 +331,15 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
 import { usePermissions } from '~/composables/usePermissions'
+import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 
 const { userHasPermission, userHasRole } = usePermissions();
 
 const vendorStore = useVendorStore()
 const { vendors, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(vendorStore)
+const permissionStore = usePermissionsStore()
+const userStore = useUserStore()
 
 const myDataTableRef = ref(null)
 const globalFilterValue = ref('')
@@ -347,6 +351,8 @@ const modalDescription = computed(() => isEditMode.value ? 'Ubah detail vendor.'
 
 let modalInstance = null;
 onMounted(() => {
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
     vendorStore.fetchVendors();
     const modalElement = document.getElementById('VendorModal')
     if (modalElement) {

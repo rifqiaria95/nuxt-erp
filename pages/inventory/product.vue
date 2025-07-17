@@ -134,8 +134,8 @@
                                         </Column>
                                         <Column header="Actions" :exportable="false" style="min-width:8rem">
                                             <template #body="slotProps">
-                                                <button @click="productStore.openModal(slotProps.data)" class="btn btn-sm btn-icon      btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                                <button @click="productStore.deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                                <button v-if="userHasRole('superadmin') || userHasPermission('edit_product')" @click="productStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                                <button v-if="userHasRole('superadmin') || userHasPermission('delete_product')" @click="productStore.deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
                                             </template>
                                         </Column>
                                 </MyDataTable>
@@ -325,6 +325,8 @@ import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
 import { useFormatRupiah } from '~/composables/formatRupiah';
 import { usePermissions } from '~/composables/usePermissions'
+import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 
 const { userHasPermission, userHasRole } = usePermissions();
 
@@ -335,6 +337,8 @@ const myDataTableRef    = ref(null)
 const productStore      = useProductStore()
 const kategoriStore     = useKategoriStore()
 const unitStore         = useUnitStore()
+const permissionStore   = usePermissionsStore()
+const userStore         = useUserStore()
 
 const { products, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(productStore)
 const { kategori } = storeToRefs(kategoriStore)
@@ -389,6 +393,8 @@ onMounted(() => {
     productStore.fetchProducts();
     kategoriStore.fetchKategori();
     unitStore.fetchUnit();
+    permissionStore.fetchPermissions()
+    userStore.loadUser()
     const modalElement = document.getElementById('ProductModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
