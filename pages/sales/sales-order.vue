@@ -549,8 +549,6 @@ onMounted(() => {
 
 watch(showModal, (newValue) => {
     if (newValue) {
-        // DEBUG: Log source saat modal dibuka
-        console.log('🔍 DEBUG ADMIN - Form source when modal opens:', form.value.source);
         
         modalInstance?.show()
         if (isEditMode.value) {
@@ -646,10 +644,6 @@ const exportData = (format) => {
 };
 
 const handleSubmit = () => {
-    // DEBUG: Log source sebelum submit
-    console.log('🔍 DEBUG ADMIN - Form source before submit:', form.value.source);
-    console.log('🔍 DEBUG ADMIN - Full form before submit:', form.value);
-    
     salesOrderStore.saveSalesOrder();
 };
 
@@ -688,8 +682,6 @@ const calculateSubtotal = (index) => {
 };
 
 const viewSalesOrderDetails = (salesOrderId) => {
-    console.log('🔍 Page Debug - viewSalesOrderDetails called with ID:', salesOrderId);
-    console.log('🔍 Page Debug - ID type:', typeof salesOrderId);
     
     if (!salesOrderId) {
         console.error('❌ Page Debug - No salesOrderId provided');
@@ -701,8 +693,6 @@ const viewSalesOrderDetails = (salesOrderId) => {
         });
         return;
     }
-    
-    console.log('🔍 Page Debug - Navigating to sales-order-detail with ID:', salesOrderId);
     router.push({ path: `/sales/sales-order-detail`, query: { id: salesOrderId } });
 };
 

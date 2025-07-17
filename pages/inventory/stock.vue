@@ -77,6 +77,11 @@
                                         }}
                                     </template>
                                 </Column>
+                                <Column field="product.sku" header="Part Number" :sortable="true">
+                                    <template #body="slotProps">
+                                        {{ slotProps.data.product.sku }}
+                                    </template>
+                                </Column>
                                 <Column field="product.name" header="Nama Produk" :sortable="true">
                                     <template #body="slotProps">
                                         {{ slotProps.data.product.name }}
