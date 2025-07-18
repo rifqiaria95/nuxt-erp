@@ -785,8 +785,10 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
             // Clear existing items
             form.value.salesInvoiceItems = [];
             
-            // Auto fill items dari sales order
-            detailedSalesOrder.salesOrderItems.forEach((soItem, index) => {
+            // Auto fill items dari sales order - HANYA YANG STATUS_PARTIAL = TRUE
+            detailedSalesOrder.salesOrderItems
+              .filter(soItem => soItem.statusPartial === true)
+              .forEach((soItem, index) => {
               const invoiceItem = {
                 productId: soItem.productId,
                 warehouseId: soItem.warehouseId,
