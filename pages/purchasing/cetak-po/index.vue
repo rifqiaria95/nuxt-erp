@@ -7,7 +7,7 @@
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
     <div v-else-if="purchaseOrder" class="p-6">
       <div class="d-flex justify-content-between flex-row">
-         <div v-if="purchaseOrder.perusahaan">
+         <div v-if="purchaseOrder.perusahaan" class="w-60">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
                <img v-if="purchaseOrder.perusahaan.logoPerusahaan"
@@ -21,34 +21,34 @@
           <p class="mb-0">{{ purchaseOrder.perusahaan.tlpPerusahaan }}</p>
           <p class="mb-0">{{ purchaseOrder.perusahaan.emailPerusahaan }}</p>
         </div>
-        <div>
+        <div class="w-40">
           <h6 class="mb-6 text-capitalize text-end fw-bold">PURCHASE ORDER #{{ purchaseOrder.noPo }}</h6>
-          <div style="margin-left: 32px;">
+          <div class="d-flex justify-content-end">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
               <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Supplier/Vendor</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.name || '-' }}</td>
+                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Supplier/Vendor</td>
+                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
+                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.name || '-' }}</td>
               </tr>
               <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Address</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.address || '-' }}</td>
+                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Address</td>
+                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
+                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.address || '-' }}</td>
               </tr>
               <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">NPWP</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.npwp || '-' }}</td>
+                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">NPWP</td>
+                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
+                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.npwp || '-' }}</td>
               </tr>
               <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Email</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.email || '-' }}</td>
+                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Email</td>
+                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
+                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.email || '-' }}</td>
               </tr>
               <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Phone</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.phone || '-' }}</td>
+                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Phone</td>
+                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
+                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.phone || '-' }}</td>
               </tr>
             </table>
           </div>
@@ -58,18 +58,18 @@
       <hr class="my-6" />
 
       <!-- ✅ INFO SECTION -->
-      <div v-if="purchaseOrder.purchaseOrderItems && purchaseOrder.purchaseOrderItems.length > 0" 
+      <div v-if="purchaseOrder.purchaseOrderItems && purchaseOrder.purchaseOrderItems.length > 0"
            class="alert alert-info d-flex align-items-center mb-4" role="alert">
         <i class="ri-information-line me-2"></i>
         <div>
           <strong>Purchase Order Items:</strong> Menampilkan {{ purchaseOrder.purchaseOrderItems.length }} item dari Purchase Order Items
         </div>
       </div>
-      <div v-else-if="purchaseOrder.purchaseOrderItems && purchaseOrder.purchaseOrderItems.length > 0" 
+      <div v-else
            class="alert alert-warning d-flex align-items-center mb-4" role="alert">
         <i class="ri-alert-line me-2"></i>
         <div>
-          <strong>Fallback Mode:</strong> Menampilkan {{ purchaseOrder.purchaseOrderItems.length }} item dari Purchase Order Items
+          <strong>Tidak ada item:</strong> Tidak ada item Purchase Order yang dapat ditampilkan.
         </div>
       </div>
 
@@ -134,25 +134,33 @@
               </td>
               <td colspan="4" class="px-0 pt-6 align-top">
                 <div class="d-flex flex-column align-items-end">
-                  <div class="mb-2">
-                    <span class="fw-medium text-heading">Subtotal: </span>
-                    <span class="fw-semibold">{{ formatRupiah(calculateSubtotal()) || 0 }}</span>
+                  <div class="mb-2 d-flex" style="min-width: 270px;">
+                    <span class="fw-medium text-heading" style="min-width: 90px;">Subtotal</span>
+                    <span class="fw-medium text-heading px-2" style="min-width: 10px; text-align: right;">:</span>
+                    <span class="fw-semibold text-end flex-grow-1">{{ formatRupiah(calculateSubtotal()) || 0 }}</span>
                   </div>
-                  <div class="mb-2">
-                    <span class="fw-medium text-heading">
-                      Discount ({{ Number(purchaseOrder.discountPercent) }}%):
+                  <div class="mb-2 d-flex" style="min-width: 270px;">
+                    <span class="fw-medium text-heading" style="min-width: 90px;">
+                      Discount
+                      <span v-if="Number(purchaseOrder.discountPercent) > 0">({{ Number(purchaseOrder.discountPercent) }}%)</span>
                     </span>
-                    <span v-if="Number(purchaseOrder.discountPercent) > 0" class="fw-semibold">-{{ formatRupiah(calculateDiscount()) || 0 }}</span>
+                    <span class="fw-medium text-heading px-2" style="min-width: 10px; text-align: right;">:</span>
+                    <span v-if="Number(purchaseOrder.discountPercent) > 0" class="fw-semibold text-end flex-grow-1">-{{ formatRupiah(calculateDiscount()) || 0 }}</span>
+                    <span v-else class="fw-semibold text-end flex-grow-1">-</span>
                   </div>
-                  <div class="mb-2">
-                    <span class="fw-medium text-heading">
-                      Tax ({{ Number(purchaseOrder.taxPercent) }}%):
+                  <div class="mb-2 d-flex" style="min-width: 270px;">
+                    <span class="fw-medium text-heading" style="min-width: 90px;">
+                      Tax
+                      <span v-if="Number(purchaseOrder.taxPercent) > 0">({{ Number(purchaseOrder.taxPercent) }}%)</span>
                     </span>
-                    <span v-if="Number(purchaseOrder.taxPercent) > 0" class="fw-semibold">{{ formatRupiah(calculateTax()) || 0 }}</span>
+                    <span class="fw-medium text-heading px-2" style="min-width: 10px; text-align: right;">:</span>
+                    <span v-if="Number(purchaseOrder.taxPercent) > 0" class="fw-semibold text-end flex-grow-1">{{ formatRupiah(calculateTax()) || 0 }}</span>
+                    <span v-else class="fw-semibold text-end flex-grow-1">-</span>
                   </div>
-                  <div class="fw-bold border-top border-dark pt-2">
-                    <span class="fw-medium text-heading">Total: </span>
-                    <span class="fw-semibold">{{ formatRupiah(calculateGrandTotal()) || 0 }}</span>
+                  <div class="fw-bold border-top border-dark pt-2 d-flex" style="min-width: 270px;">
+                    <span class="fw-medium text-heading" style="min-width: 90px;">Total</span>
+                    <span class="fw-medium text-heading px-2" style="min-width: 10px; text-align: right;">:</span>
+                    <span class="fw-semibold text-end flex-grow-1">{{ formatRupiah(calculateGrandTotal()) || 0 }}</span>
                   </div>
                 </div>
               </td>
@@ -174,9 +182,6 @@
                   </span>
                 </p>
               </td>
-            </tr>
-            <tr>
-              <td colspan="2"></td>
             </tr>
             <tr>
               <td colspan="2"></td>

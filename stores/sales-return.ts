@@ -250,8 +250,10 @@ export const useSalesReturnStore = defineStore('salesReturn', {
         this.form.totalReturnAmount = selectedSO.total;
         this.form.status            = 'draft';
 
-        // Populate items
-        this.form.salesReturnItems = selectedSO.salesOrderItems?.map(item => ({
+        // Populate items - HANYA YANG STATUS_PARTIAL = TRUE
+        this.form.salesReturnItems = selectedSO.salesOrderItems
+          ?.filter(item => item.statusPartial === true)
+          ?.map(item => ({
           salesOrderItemId: item.id,
           productId  : item.productId,
           warehouseId: item.warehouseId,

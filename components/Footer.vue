@@ -6,12 +6,6 @@
             © {{ new Date().getFullYear() }}, made with <span class="text-danger"><i class="tf-icons ri-heart-fill"></i></span> by
             <a href="#" target="_blank" class="footer-link">Kainnova Digital Solutions</a>
           </div>
-          <div class="d-none d-lg-inline-block">
-            <a href="https://themeforest.net/licenses/standard" class="footer-link me-4" target="_blank">License</a>
-            <a href="https://1.envato.market/pixinvent_portfolio" target="_blank" class="footer-link me-4">More Themes</a>
-            <a href="https://demos.pixinvent.com/materialize-html-admin-template/documentation/" target="_blank" class="footer-link me-4">Documentation</a>
-            <a href="https://pixinvent.ticksy.com/" target="_blank" class="footer-link d-none d-sm-inline-block">Support</a>
-          </div>
         </div>
       </div>
     </footer>
