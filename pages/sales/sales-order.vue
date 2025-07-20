@@ -70,6 +70,25 @@
                                     <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
                                 </div>
                             </div>
+                            <div class="row mt-5">
+                                <div class="col-md-4">
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="date" v-model="filters.startDate" class="form-control" placeholder="Tanggal Mulai" @change="onDateChange">
+                                        <label>Tanggal Mulai</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="date" v-model="filters.endDate" class="form-control" placeholder="Tanggal Akhir" @change="onDateChange">
+                                        <label>Tanggal Akhir</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 reset-filter-button">
+                                    <button @click="clearDateFilters" class="btn btn-outline-secondary me-2">
+                                        <i class="ri-refresh-line me-1"></i> Reset Filter
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -472,6 +491,8 @@ const filters = ref({
   customerId: null,
   source: null,
   status: null,
+  startDate: null,
+  endDate: null,
   search: '',
 });
 const globalFilterValue = ref('');
@@ -622,6 +643,7 @@ watch(globalFilterValue, useDebounceFn((newValue) => {
 
 watch(filters, (newFilters) => {
     const { page, rows, ...restFilters } = newFilters;
+    console.log('🔍 Frontend Filter Debug:', restFilters);
     salesOrderStore.setFilters(restFilters);
 }, { deep: true });
 
@@ -639,8 +661,53 @@ const onSort = (event) => {
     salesOrderStore.fetchSalesOrders();
 };
 
-const exportData = (format) => {
-    if (format === 'csv') myDataTableRef.value.exportCSV();
+const exportData = async (format) => {
+    const toast = useToast();
+    
+    if (format === 'csv') {
+        myDataTableRef.value.exportCSV();
+    } else if (format === 'pdf') {
+        try {
+            // Cek apakah ada filter yang diterapkan
+            const hasFilters = filters.value.customerId || filters.value.source || filters.value.status || filters.value.search;
+            
+            toast.info({
+                title: 'Info',
+                message: hasFilters 
+                    ? 'Sedang mempersiapkan data sesuai filter untuk export PDF...' 
+                    : 'Sedang mempersiapkan semua data untuk export PDF...',
+                color: 'blue'
+            });
+            
+            // Ambil semua data yang sesuai dengan filter untuk export PDF
+            const allData = await salesOrderStore.fetchAllSalesOrdersForExport();
+            
+            if (allData && allData.length > 0) {
+                // Gunakan fungsi export PDF khusus untuk Sales Order
+                await exportSalesOrderPDF(allData);
+                toast.success({
+                    title: 'Success',
+                    message: `PDF berhasil dibuat dengan ${allData.length} data Sales Order${hasFilters ? ' sesuai filter' : ''}`,
+                    color: 'green'
+                });
+            } else {
+                toast.warning({
+                    title: 'Warning',
+                    message: 'Tidak ada data untuk diexport',
+                    color: 'orange'
+                });
+            }
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            toast.error({
+                title: 'Error',
+                message: 'Gagal membuat PDF. Mencoba dengan data yang ditampilkan saat ini.',
+                color: 'red'
+            });
+            // Fallback ke data yang ditampilkan saat ini
+            await exportSalesOrderPDF(salesOrders.value);
+        }
+    }
 };
 
 const handleSubmit = () => {
@@ -741,6 +808,344 @@ const updateStockInfo = async (index) => {
     }
 }
 
+const clearDateFilters = () => {
+    filters.value.startDate = null;
+    filters.value.endDate = null;
+    salesOrderStore.setFilters(filters.value);
+};
+
+const onDateChange = () => {
+    console.log('🔍 Date Change Debug:', {
+        startDate: filters.value.startDate,
+        endDate: filters.value.endDate,
+        startDateType: typeof filters.value.startDate,
+        endDateType: typeof filters.value.endDate
+    });
+};
+
+// Fungsi export PDF khusus untuk Sales Order
+const exportSalesOrderPDF = async (dataToExport) => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
+    // Definisikan kolom yang akan diexport
+    const columnDefinitions = [
+        { field: 'noSo', header: 'No. SO' },
+        { field: 'noPo', header: 'No. PO' },
+        { field: 'customer.name', header: 'Nama Customer' },
+        { field: 'paymentMethod', header: 'Metode Pembayaran' },
+        { field: 'status', header: 'Status SO' },
+        { field: 'date', header: 'Tanggal SO' },
+        { field: 'dueDate', header: 'Jatuh Tempo SO' },
+        { field: 'perusahaan.nmPerusahaan', header: 'Perusahaan' },
+        { field: 'cabang.nmCabang', header: 'Cabang' },
+        { field: 'total', header: 'Total' }
+    ];
+
+    const head = [columnDefinitions.map(col => col.header)];
+
+    if (!dataToExport || dataToExport.length === 0) {
+        console.warn('Tidak ada data untuk diexport');
+        const doc = new jsPDF('landscape');
+        doc.setFontSize(16);
+        doc.text('Laporan Sales Orders', 14, 15);
+        doc.setFontSize(12);
+        doc.text('Tidak ada data yang tersedia untuk export', 14, 50);
+        doc.save('sales-orders-empty.pdf');
+        return;
+    }
+
+    const body = dataToExport.map(row => columnDefinitions.map(col => {
+        const field = col.field;
+        let value = '';
+
+        if (field.includes('.')) {
+            value = field.split('.').reduce((o, i) => (o ? o[i] : ''), row) || '';
+        } else {
+            value = row[field] || '';
+        }
+
+        // Format tanggal
+        if (field === 'date' || field === 'dueDate' || field === 'createdAt' || field === 'updatedAt') {
+            if (value) {
+                try {
+                    value = new Date(value).toLocaleDateString('id-ID');
+                } catch (e) {
+                    value = value.toString();
+                }
+            }
+        }
+
+        // Format total (currency)
+        if (field === 'total') {
+            if (value) {
+                try {
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue)) {
+                        value = new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(numValue);
+                    }
+                } catch (e) {
+                    value = value.toString();
+                }
+            }
+        }
+
+        // Format payment method
+        if (field === 'paymentMethod') {
+            if (value) {
+                const paymentMethods = {
+                    'cash': 'Cash',
+                    'transfer': 'Transfer',
+                    'qris': 'QRIS',
+                    'card': 'Card'
+                };
+                value = paymentMethods[value] || value;
+            }
+        }
+
+        // Format status
+        if (field === 'status') {
+            if (value) {
+                const statusLabels = {
+                    'draft': 'Draft',
+                    'approved': 'Approved',
+                    'delivered': 'Delivered',
+                    'rejected': 'Rejected',
+                    'partial': 'Partial'
+                };
+                value = statusLabels[value] || value;
+            }
+        }
+
+        // Potong text panjang
+        const maxLength = 30;
+        if (value && value.length > maxLength) {
+            value = value.substring(0, maxLength) + '...';
+        }
+
+        return value != null ? value.toString() : '';
+    }));
+
+    // Ambil data perusahaan dari dataToExport, bukan hardcode
+    let companyInfo = {
+        name: '',
+        address: '',
+        email: '',
+        phone: '',
+        logo: null
+    };
+
+    // Cari data perusahaan pertama yang valid dari dataToExport
+    let foundPerusahaan = null;
+    for (let i = 0; i < dataToExport.length; i++) {
+        if (dataToExport[i].perusahaan) {
+            foundPerusahaan = dataToExport[i].perusahaan;
+            break;
+        }
+    }
+
+    if (foundPerusahaan) {
+        companyInfo = {
+            name: foundPerusahaan.nmPerusahaan || '',
+            address: foundPerusahaan.alamatPerusahaan || '',
+            email: foundPerusahaan.emailPerusahaan || '',
+            phone: foundPerusahaan.tlpPerusahaan || '',
+            logo: foundPerusahaan.logoPerusahaan || null
+        };
+    } else {
+        // Jika tidak ada data perusahaan sama sekali, fallback ke hardcode
+        companyInfo = {
+            name: 'PT. ANDARA PRIMA UTAMA',
+            address: 'Jl. Raya Serpong KM 7, Serpong',
+            email: 'info@andara.co.id',
+            phone: '(021) 1234-5678',
+            logo: null
+        };
+    }
+
+    // Hitung grand total
+    let grandTotal = 0;
+    dataToExport.forEach(row => {
+        const totalValue = parseFloat(row.total) || 0;
+        grandTotal += totalValue;
+    });
+
+    // Format grand total
+    const formattedGrandTotal = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(grandTotal);
+
+    // Buat PDF
+    const doc = new jsPDF('landscape');
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    // Gunakan font yang tersedia di jsPDF
+    // jsPDF mendukung: helvetica, courier, times, symbol, zapfdingbats
+    const fontFamily = 'helvetica'; // Font yang aman dan tersedia
+
+    // Logo perusahaan (jika ada)
+    if (companyInfo.logo) {
+        try {
+            doc.addImage(companyInfo.logo, 'PNG', pageWidth - 60, 10, 50, 20);
+        } catch (e) {
+            console.log('Logo perusahaan tidak ditemukan atau tidak valid, lanjut tanpa logo');
+        }
+    }
+
+    // Info perusahaan di kanan atas
+    doc.setFontSize(10);
+    doc.setFont(fontFamily, 'bold');
+    if (companyInfo.name) doc.text(String(companyInfo.name), pageWidth - 10, 15, { align: 'right' });
+
+    doc.setFontSize(8);
+    doc.setFont(fontFamily, 'normal');
+    if (companyInfo.address) doc.text(String(companyInfo.address), pageWidth - 10, 22, { align: 'right' });
+    if (companyInfo.email) doc.text(`Email: ${String(companyInfo.email)}`, pageWidth - 10, 28, { align: 'right' });
+    if (companyInfo.phone) doc.text(`Telp: ${String(companyInfo.phone)}`, pageWidth - 10, 34, { align: 'right' });
+
+    // Judul di kiri atas
+    doc.setFontSize(16);
+    doc.setFont(fontFamily, 'bold');
+    doc.text('Laporan Sales Orders', 14, 15);
+
+    // Timestamp dan jumlah data
+    doc.setFontSize(10);
+    doc.setFont(fontFamily, 'normal');
+    doc.text(`Dibuat pada: ${new Date().toLocaleString('id-ID')}`, 14, 25);
+    doc.text(`Total Data: ${dataToExport.length}`, 14, 32);
+
+    // Info filter hanya tanggal
+    const filterInfo = [];
+    // Tambahkan filter tanggal jika ada
+    if (filters.value.startDate) {
+        filterInfo.push(`${new Date(filters.value.startDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}`);
+    }
+    if (filters.value.endDate) {
+        filterInfo.push(`${new Date(filters.value.endDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}`);
+    }
+
+    if (filterInfo.length > 0) {
+        doc.setFontSize(8);
+        doc.setFont(fontFamily, 'normal');
+        doc.text(`Periode: ${filterInfo.join(' - ')}`, 14, 40);
+    }
+
+    // Hitung lebar kolom dinamis
+    const columnCount = columnDefinitions.length;
+    const availableWidth = doc.internal.pageSize.width - 20;
+    const baseColumnWidth = availableWidth / columnCount;
+
+    // Style kolom
+    const columnStyles = {};
+    columnDefinitions.forEach((col, index) => {
+        let cellWidth = baseColumnWidth;
+        if (col.field === 'noSo' || col.field === 'noPo') {
+            cellWidth = 25;
+        } else if (col.field === 'customer.name') {
+            cellWidth = 40;
+        } else if (col.field === 'paymentMethod') {
+            cellWidth = 25;
+        } else if (col.field === 'status') {
+            cellWidth = 20;
+        } else if (col.field === 'date' || col.field === 'dueDate') {
+            cellWidth = 25;
+        } else if (col.field === 'perusahaan.nmPerusahaan' || col.field === 'cabang.nmCabang') {
+            cellWidth = 30;
+        } else if (col.field === 'total') {
+            cellWidth = 25;
+        }
+        columnStyles[index] = { cellWidth };
+    });
+
+    autoTable(doc, {
+        head: head,
+        body: body,
+        startY: filterInfo.length > 0 ? 50 : 45,
+        styles: {
+            font: fontFamily,
+            fontSize: 7,
+            cellPadding: 2,
+            overflow: 'linebreak',
+            halign: 'left',
+        },
+        headStyles: {
+            fillColor: [41, 128, 185],
+            textColor: 255,
+            fontStyle: 'bold',
+            halign: 'center',
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 245],
+        },
+        margin: { top: 30, right: 10, bottom: 10, left: 10 },
+        tableWidth: 'auto',
+        columnStyles: columnStyles,
+        didDrawPage: function (data) {
+            // Tambahkan nomor halaman
+            const pageCount = doc.internal.getNumberOfPages();
+            doc.setFontSize(8);
+            doc.setFont(fontFamily, 'normal');
+            doc.text(`Halaman ${pageCount}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+        },
+        didParseCell: function (data) {
+            // Highlight kolom total
+            if (data.column.index === columnDefinitions.findIndex(col => col.field === 'total')) {
+                if (data.section === 'head') {
+                    data.cell.styles.textColor = [255, 255, 255];
+                } else {
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fillColor = [200, 255, 200];
+                }
+            }
+        },
+    });
+
+    // Grand total setelah tabel
+    const finalY = doc.lastAutoTable.finalY || 200;
+
+    // Garis pemisah
+    doc.setDrawColor(200, 200, 200);
+    doc.line(10, finalY + 5, doc.internal.pageSize.width - 10, finalY + 5);
+
+    // Grand total
+    doc.setFontSize(12);
+    doc.setFont(fontFamily, 'bold');
+    doc.text('Grand Total:', 10, finalY + 20);
+    doc.text(String(formattedGrandTotal), doc.internal.pageSize.width - 10, finalY + 20, { align: 'right' });
+
+    // Info ringkasan
+    doc.setFontSize(8);
+    doc.setFont(fontFamily, 'normal');
+    doc.text(`Total Sales Orders: ${dataToExport.length}`, 10, finalY + 30);
+
+    // Pastikan pembagian tidak menghasilkan NaN atau Infinity
+    let rataRata = 0;
+    if (dataToExport.length > 0) {
+        rataRata = grandTotal / dataToExport.length;
+    }
+    doc.text(
+        `Rata-rata per Order: ${new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(rataRata)}`,
+        10,
+        finalY + 37
+    );
+
+    doc.save('sales-orders.pdf');
+};
+
 </script>
 
 <style scoped>
@@ -754,6 +1159,7 @@ const updateStockInfo = async (index) => {
     :deep(.status .vs__dropdown-toggle),
     :deep(.vendor .vs__dropdown-toggle),
     :deep(.product-select .vs__dropdown-toggle),
+    :deep(.reset-filter-button .btn),
     :deep(.cabang .vs__dropdown-toggle),
     :deep(.select-payment-method .vs__dropdown-toggle) {
         height: 48px !important;

@@ -47,6 +47,7 @@ export default defineNuxtPlugin(() => {
 
     // Menu
     menuGroups : () => `${apiBase}/menu-groups`,
+    menuGroupsAll: () => `${apiBase}/menu-groups-all`,
     menuDetails: () => `${apiBase}/menu-details`,
 
     // Jabatan, Perusahaan, Cabang, Divisi, Departemen, Cuti, Pegawai
@@ -98,6 +99,9 @@ export default defineNuxtPlugin(() => {
     salesReturnUpdate    : (id: number | string) => `${apiBase}/sales-return/update/${id}`,
     getSalesReturnDetails: (id: number | string) => `${apiBase}/sales-return/getSalesReturnDetails/${id}`,
     getSalesOrderForSalesReturn: (id: number | string) => `${apiBase}/sales-return/get-sales-order/${id}`,
+
+    // Sales Report
+    salesReport: () => `${apiBase}/sales-report`,
 
     // Product
     product: () => `${apiBase}/product`,

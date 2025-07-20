@@ -461,7 +461,7 @@ const handleSavePermission = async () => {
                 icon: 'ri-check-line',
                 message: 'Permission berhasil disimpan',
                 timeout: 3000,
-                position: 'bottomRight',
+                position: 'topRight',
                 layout: 2,
             })
         } else {
@@ -474,7 +474,7 @@ const handleSavePermission = async () => {
                     icon: 'ri-close-line',
                     message: errorData.message || 'Gagal menyimpan permission',
                     timeout: 3000,
-                    position: 'bottomRight',
+                    position: 'topRight',
                     layout: 2,
                 })
             }
@@ -485,7 +485,7 @@ const handleSavePermission = async () => {
             icon: 'ri-close-line',
             message: error.message || 'Terjadi kesalahan saat menyimpan data.',
             timeout: 3000,
-            position: 'bottomRight',
+            position: 'topRight',
             layout: 2,
         })
     } finally {

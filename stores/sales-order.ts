@@ -98,17 +98,19 @@ interface SalesOrderState {
   error             : any
   stats             : Stats
   totalRecords      : number
-  params: {
-    first      : number
-    rows       : number
-    sortField  : string | null
-    sortOrder  : number | null
-    draw       : number
-    search     : string
-    customerId?: number | null
-    source?    : string | null
-    status?    : string | null
-  }
+      params: {
+        first      : number
+        rows       : number
+        sortField  : string | null
+        sortOrder  : number | null
+        draw       : number
+        search     : string
+        customerId?: number | null
+        source?    : string | null
+        status?    : string | null
+        startDate? : string | null
+        endDate?   : string | null
+    }
   form            : any,
   isEditMode      : boolean
   showModal       : boolean
@@ -142,6 +144,8 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         customerId: null,
         source    : null,
         status    : null,
+        startDate : null,
+        endDate   : null,
     },
     form: {
         noSo           : '',
@@ -208,6 +212,12 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         }
         if (this.params.status) {
           params.append('status', this.params.status);
+        }
+        if (this.params.startDate) {
+          params.append('startDate', this.params.startDate);
+        }
+        if (this.params.endDate) {
+          params.append('endDate', this.params.endDate);
         }
           
         url.search = params.toString();
@@ -804,13 +814,80 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         this.fetchSalesOrders();
     },
 
-    setFilters(filters: { customerId?: number | null, source?: string | null, status?: string | null, search?: string }) {
+    setFilters(filters: { customerId?: number | null, source?: string | null, status?: string | null, startDate?: string | null, endDate?: string | null, search?: string }) {
         this.params.customerId = filters.customerId;
         this.params.source = filters.source;
         this.params.status = filters.status;
+        this.params.startDate = filters.startDate;
+        this.params.endDate = filters.endDate;
         this.params.search = filters.search || '';
         this.params.first = 0; // reset pagination
         this.fetchSalesOrders();
+    },
+
+    async fetchAllSalesOrdersForExport() {
+        const toast = useToast();
+        this.loading = true;
+        this.error = null;
+        const { $api } = useNuxtApp();
+        
+        try {
+            const token = localStorage.getItem('token');
+
+            const url = new URL($api.salesOrder())
+            const params = new URLSearchParams({
+                page: '1',
+                rows: '1000', // Batasi maksimal 1000 data untuk export
+                sortField: this.params.sortField || '',
+                sortOrder: this.params.sortOrder?.toString() || '',
+                draw: this.params.draw.toString(),
+                search: this.params.search || '',
+            });
+
+            if (this.params.customerId) {
+                params.append('customerId', this.params.customerId.toString());
+            }
+            if (this.params.source) {
+                params.append('source', this.params.source);
+            }
+            if (this.params.status) {
+                params.append('status', this.params.status);
+            }
+            if (this.params.startDate) {
+                params.append('startDate', this.params.startDate);
+            }
+            if (this.params.endDate) {
+                params.append('endDate', this.params.endDate);
+            }
+                
+            url.search = params.toString();
+
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Gagal mengambil data salesOrder untuk export');
+
+            const result = await response.json();
+            return result.data;
+        } catch (e: any) {
+            console.error('Gagal mengambil data salesOrder untuk export:', e);
+            this.error = e;
+            toast.error({
+                title: 'Error',
+                message: `Tidak dapat memuat data Sales Order untuk export: ${e?.message || e}`,
+                color: 'red'
+            });
+            return [];
+        } finally {
+            this.loading = false;
+        }
     },
 
     async getSalesOrderDetails(soId: string) {

@@ -167,7 +167,8 @@
                                             { label: 'Inventory', value: 4 },
                                             { label: 'Sales', value: 5 },
                                             { label: 'Company', value: 6 },
-                                            { label: 'Admin', value: 7 },
+                                            { label: 'Reports', value: 7 },
+                                            { label: 'Admin', value: 8 },
                                         ]"
                                         label="label"
                                         :reduce="option => option.value"
@@ -265,7 +266,9 @@ const getStatusBadge = (jenisMenu) => {
         case 6:
             return { text: 'Company', class: 'badge rounded-pill bg-label-info' };
         case 7:
-            return { text: 'Admin', class: 'badge rounded-pill bg-label-danger' };
+            return { text: 'Reports', class: 'badge rounded-pill bg-label-danger' };
+        case 8:
+            return { text: 'Admin', class: 'badge rounded-pill bg-label-dark' };
         default:
             return { text: '-', class: 'badge rounded-pill bg-label-light' };
     }

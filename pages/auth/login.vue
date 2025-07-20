@@ -128,7 +128,7 @@
           icon: 'ri-close-line',
           message: `Gagal login: ${error.value}`,
           timeout: 3000,
-          position: 'bottomRight',
+          position: 'topRight',
           layout: 2,
         });
         pending.value = false;
@@ -145,7 +145,7 @@
           icon: 'ri-close-line',
           message: `Gagal login: ${error.value}`,
           timeout: 3000,
-          position: 'bottomRight',
+          position: 'topRight',
           layout: 2,
         });
         pending.value = false;
@@ -159,7 +159,7 @@
         icon: 'ri-check-line',
         message: 'Selamat datang',
         timeout: 3000,
-        position: 'bottomRight',
+        position: 'topRight',
         layout: 2,
       })
       router.push('/dashboard');
@@ -172,7 +172,7 @@
         icon: 'ri-close-line',
         message: `Gagal login: ${error.value}`,
         timeout: 3000,
-        position: 'bottomRight',
+        position: 'topRight',
         layout: 2,
       });
     } finally {
