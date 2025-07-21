@@ -22,7 +22,10 @@
           <p class="mb-0">{{ suratJalan.salesOrder.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h6 class="mb-6 text-capitalize text-end fw-bold">SURAT JALAN #{{ suratJalan.noSuratJalan }}</h6>
+          <h6 class="mb-2 text-capitalize text-end fw-bold">SURAT JALAN #{{ suratJalan.noSuratJalan }}</h6>
+          <p class="text-end mb-6" style="font-size: 14px;"> Tanggal:
+            {{ suratJalan.createdAt ? new Date(suratJalan.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
+          </p>
           <!-- Geser tabel info customer ke kanan dengan margin-left lebih besar -->
           <div style="margin-left: 100px;">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
@@ -69,7 +72,6 @@
               <th>No</th>
               <th>Part Number</th>
               <th>Produk</th>
-              <th>Deskripsi</th>
               <th>Qty</th>
             </tr>
           </thead>
@@ -80,7 +82,6 @@
               <td class="text-nowrap text-heading">{{ item.product?.sku || 'Part Number' }}</td>
               <td class="text-nowrap text-heading">{{ item.product?.name || 'Product Name' }}</td>
               <td class="text-nowrap">{{ item.description || '-' }}</td>
-              <td class="text-nowrap">{{ Number(item.quantity) }}</td>
             </tr>
             <!-- ✅ MESSAGE jika tidak ada items sama sekali -->
             <tr v-if="!suratJalan.suratJalanItems || suratJalan.suratJalanItems.filter(item => item.salesOrderItem?.statusPartial === true).length === 0">
