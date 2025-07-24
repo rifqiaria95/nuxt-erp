@@ -122,7 +122,7 @@
                                                     <h6>{{ product.name }}</h6>
                                                     <p class="kategori">{{ product.category.name }}</p>
                                                     <p class="price">{{ formatRupiah(product.priceSell) }}</p>
-                                                    <p class="stock">Stock: {{ product.stocks && product.stocks.length > 0 ? Math.floor(product.stocks[0].quantity) : 0 }}</p>
+                                                    <p class="stock">Stock: {{ getProductStock(product) }}</p>
                                                     <div v-if="isProductInOrder(product.id)" class="selected-indicator">
                                                         <i class="fas fa-check-circle"></i>
                                                     </div>
@@ -295,6 +295,22 @@
         return imageUrl;
     };
 
+    const getProductStock = (product) => {
+        if (!product.stocks || product.stocks.length === 0) {
+            return 0;
+        }
+        
+        // Jika ada warehouse yang dipilih, tampilkan stok untuk warehouse tersebut
+        if (form.value.warehouseId) {
+            const warehouseStock = product.stocks.find(stock => stock.warehouseId === form.value.warehouseId);
+            return warehouseStock ? Math.floor(warehouseStock.quantity) : 0;
+        }
+        
+        // Jika tidak ada warehouse yang dipilih, tampilkan total stok dari semua warehouse
+        const totalStock = product.stocks.reduce((total, stock) => total + Number(stock.quantity), 0);
+        return Math.floor(totalStock);
+    };
+
     const isProductInOrder = (productId) => {
         return form.value.salesOrderItems && form.value.salesOrderItems.some(item => item.productId === productId);
     };
@@ -308,7 +324,7 @@
         if (itemIndex > -1) {
             salesOrderStore.removeItem(itemIndex);
         } else {
-            const stockQty = product.stocks?.[0]?.quantity ?? 0;
+            const stockQty = getProductStock(product);
             if (stockQty > 0) {
                 form.value.salesOrderItems.push({
                     productId: product.id,
@@ -330,8 +346,8 @@
         const item = form.value.salesOrderItems[index];
         const product = products.value.find(p => p.id === item.productId);
 
-        if (product && product.stocks && product.stocks.length > 0) {
-            const stockQty = product.stocks[0].quantity;
+        if (product) {
+            const stockQty = getProductStock(product);
             if (item.quantity < stockQty) {
                 item.quantity++;
             } else {
