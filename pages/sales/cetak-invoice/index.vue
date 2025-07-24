@@ -7,7 +7,7 @@
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
     <div v-else-if="salesInvoice" class="p-6">
       <div class="d-flex justify-content-between flex-row">
-        <div v-if="salesInvoice.salesOrder?.perusahaan">
+        <div v-if="salesInvoice.salesOrder?.perusahaan" class="w-60">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
                <img v-if="salesInvoice.salesOrder.perusahaan.logoPerusahaan"
@@ -16,50 +16,42 @@
                style="width: 200px;">
             </span>
           </div>
-          <h4 class="mb-2 text-primary">{{ salesInvoice.salesOrder.perusahaan.nmPerusahaan }}</h4>
+          <h4 class="mb-2 text-primary text-nowrap">{{ salesInvoice.salesOrder.perusahaan.nmPerusahaan }}</h4>
           <p class="mb-1">{{ salesInvoice.salesOrder.perusahaan.alamatPerusahaan }}</p>
           <p class="mb-0">{{ salesInvoice.salesOrder.perusahaan.tlpPerusahaan }}</p>
           <p class="mb-0">{{ salesInvoice.salesOrder.perusahaan.emailPerusahaan }}</p>
         </div>
-        <div>
+        <div class="w-40">
           <h5 class="mb-6 text-capitalize text-end">INVOICE #{{ salesInvoice.noInvoice }}</h5>
-          <table class="table table-borderless">
-            <tr>
-              <td class="text-start w-90">Customer</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.name || salesInvoice.salesOrder?.customer?.name || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Address</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.address || salesInvoice.salesOrder?.customer?.address || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">NPWP</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.npwp || salesInvoice.salesOrder?.customer?.npwp || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Email</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.email || salesInvoice.salesOrder?.customer?.email || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Phone</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.customer?.phone || salesInvoice.salesOrder?.customer?.phone || '-' }}</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Payment Term</td>
-              <td class="w-10">:</td>
-              <td class="text-start">30 Days</td>
-            </tr>
-            <tr>
-              <td class="text-start w-90">Order No</td>
-              <td class="w-10">:</td>
-              <td class="text-start">{{ salesInvoice.salesOrder?.noSo || '-' }}</td>
-            </tr>
-          </table>
+          <div style="margin-left: 100px;">
+            <table class="table table-borderless" style="font-size: 12px; width: auto;">
+              <tr>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Customer</td>
+                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.name || salesInvoice.salesOrder?.customer?.name || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap; vertical-align: top;">Alamat</td>
+                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
+                <td class="text-start" style="font-size: 12px; white-space: pre-line;">{{ salesInvoice.customer?.address || salesInvoice.salesOrder?.customer?.address || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">NPWP</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.npwp || salesInvoice.salesOrder?.customer?.npwp || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Email</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.email || salesInvoice.salesOrder?.customer?.email || '-' }}</td>
+              </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">No. Telp</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.phone || salesInvoice.salesOrder?.customer?.phone || '-' }}</td>
+              </tr>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -82,7 +74,7 @@
       </div>
 
       <div class="table-responsive border border-bottom-0 rounded">
-        <table class="table m-0">
+        <table class="table m-0" style="font-size: 12px;">
           <thead>
             <tr>
               <th>No</th>
@@ -91,7 +83,7 @@
               <th>Deskripsi</th>
               <th>Qty</th>
               <th>Price</th>
-              <th>Subtotal</th>
+              <th>Total</th>
             </tr>
           </thead>
           <tbody>
@@ -130,38 +122,46 @@
       </div>
       
       <div class="table-responsive">
-        <table class="table mt-2 table-borderless">
+        <table class="table mt-2 table-borderless" style="font-size: 12px;">
           <tbody>
             <tr v-if="salesInvoice.description">
               <td colspan="2" class="px-0 pt-6 align-top" style="max-width: 320px; width: 320px; min-width: 220px;">
                 <p class="mb-2">
                   <span class="fw-medium text-heading">Catatan:</span>
                 </p>
-                <p class="mb-0" style="white-space: pre-line; word-break: break-word; max-width: 320px;">
+                <p class="mb-0" style="white-space: pre-line; word-break: break-word; max-width: 320px; font-size: 12px;">
                   {{ salesInvoice.description }}
                 </p>
               </td>
               <td colspan="4" class="px-0 pt-6 align-top">
                 <div class="d-flex flex-column align-items-end">
-                  <div class="mb-2">
-                    <span class="fw-medium text-heading">Subtotal: </span>
-                    <span class="fw-semibold">{{ formatRupiah(calculateSubtotal()) || 0 }}</span>
+                  <div class="mb-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
+                    <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">Subtotal</span>
+                    <span class="fw-medium text-heading px-2 text-end" style="width: 30px; display: inline-block; font-size: 12px;">:</span>
+                    <span class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">{{ formatRupiah(calculateSubtotal()) || 0 }}</span>
                   </div>
-                  <div class="mb-2">
-                    <span class="fw-medium text-heading">
-                      Discount ({{ Number(salesInvoice.discountPercent) }}%):
+                  <div class="mb-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
+                    <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">
+                      Discount
+                      <span v-if="Number(salesInvoice.discountPercent) > 0" style="font-size: 12px;">({{ Number(salesInvoice.discountPercent) }}%)</span>
                     </span>
-                    <span v-if="Number(salesInvoice.discountPercent) > 0" class="fw-semibold">-{{ formatRupiah(calculateDiscount()) || 0 }}</span>
+                    <span class="fw-medium text-heading px-2 text-end" style="width: 30px; display: inline-block; font-size: 12px;">:</span>
+                    <span v-if="Number(salesInvoice.discountPercent) > 0" class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">-{{ formatRupiah(calculateDiscount()) || 0 }}</span>
+                    <span v-else class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">-</span>
                   </div>
-                  <div class="mb-2">
-                    <span class="fw-medium text-heading">
-                      Tax ({{ Number(salesInvoice.taxPercent) }}%):
+                  <div class="mb-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
+                    <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">
+                      Tax
+                      <span v-if="Number(salesInvoice.taxPercent) > 0" style="font-size: 12px;">({{ Number(salesInvoice.taxPercent) }}%)</span>
                     </span>
-                    <span v-if="Number(salesInvoice.taxPercent) > 0" class="fw-semibold">{{ formatRupiah(calculateTax()) || 0 }}</span>
+                    <span class="fw-medium text-heading px-2 text-end" style="width: 30px; display: inline-block; font-size: 12px;">:</span>
+                    <span v-if="Number(salesInvoice.taxPercent) > 0" class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">{{ formatRupiah(calculateTax()) || 0 }}</span>
+                    <span v-else class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">-</span>
                   </div>
-                  <div>
-                    <span class="fw-medium text-heading">Total: </span>
-                    <span class="fw-semibold">{{ formatRupiah(calculateGrandTotal()) || 0 }}</span>
+                  <div class="fw-bold border-top border-dark pt-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
+                    <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">Total</span>
+                    <span class="fw-medium text-heading px-2 text-end" style="width: 30px; display: inline-block; font-size: 12px;">:</span>
+                    <span class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">{{ formatRupiah(calculateGrandTotal()) || 0 }}</span>
                   </div>
                 </div>
               </td>
@@ -172,7 +172,7 @@
               <td></td>
               <td></td>
               <td class="align-top px-0 py-6" colspan="2">
-                <p class="mb-1 mt-5 text-center">
+                <p class="mb-1 mt-5 text-center" style="font-size: 12px;">
                   <span class="fw-medium text-heading">
                     Jakarta, 
                     {{
@@ -197,7 +197,7 @@
               <td colspan="2">
               </td>
               <td></td>
-              <td colspan="4" class="text-center py-6 px-0">
+              <td colspan="4" class="text-center py-6 px-0" style="font-size: 12px;">
                 Ronal Aurora
               </td>
             </tr>

@@ -242,7 +242,7 @@
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || userHasPermission('delete_sales_order')">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('delete_sales_order') && (slotProps.data.status == 'draft'))">
                                                         <a class="dropdown-item text-danger" href="javascript:void(0)" @click="salesOrderStore.deleteSalesOrder(slotProps.data.id)">
                                                             <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                         </a>
