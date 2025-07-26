@@ -145,6 +145,12 @@ export default defineNuxtPlugin(() => {
 
     // Vendor
     vendor: () => `${apiBase}/vendor`,
+
+    // Quotation
+    quotation: () => `${apiBase}/quotation`,
+    approveQuotation: (id: number | string) => `${apiBase}/quotation/approveQuotation/${id}`,
+    rejectQuotation: (id: number | string) => `${apiBase}/quotation/rejectQuotation/${id}`,
+    getQuotationDetails: (id: number | string) => `${apiBase}/quotation/getQuotationDetails/${id}`,
   };
 
   // Inject ke context Nuxt
