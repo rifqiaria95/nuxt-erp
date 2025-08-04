@@ -22,7 +22,7 @@
           <p class="mb-0">{{ salesInvoice.salesOrder.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h5 class="mb-6 text-capitalize text-end">INVOICE #{{ salesInvoice.noInvoice }}</h5>
+          <h5 class="mb-6 text-capitalize text-end">INVOICE NO: {{ salesInvoice.noInvoice }}</h5>
           <div style="margin-left: 100px;">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
               <tr>
@@ -41,14 +41,14 @@
                 <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.npwp || salesInvoice.salesOrder?.customer?.npwp || '-' }}</td>
               </tr>
               <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Email</td>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Attention</td>
                 <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.email || salesInvoice.salesOrder?.customer?.email || '-' }}</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.up || salesInvoice.salesOrder?.up || '-' }}</td>
               </tr>
               <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">No. Telp</td>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Order Number</td>
                 <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.customer?.phone || salesInvoice.salesOrder?.customer?.phone || '-' }}</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.salesOrder?.noSo || '-' }}</td>
               </tr>
             </table>
           </div>
