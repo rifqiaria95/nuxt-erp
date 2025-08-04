@@ -110,6 +110,10 @@ export const useProductStore = defineStore('product', {
 
         if (this.params.warehouseId) {
           params.append('warehouseId', this.params.warehouseId.toString());
+          params.append('includeStocks', 'true');
+        } else {
+          // Include stocks without warehouse filter to show total stock across all warehouses
+          params.append('includeStocks', 'true');
         }
 
         const response = await fetch(`${$api.product()}?${params.toString()}`, {
@@ -126,9 +130,21 @@ export const useProductStore = defineStore('product', {
             throw new Error(errorData.message || 'Gagal memuat data produk');
         }
         
-        const result = await response.json()
-        this.products = result.data
-        this.totalRecords = result.meta.total
+                 const result = await response.json()
+         
+         // 🔍 DEBUG: Log untuk debugging response
+         console.log('🔍 Product Store Debug - API Response:', {
+           totalProducts: result.data?.length,
+           firstProduct: result.data?.[0],
+           firstProductStocks: result.data?.[0]?.stocks,
+           params: {
+             warehouseId: this.params.warehouseId,
+             includeStocks: 'true'
+           }
+         })
+         
+         this.products = result.data
+         this.totalRecords = result.meta.total
       } catch (e: any) {
         this.error = e.message
         Swal.fire('Error', `Tidak dapat memuat data produk: ${e.message}`, 'error');
