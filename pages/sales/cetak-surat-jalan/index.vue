@@ -81,7 +81,7 @@
               <td>{{ index + 1 }}</td>
               <td class="text-nowrap text-heading">{{ item.product?.sku || 'Part Number' }}</td>
               <td class="text-nowrap text-heading">{{ item.product?.name || 'Product Name' }}</td>
-              <td class="text-nowrap">{{ item.description || '-' }}</td>
+              <td class="text-nowrap">{{ item.quantity || '-' }}</td>
             </tr>
             <!-- ✅ MESSAGE jika tidak ada items sama sekali -->
             <tr v-if="!suratJalan.suratJalanItems || suratJalan.suratJalanItems.filter(item => item.salesOrderItem?.statusPartial === true).length === 0">
