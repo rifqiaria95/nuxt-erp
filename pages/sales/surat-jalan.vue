@@ -446,7 +446,6 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
     const selectedSalesOrder = filteredSalesOrders.find(so => so.id === newSalesOrderId);
 
     if (selectedSalesOrder) {
-      console.log('🔍 Selected Sales Order:', selectedSalesOrder);
 
       // Auto fill data dari sales order yang dipilih
       form.value.customerId = selectedSalesOrder.customerId || selectedSalesOrder.customer?.id;
@@ -469,7 +468,6 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
           const detailedSalesOrder = salesOrderStore.salesOrder;
 
           if (detailedSalesOrder && detailedSalesOrder.salesOrderItems) {
-            console.log('🔍 Auto filling sales order items:', detailedSalesOrder.salesOrderItems);
 
             // Pastikan suratJalanItems selalu ada
             if (!form.value.suratJalanItems) {
@@ -508,26 +506,20 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
                 form.value.suratJalanItems.push(suratJalanItem);
               });
 
-            console.log('✅ Auto filled surat jalan items:', form.value.suratJalanItems);
+            
           }
         } catch (error) {
           console.error('❌ Error fetching sales order details for auto fill:', error);
           // Fallback: buat array kosong
           form.value.suratJalanItems = [];
         }
-      } else {
-        console.log('🔒 Edit mode detected - preserving existing sales invoice items');
+        } else {
       }
 
-      console.log('✅ Auto filled form data:', {
-        customerId     : form.value.customerId,
-        perusahaanId   : form.value.perusahaanId,
-        itemsCount     : form.value.suratJalanItems?.length || 0
-      });
+      
     }
   } else if (!newSalesOrderId && oldSalesOrderId) {
     // Jika sales order dihapus/di-clear, reset beberapa field ke kondisi manual
-    console.log('🔄 Sales Order cleared, enabling manual input');
 
     // Reset ke default values tapi tetap biarkan user bisa edit
     if (!isEditMode.value) {

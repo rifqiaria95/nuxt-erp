@@ -222,8 +222,6 @@ export const useStockTransferStore = defineStore('stockTransfer', {
 
         const resData = await response.json();
         this.stockTransfers = resData
-
-        console.log('Pinia store stockTransfer state after refresh load:', this.stockTransfers);
       } catch (e) {
         console.error('Error fetching stock in details:', e);
         this.error = e;

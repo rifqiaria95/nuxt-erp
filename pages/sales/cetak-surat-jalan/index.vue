@@ -120,7 +120,7 @@
                     </span>
                   </p>
                   <p class="mt-10 text-start pt-10">
-                    {{ suratJalan.picName || '-' }}
+                    ....................
                   </p>
                 </div>
               </td>
@@ -185,10 +185,6 @@
       try {
         await suratJalanStore.fetchSuratJalanDetailWithItems(suratJalanId);
         
-        // ✅ DEBUG: Log data untuk memastikan suratJalanItems dimuat
-        console.log('🔍 Print Invoice Debug - Surat Jalan Data:', suratJalan.value);
-        console.log('🔍 Print Invoice Debug - Surat Jalan Items:', suratJalan.value?.suratJalanItems);
-        console.log('🔍 Print Invoice Debug - Items Count:', suratJalan.value?.suratJalanItems?.length || 0);
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail surat jalan.', 'error');
       }

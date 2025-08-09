@@ -179,8 +179,6 @@ export const useStockOutStore = defineStore('stockOut', {
 
         const resData = await response.json();
         this.stockOuts = resData
-
-        console.log('Pinia store stockOut state after refresh load:', this.stockOuts);
       } catch (e) {
         console.error('Error fetching stock out details:', e);
         this.error = e;

@@ -322,20 +322,14 @@ const printQuotation = (id) => {
 async function refreshQuotationDetails() {
     const quotationIdToFetch = Array.isArray(quotationId) ? quotationId[0] : quotationId;
     
-    console.log('=== DEBUG: refreshQuotationDetails ===');
-    console.log('route.query.id:', route.query.id);
-    console.log('quotationId:', quotationId);
-    console.log('quotationIdToFetch:', quotationIdToFetch);
-    console.log('typeof poIdToFetch:', typeof poIdToFetch);
+    
     
     if (typeof quotationIdToFetch === 'string') {
         loading.value = true
         try {
-            console.log('Calling quotationStore.getQuotationDetails with:', quotationIdToFetch);
             await quotationStore.getQuotationDetails(quotationIdToFetch)
-            console.log('Successfully fetched quotation details');
         } catch (error) {
-            console.error("Failed to refresh quotation details:", error)
+        console.error("Failed to refresh quotation details:", error)
         } finally {
             loading.value = false
         }

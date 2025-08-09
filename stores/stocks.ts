@@ -248,8 +248,6 @@ export const useStocksStore = defineStore('stocks', {
 
         const resData = await response.json();
         this.stocks = resData
-
-        console.log('Pinia store stocks state after refresh load:', this.stocks);
       } catch (e) {
         console.error('Error fetching stock details:', e);
         this.error = e;

@@ -249,7 +249,7 @@ if (document.getElementById('layout-menu')) {
         i18next.changeLanguage(currentLanguage, (err, t) => {
           window.templateCustomizer ? window.templateCustomizer.setLang(currentLanguage) : '';
           directionChange(textDirection);
-          if (err) return console.log('something went wrong loading', err);
+          if (err) return;
           localize();
         });
       });

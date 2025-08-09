@@ -213,13 +213,18 @@ export const useSuratJalanStore = defineStore('suratJalan', {
       try {
         const token = localStorage.getItem('token');
 
-        const resData = await apiFetch($api.suratJalanShow(suratJalanId), {
+        // ✅ PERBAIKAN: Add cache-busting parameter untuk force fresh data
+        const url = `${$api.suratJalanShow(suratJalanId)}?_t=${Date.now()}`;
+
+        const resData = await apiFetch(url, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
+            'Cache-Control': 'no-cache', // ✅ Force no cache
           },
           credentials: 'include',
         })
+        
         
         if (resData && resData.data) {
           this.suratJalan = resData.data
@@ -248,33 +253,37 @@ export const useSuratJalanStore = defineStore('suratJalan', {
         try {
             const token = localStorage.getItem('token');
 
-            // Prepare FormData for file upload
-            const formData = new FormData();
-            
-            // Add basic fields
-            formData.append('customerId', this.form.customerId?.toString() || '');
-            formData.append('salesOrderId', this.form.salesOrderId?.toString() || '');
-            formData.append('date', this.form.date || '');
-            formData.append('description', this.form.description || '');
-            formData.append('alamatPengiriman', this.form.alamatPengiriman || '');
-            formData.append('picName', this.form.picName || '');
+            // Prepare payload data - Always include all fields for update
+            const payload: any = {
+                customerId: Number(this.form.customerId) || null,
+                salesOrderId: this.form.salesOrderId || null,
+                date: this.form.date || '',
+                description: this.form.description !== undefined ? this.form.description : '', // ✅ Always include
+                alamatPengiriman: this.form.alamatPengiriman !== undefined ? this.form.alamatPengiriman : '', // ✅ Always include
+                picName: this.form.picName || '',
+            };
 
-            // ✅ ADD: Append sales invoice items to FormData
+            
+
+            // ✅ ADD: Format surat jalan items properly
             if (this.form.suratJalanItems && Array.isArray(this.form.suratJalanItems)) {
-                this.form.suratJalanItems.forEach((item: any, i: number) => {
-                    if (item.productId && item.quantity > 0) {
-                        Object.keys(item).forEach(itemKey => {
-                            const value = item[itemKey];
-                            if (value !== null && value !== undefined) {
-                                formData.append(`suratJalanItems[${i}][${itemKey}]`, value);
-                            }
-                        });
-                    }
-                });
+                payload.suratJalanItems = this.form.suratJalanItems
+                    .filter((item: any) => item.productId && item.quantity > 0)
+                    .map((item: any) => ({
+                        salesOrderItemId: item.salesOrderItemId || null,
+                        productId: Number(item.productId),
+                        warehouseId: Number(item.warehouseId),
+                        quantity: Number(item.quantity),
+                        description: item.description || '',
+                    }));
+            } else {
+                payload.suratJalanItems = [];
             }
 
             const method = this.isEditMode ? 'PUT' : 'POST';
             const url = this.isEditMode ? `${$api.suratJalan()}/${this.form.id}` : $api.suratJalan();
+            
+            
             
             // Send data to API
             const response = await fetch(url, {
@@ -282,8 +291,9 @@ export const useSuratJalanStore = defineStore('suratJalan', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json',
+                    'Content-Type': 'application/json',
                 },
-                body: formData,
+                body: JSON.stringify(payload),
                 credentials: 'include',
             });
 
@@ -301,6 +311,9 @@ export const useSuratJalanStore = defineStore('suratJalan', {
                 }
             } else {
                 this.closeModal();
+                // ✅ PERBAIKAN: Clear cache data sebelum fetch ulang
+                this.suratJalan = null;
+                this.selectedSuratJalan = null;
                 await this.fetchSuratJalans();
                 toast.success({
                   title: 'Success',
@@ -399,15 +412,29 @@ export const useSuratJalanStore = defineStore('suratJalan', {
           
           // Salin data ke form state dan format tanggal dengan benar
           this.form = {
-              ...JSON.parse(JSON.stringify(fullData)),
+              id: fullData.id,
+              noSuratJalan: fullData.noSuratJalan || '',
+              picName: fullData.picName || '',
+              date: formatDate(fullData.date),
+              description: fullData.description || '',
+              alamatPengiriman: fullData.alamatPengiriman || '',
+              customerId: fullData.customerId || null,
+              salesOrderId: fullData.salesOrderId || null,
+              suratJalanItems: fullData.suratJalanItems ? fullData.suratJalanItems.map((item: any) => ({
+                  id: item.id,
+                  suratJalanId: item.suratJalanId,
+                  salesOrderItemId: item.salesOrderItemId,
+                  productId: item.productId,
+                  warehouseId: item.warehouseId,
+                  quantity: item.quantity,
+                  description: item.description || '',
+                  product: item.product,
+                  warehouse: item.warehouse,
+                  salesOrderItem: item.salesOrderItem,
+              })) : [],
           };
 
-          const dateFields = ['date'];
-          dateFields.forEach(field => {
-              if (this.form[field]) {
-                  this.form[field] = formatDate(this.form[field]);
-              }
-          });
+          
       } else {
           this.resetForm();
       }
@@ -467,7 +494,6 @@ export const useSuratJalanStore = defineStore('suratJalan', {
       
       try {
         const token = localStorage.getItem('token');
-        console.log('🔍 Store Debug - fetchSalesInvoiceById - Token exists:', !!token);
 
         const resData = await apiFetch($api.suratJalanShow(suratJalanId), {
           headers: {
@@ -477,7 +503,6 @@ export const useSuratJalanStore = defineStore('suratJalan', {
           credentials: 'include',
         });
         
-        console.log('🔍 Store Debug - fetchSuratJalanById - API Response:', resData);
         
         if (resData && resData.data) {
           this.selectedSuratJalan = resData.data;
@@ -526,7 +551,6 @@ export const useSuratJalanStore = defineStore('suratJalan', {
       
       try {
         const token = localStorage.getItem('token');
-        console.log('🔍 Store Debug - fetchSuratJalanDetailWithItems - Token exists:', !!token);
 
         const resData = await apiFetch($api.suratJalanShow(suratJalanId), {
           headers: {
@@ -536,7 +560,6 @@ export const useSuratJalanStore = defineStore('suratJalan', {
           credentials: 'include',
         });
         
-        console.log('🔍 Store Debug - fetchSuratJalanDetailWithItems - API Response:', resData);
         
         if (resData && resData.data) {
           // Set salesInvoice dengan data lengkap termasuk salesInvoiceItems

@@ -726,7 +726,6 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
     const selectedSalesOrder = salesOrders.value?.find(so => so.id === newSalesOrderId);
     
     if (selectedSalesOrder) {
-      console.log('🔍 Selected Sales Order:', selectedSalesOrder);
       
       // Auto fill data dari sales order yang dipilih
       form.value.customerId = selectedSalesOrder.customerId || selectedSalesOrder.customer?.id;
@@ -774,8 +773,7 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
           await salesOrderStore.getSalesOrderDetails(newSalesOrderId);
           const detailedSalesOrder = salesOrderStore.salesOrder;
           
-          if (detailedSalesOrder && detailedSalesOrder.salesOrderItems) {
-            console.log('🔍 Auto filling sales order items:', detailedSalesOrder.salesOrderItems);
+            if (detailedSalesOrder && detailedSalesOrder.salesOrderItems) {
             
             // Pastikan salesInvoiceItems selalu ada
             if (!form.value.salesInvoiceItems) {
@@ -817,35 +815,20 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
               
               form.value.salesInvoiceItems.push(invoiceItem);
             });
-        
-            console.log('✅ Auto filled sales invoice items:', form.value.salesInvoiceItems);
+            
           }
         } catch (error) {
           console.error('❌ Error fetching sales order details for auto fill:', error);
           // Fallback: create empty items array
           form.value.salesInvoiceItems = [];
         }
-      } else {
-        console.log('🔒 Edit mode detected - preserving existing sales invoice items');
+        } else {
       }
       
-      console.log('✅ Auto filled form data:', {
-        customerId     : form.value.customerId,
-        discountPercent: form.value.discountPercent,
-        taxPercent     : form.value.taxPercent,
-        total          : form.value.total,
-        perusahaanId   : form.value.perusahaanId,
-        cabangId       : form.value.cabangId,
-        date           : form.value.date,
-        dueDate        : form.value.dueDate,
-        status         : form.value.status,
-        paidAmount     : form.value.paidAmount,
-        itemsCount     : form.value.salesInvoiceItems?.length || 0
-      });
+      
     }
   } else if (!newSalesOrderId && oldSalesOrderId) {
     // Jika sales order dihapus/di-clear, reset beberapa field ke kondisi manual
-    console.log('🔄 Sales Order cleared, enabling manual input');
     
     // Reset ke default values tapi tetap biarkan user bisa edit
     if (!isEditMode.value) {

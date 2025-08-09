@@ -289,10 +289,6 @@
       try {
         await salesInvoiceStore.fetchSalesInvoiceById(salesInvoiceId);
         
-        // ✅ DEBUG: Log data untuk memastikan salesInvoiceItems dimuat
-        console.log('🔍 Print Invoice Debug - Sales Invoice Data:', salesInvoice.value);
-        console.log('🔍 Print Invoice Debug - Sales Invoice Items:', salesInvoice.value?.salesInvoiceItems);
-        console.log('🔍 Print Invoice Debug - Items Count:', salesInvoice.value?.salesInvoiceItems?.length || 0);
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail sales invoice.', 'error');
       }

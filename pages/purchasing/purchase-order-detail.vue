@@ -344,20 +344,14 @@ const printPurchaseOrder = (id) => {
 async function refreshPurchaseOrderDetails() {
     const poIdToFetch = Array.isArray(poId) ? poId[0] : poId;
     
-    console.log('=== DEBUG: refreshPurchaseOrderDetails ===');
-    console.log('route.query.id:', route.query.id);
-    console.log('poId:', poId);
-    console.log('poIdToFetch:', poIdToFetch);
-    console.log('typeof poIdToFetch:', typeof poIdToFetch);
+    
     
     if (typeof poIdToFetch === 'string') {
         loading.value = true
         try {
-            console.log('Calling purchaseOrderStore.getPurchaseOrderDetails with:', poIdToFetch);
             await purchaseOrderStore.getPurchaseOrderDetails(poIdToFetch)
-            console.log('Successfully fetched purchase order details');
         } catch (error) {
-            console.error("Failed to refresh PO details:", error)
+        console.error("Failed to refresh PO details:", error)
         } finally {
             loading.value = false
         }

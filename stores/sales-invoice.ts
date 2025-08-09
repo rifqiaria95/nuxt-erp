@@ -535,7 +535,6 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
       
       try {
         const token = localStorage.getItem('token');
-        console.log('🔍 Store Debug - fetchSalesInvoiceById - Token exists:', !!token);
 
         const resData = await apiFetch($api.salesInvoiceShow(invoiceId), {
           headers: {
@@ -545,7 +544,6 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
           credentials: 'include',
         });
         
-        console.log('🔍 Store Debug - fetchSalesInvoiceById - API Response:', resData);
         
         if (resData && resData.data) {
           this.selectedSalesInvoice = resData.data;
@@ -594,7 +592,6 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
       
       try {
         const token = localStorage.getItem('token');
-        console.log('🔍 Store Debug - fetchInvoiceDetailWithItems - Token exists:', !!token);
 
         const resData = await apiFetch($api.salesInvoiceShow(invoiceId), {
           headers: {
@@ -604,7 +601,6 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
           credentials: 'include',
         });
         
-        console.log('🔍 Store Debug - fetchInvoiceDetailWithItems - API Response:', resData);
         
         if (resData && resData.data) {
           // Set salesInvoice dengan data lengkap termasuk salesInvoiceItems

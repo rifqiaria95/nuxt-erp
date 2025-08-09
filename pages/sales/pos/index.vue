@@ -406,9 +406,7 @@
     };
 
     const saveBills = async () => {
-        // DEBUG: Log source sebelum submit
-        console.log('🔍 DEBUG POS - Form source before submit:', form.value.source);
-        console.log('🔍 DEBUG POS - Full form before submit:', form.value);
+        
 
         if (!form.value.perusahaanId || !form.value.cabangId || !form.value.warehouseId || !form.value.customerId) {
             toast.fire({
@@ -492,8 +490,7 @@
         form.value.date = today;
         form.value.dueDate = today;
 
-        // DEBUG: Log untuk memastikan source diset
-        console.log('🔍 DEBUG POS - Form source after reset:', form.value.source);
+        
 
         salesOrderStore.fetchSalesOrders();
         customerStore.fetchCustomers();

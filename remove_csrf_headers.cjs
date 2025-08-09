@@ -30,11 +30,11 @@ files.forEach(file => {
   // Count changes
   const changes = originalContent.length - content.length;
   if (changes > 0) {
-    console.log(`Removed CSRF headers from ${file} (${changes} characters)`);
+    
     totalRemoved += changes;
     fs.writeFileSync(filePath, content);
   }
 });
 
-console.log(`\nTotal characters removed: ${totalRemoved}`);
-console.log('All CSRF token headers have been removed from the store files.'); 
+ 
+ 

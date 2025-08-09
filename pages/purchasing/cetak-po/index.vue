@@ -285,10 +285,6 @@
       try {
         await purchaseOrderStore.getPurchaseOrderDetails(purchaseOrderId);
         
-        // ✅ DEBUG: Log data untuk memastikan purchaseOrderItems dimuat
-        console.log('🔍 Print Invoice Debug - Purchase Order Data:', purchaseOrder.value);
-        console.log('🔍 Print Invoice Debug - Purchase Order Items:', purchaseOrder.value?.purchaseOrderItems);
-        console.log('🔍 Print Invoice Debug - Items Count:', purchaseOrder.value?.purchaseOrderItems?.length || 0);
       } catch (e) {
         toast.error({
           title: 'Gagal!',

@@ -335,12 +335,10 @@ const printSalesInvoice = (id) => {
 
 const downloadInvoice = () => {
   // Implement PDF download logic
-  console.log('Download invoice PDF')
 }
 
 const editInvoice = () => {
   // Navigate to edit page or open modal
-  console.log('Edit invoice')
 }
 
 const viewSalesOrder = () => {
@@ -354,7 +352,6 @@ const viewSalesOrder = () => {
 
 const addPayment = () => {
   // Implement payment logic
-  console.log('Add payment')
 }
 
 // ✅ FETCH INVOICE DETAILS menggunakan store

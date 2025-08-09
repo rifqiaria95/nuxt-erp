@@ -642,8 +642,7 @@ watch(globalFilterValue, useDebounceFn((newValue) => {
 }, 500));
 
 watch(filters, (newFilters) => {
-    const { page, rows, ...restFilters } = newFilters;
-    console.log('🔍 Frontend Filter Debug:', restFilters);
+  const { page, rows, ...restFilters } = newFilters;
     salesOrderStore.setFilters(restFilters);
 }, { deep: true });
 
@@ -815,12 +814,7 @@ const clearDateFilters = () => {
 };
 
 const onDateChange = () => {
-    console.log('🔍 Date Change Debug:', {
-        startDate: filters.value.startDate,
-        endDate: filters.value.endDate,
-        startDateType: typeof filters.value.startDate,
-        endDateType: typeof filters.value.endDate
-    });
+    
 };
 
 // Fungsi export PDF khusus untuk Sales Order
@@ -997,7 +991,7 @@ const exportSalesOrderPDF = async (dataToExport) => {
         try {
             doc.addImage(companyInfo.logo, 'PNG', pageWidth - 60, 10, 50, 20);
         } catch (e) {
-            console.log('Logo perusahaan tidak ditemukan atau tidak valid, lanjut tanpa logo');
+            void e;
         }
     }
 

@@ -132,16 +132,7 @@ export const useProductStore = defineStore('product', {
         
                  const result = await response.json()
          
-         // 🔍 DEBUG: Log untuk debugging response
-         console.log('🔍 Product Store Debug - API Response:', {
-           totalProducts: result.data?.length,
-           firstProduct: result.data?.[0],
-           firstProductStocks: result.data?.[0]?.stocks,
-           params: {
-             warehouseId: this.params.warehouseId,
-             includeStocks: 'true'
-           }
-         })
+         
          
          this.products = result.data
          this.totalRecords = result.meta.total

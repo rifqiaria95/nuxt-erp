@@ -286,10 +286,6 @@
       try {
         await quotationStore.getQuotationDetails(quotationId);
         
-        // ✅ DEBUG: Log data untuk memastikan salesInvoiceItems dimuat
-        console.log('🔍 Print Quotation Debug - Quotation Data:', quotation.value);
-        console.log('🔍 Print Quotation Debug - Quotation Items:', quotation.value?.quotationItems);
-        console.log('🔍 Print Quotation Debug - Items Count:', quotation.value?.quotationItems?.length || 0);
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail quotation.', 'error');
       }
