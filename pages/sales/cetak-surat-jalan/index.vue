@@ -49,6 +49,11 @@
                 <td style="font-size: 12px; width: 10px;">:</td>
                 <td class="text-start" style="font-size: 12px;">{{ suratJalan.customer?.phone || '-' }}</td>
               </tr>
+              <tr>
+                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">No. PO</td>
+                <td style="font-size: 12px; width: 10px;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ suratJalan.salesOrder?.noPo || '-' }}</td>
+              </tr>
             </table>
           </div>
         </div>

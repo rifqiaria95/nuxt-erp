@@ -201,7 +201,7 @@
                         @click="printSuratJalan(salesOrder.id)"
                         >
                         <span class="d-flex align-items-center justify-content-center text-nowrap"
-                            ><i class="ri-printer-line ri-16px scaleX-n1-rtl me-2"></i>Print Surat Jalan</span
+                            ><i class="ri-printer-line ri-16px scaleX-n1-rtl me-2"></i>Print Sales Order</span
                         >
                         </button>
                         <button class="btn btn-outline-secondary d-grid w-100 mb-4">Download</button>
