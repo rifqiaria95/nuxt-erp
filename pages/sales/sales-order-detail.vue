@@ -84,14 +84,14 @@
                                     <th>Total Price</th>
                                     <th>
                                         Status
-                                        <!-- ✅ DISABLE MASTER CHECKBOX ketika DELIVERED -->
+                                        <!-- ✅ DISABLE MASTER CHECKBOX ketika DELIVERED atau ada item tanpa delivered_qty -->
                                         <input 
                                             type="checkbox" 
                                             class="form-check-input ms-2" 
                                             :checked="allItemsCompleted"
                                             @change="toggleAllItemsStatus"
-                                            :disabled="isDelivered"
-                                            :title="isDelivered ? 'Tidak dapat mengubah status - Sales Order sudah delivered' : 'Toggle all items status'" 
+                                            :disabled="isDelivered || !canToggleAllItems"
+                                            :title="getMasterCheckboxTooltip()" 
                                         />
                                     </th>
                                 </tr>
@@ -109,18 +109,21 @@
                                           v-model="item.deliveredQty"
                                           style="width: 80px;"
                                           :disabled="item.statusPartial || isReturned(item) || isDelivered"
+                                          min="1"
+                                          :max="item.quantity"
                                         />
                                     </td>
                                     <td>{{ formatRupiah(item.subtotal) }}</td>
                                     <td>
                                         <label class="switch switch-success" v-if="!isReturned(item)">
-                                            <!-- ✅ DISABLE INDIVIDUAL CHECKBOX ketika DELIVERED -->
+                                            <!-- ✅ DISABLE INDIVIDUAL CHECKBOX ketika DELIVERED atau delivered_qty kosong -->
                                             <input 
                                                 type="checkbox" 
                                                 class="switch-input" 
                                                 :checked="item.statusPartial" 
                                                 @change="updateStatusPartial(item.id, !item.statusPartial, item.deliveredQty)"
-                                                :disabled="isDelivered"
+                                                :disabled="isDelivered || !isDeliveredQtyValid(item)"
+                                                :title="getCheckboxTooltip(item)"
                                             />
                                             <span class="switch-toggle-slider">
                                             <span class="switch-on">
@@ -394,6 +397,52 @@ const isReturned = (item) => {
     return item.salesReturnItems.some(ri => ri.salesReturn && ri.salesReturn.status === 'approved');
 }
 
+// ✅ FUNCTION untuk validasi delivered quantity
+const isDeliveredQtyValid = (item) => {
+    // Jika item sudah statusPartial true, tidak perlu validasi lagi
+    if (item.statusPartial) {
+        return true;
+    }
+    
+    // Validasi: deliveredQty harus diisi dan > 0
+    return item.deliveredQty && Number(item.deliveredQty) > 0;
+}
+
+// ✅ FUNCTION untuk tooltip checkbox
+const getCheckboxTooltip = (item) => {
+    if (isDelivered.value) {
+        return 'Tidak dapat mengubah status - Sales Order sudah delivered';
+    }
+    if (!isDeliveredQtyValid(item)) {
+        return 'Harap isi quantity yang diterima terlebih dahulu';
+    }
+    return 'Toggle status item';
+}
+
+// ✅ COMPUTED PROPERTY untuk mengecek apakah semua item dapat di-toggle
+const canToggleAllItems = computed(() => {
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
+        return false;
+    }
+    
+    // Hanya item yang belum di-return yang perlu dicek
+    const activeItems = salesOrder.value.salesOrderItems.filter(item => !isReturned(item));
+    
+    // Semua item harus punya delivered quantity yang valid
+    return activeItems.every(item => isDeliveredQtyValid(item));
+})
+
+// ✅ FUNCTION untuk tooltip master checkbox
+const getMasterCheckboxTooltip = () => {
+    if (isDelivered.value) {
+        return 'Tidak dapat mengubah status - Sales Order sudah delivered';
+    }
+    if (!canToggleAllItems.value) {
+        return 'Harap isi quantity yang diterima untuk semua item terlebih dahulu';
+    }
+    return 'Toggle status semua item';
+}
+
 // ✅ COMPUTED PROPERTY untuk mengecek apakah sales order sudah delivered
 const isDelivered = computed(() => {
     return salesOrder.value?.status === 'delivered'
@@ -479,6 +528,20 @@ async function updateStatusPartial(itemId, status, receivedQty) {
         return
     }
 
+    // ✅ VALIDASI: Cek apakah delivered quantity sudah diisi
+    if (status && (!receivedQty || Number(receivedQty) <= 0)) {
+        toast.error({
+            title: 'Validasi Gagal',
+            message: 'Harap isi quantity yang diterima terlebih dahulu sebelum mengubah status!',
+            icon: 'ri-close-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
+        await refreshSalesOrderDetails()
+        return
+    }
+
     if (receivedQty > item.quantity) {
         toast.error({
             title: 'Validasi Gagal',
@@ -524,6 +587,20 @@ async function toggleAllItemsStatus(event) {
             title: 'Aksi Tidak Diizinkan',
             message: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
             icon: 'ri-alert-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
+        return
+    }
+
+    // ✅ VALIDASI: Cek apakah semua item memiliki delivered quantity
+    if (!canToggleAllItems.value) {
+        event.target.checked = allItemsCompleted.value // Reset checkbox
+        toast.error({
+            title: 'Validasi Gagal',
+            message: 'Harap isi quantity yang diterima untuk semua item terlebih dahulu sebelum mengubah status!',
+            icon: 'ri-close-line',
             timeout: 3000,
             position: 'topRight',
             layout: 2,
@@ -673,6 +750,18 @@ onMounted(refreshSalesOrderDetails)
     input:disabled {
         background-color: #f8f9fa !important;
         opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    /* ✅ CSS untuk master checkbox yang disabled */
+    .form-check-input:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* ✅ CSS untuk disabled switch label */
+    .switch input:disabled + .switch-toggle-slider + .switch-label {
+        opacity: 0.5;
         cursor: not-allowed;
     }
 </style>

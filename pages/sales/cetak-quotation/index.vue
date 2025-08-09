@@ -22,7 +22,7 @@
           <p class="mb-0">{{ quotation.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h5 class="mb-6 text-capitalize text-end">QUOTATION #{{ quotation.noQuotation }}</h5>
+          <h5 class="mb-6 text-capitalize text-end">QUOTATION NUMBER : {{ quotation.noQuotation }}</h5>
           <div style="margin-left: 100px;">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
               <tr>
@@ -31,14 +31,14 @@
                 <td class="text-start" style="font-size: 12px;">{{ quotation.customer?.name || '-' }}</td>
               </tr>
               <tr>
+                <td class="text-start" style="font-size: 12px; white-space: nowrap;">PIC</td>
+                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
+                <td class="text-start" style="font-size: 12px;">{{ quotation.up || '-' }}</td>
+              </tr>
+              <tr>
                 <td class="text-start" style="font-size: 12px; white-space: nowrap; vertical-align: top;">Alamat</td>
                 <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
                 <td class="text-start" style="font-size: 12px; white-space: pre-line;">{{ quotation.customer?.address || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">NPWP</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ quotation.customer?.npwp || '-' }}</td>
               </tr>
               <tr>
                 <td class="text-start" style="font-size: 12px; white-space: nowrap;">Email</td>
@@ -80,7 +80,13 @@
             <tr>
               <td>{{ quotation.createdByUser?.fullName || '-' }}</td>
               <td>{{ quotation.prNumber || '-' }}</td>
-              <td>{{ quotation.shipDate || '-' }}</td>
+              <td>
+                {{
+                  quotation.shipDate
+                    ? new Date(quotation.shipDate).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$1/$2/$3')
+                    : '-'
+                }}
+              </td>
               <td>{{ quotation.fobPoint || '-' }}</td>
               <td>{{ quotation.termsOfPayment || '-' }}</td>
             </tr>
@@ -165,7 +171,7 @@
                   </div>
                   <div class="mb-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
                     <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">
-                      Tax
+                      PPN
                       <span v-if="Number(quotation.taxPercent) > 0" style="font-size: 12px;">({{ Number(quotation.taxPercent) }}%)</span>
                     </span>
                     <span class="fw-medium text-heading px-2 text-end" style="width: 30px; display: inline-block; font-size: 12px;">:</span>
