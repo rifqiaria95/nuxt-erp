@@ -22,7 +22,7 @@
           <p class="mb-0">{{ suratJalan.salesOrder.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h6 class="mb-2 text-capitalize text-end fw-bold">SURAT JALAN #{{ suratJalan.noSuratJalan }}</h6>
+          <h6 class="mb-2 text-capitalize text-end fw-bold">SURAT JALAN NUMBER : {{ suratJalan.noSuratJalan }}</h6>
           <p class="text-end mb-6" style="font-size: 14px;"> Tanggal:
             {{ suratJalan.createdAt ? new Date(suratJalan.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
           </p>
