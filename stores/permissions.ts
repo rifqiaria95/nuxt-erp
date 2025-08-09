@@ -21,9 +21,22 @@ export const usePermissionsStore = defineStore('permissions', {
             this.loading = true
             try {
                 const { $api } = useNuxtApp()
-                const response = await fetch($api.permissions())
+                const token = localStorage.getItem('token')
+
+                const response = await fetch($api.permissions(), {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        Accept: 'application/json',
+                    },
+                    credentials: 'include',
+                })
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} saat mengambil permissions`)
+                }
+
                 const data = await response.json()
-                this.permissions = data.data 
+                this.permissions = data?.data ?? []
             } catch (error) {
                 console.error('Failed to fetch permissions:', error)
             } finally {
