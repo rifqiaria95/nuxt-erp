@@ -141,6 +141,11 @@
                     <span class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">{{ formatRupiah(calculateSubtotal()) || 0 }}</span>
                   </div>
                   <div class="mb-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
+                    <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">DPP</span>
+                    <span class="fw-medium text-heading px-2 text-end" style="width: 30px; display: inline-block; font-size: 12px;">:</span>
+                    <span class="fw-semibold text-end flex-grow-1" style="min-width: 110px; font-size: 12px;">{{ formatRupiah(Number(salesInvoice.dpp) || 0) }}</span>
+                  </div>
+                  <div class="mb-2 d-flex justify-content-end" style="min-width: 320px; font-size: 12px;">
                     <span class="fw-medium text-heading" style="min-width: 110px; font-size: 12px;">
                       Discount
                       <span v-if="Number(salesInvoice.discountPercent) > 0" style="font-size: 12px;">({{ Number(salesInvoice.discountPercent) }}%)</span>
