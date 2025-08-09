@@ -16,6 +16,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         credentials: 'include',
       })
     } catch (e) {
+      const toast = useToast()
+      toast.error({
+        title: 'Sesi Berakhir',
+        message: 'Sesi anda telah berakhir, silakan logout dan login kembali',
+        color: 'red',
+      })
       localStorage.removeItem('token')
       setTimeout(() => {
         document.querySelectorAll('.layout-wrapper, .layout-content-navbar').forEach(el => el.remove())

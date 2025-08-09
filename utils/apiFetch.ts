@@ -35,10 +35,23 @@ export const apiFetch = async <T = any>(url: string, options: any = {}) => {
     }
   }
 
-  return await $fetch<T>(url, {
-    ...options,
-    // credentials: 'include' penting untuk otentikasi berbasis cookie/sesi
-    credentials: 'include',
-    headers: customHeaders,
-  })
+  try {
+    return await $fetch<T>(url, {
+      ...options,
+      // credentials: 'include' penting untuk otentikasi berbasis cookie/sesi
+      credentials: 'include',
+      headers: customHeaders,
+    })
+  } catch (error: any) {
+    const status = error?.response?.status ?? error?.statusCode ?? error?.status
+    if (status === 401 || status === 419) {
+      const toast = useToast()
+      toast.error({
+        title: 'Sesi Berakhir',
+        message: 'Sesi anda telah berakhir, silakan logout dan login kembali',
+        color: 'red',
+      })
+    }
+    throw error
+  }
 }

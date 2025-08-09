@@ -296,7 +296,13 @@
                                             <label>Jatuh Tempo Invoice</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" v-model="form.up" class="form-control" placeholder="UP">
+                                            <label>UP</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
                                         <v-select
                                             v-model="form.status"
                                             :options="statusOptions"

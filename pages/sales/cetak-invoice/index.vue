@@ -43,7 +43,7 @@
               <tr>
                 <td class="text-start" style="font-size: 12px; white-space: nowrap;">Attention</td>
                 <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.up || salesInvoice.salesOrder?.up || '-' }}</td>
+                <td class="text-start" style="font-size: 12px;">{{ salesInvoice.up || '-' }}</td>
               </tr>
               <tr>
                 <td class="text-start" style="font-size: 12px; white-space: nowrap;">Order Number</td>

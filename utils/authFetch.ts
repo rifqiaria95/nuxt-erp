@@ -14,7 +14,8 @@ export const authFetch = async <T = any>(endpoint: string, options: any = {}) =>
       })
     } catch (error: any) {
       // cek kalau token expired
-      if (error?.response?.status === 401 && refreshToken.value) {
+      const status = error?.response?.status ?? error?.statusCode ?? error?.status
+      if (status === 401 && refreshToken.value) {
         // refresh access token
         try {
           const { token: newAccessToken } = await $fetch<{ token: string }>(`${baseUrl}/refresh-token`, {
@@ -36,10 +37,25 @@ export const authFetch = async <T = any>(endpoint: string, options: any = {}) =>
           // Refresh gagal, paksa logout
           accessToken.value = null
           refreshToken.value = null
+          const toast = useToast()
+          toast.error({
+            title: 'Sesi Berakhir',
+            message: 'Sesi anda telah berakhir, silakan logout dan login kembali',
+            color: 'red',
+          })
           throw new Error('Session expired. Please login again.')
         }
       }
   
+      if (status === 419 || status === 401) {
+        const toast = useToast()
+        toast.error({
+          title: 'Sesi Berakhir',
+          message: 'Sesi anda telah berakhir, silakan logout dan login kembali',
+          color: 'red',
+        })
+      }
+
       throw error
     }
   }
