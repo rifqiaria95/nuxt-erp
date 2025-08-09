@@ -22,7 +22,7 @@
           <p class="mb-0">{{ purchaseOrder.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h6 class="mb-6 text-capitalize text-end fw-bold">PURCHASE ORDER #{{ purchaseOrder.noPo }}</h6>
+          <h6 class="mb-6 text-capitalize text-end fw-bold">PURCHASE ORDER NUMBER: {{ purchaseOrder.noPo }}</h6>
           <div class="d-flex justify-content-end">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
               <tr>

@@ -265,7 +265,6 @@
                                         class="form-control" 
                                         @change="onLogoChange"
                                         placeholder="Masukkan logo customer"
-                                        :required="!isEditMode"
                                     >
                                     <label>Logo Customer</label>
                                 </div>
