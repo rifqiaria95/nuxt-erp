@@ -342,6 +342,15 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
+                                            <input type="text" :value="formatRupiah(form.dpp)" class="form-control" placeholder="DPP" readonly>
+                                            <label>DPP (Dasar Pengenaan Pajak)</label>
+                                            <div class="form-text">
+                                                <small class="text-info">🧮 Otomatis: Subtotal Items × 11/12</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-floating form-floating-outline">
                                             <input type="text" :value="formatRupiah(form.paidAmount)" @input="updatePaidAmountFromInput" class="form-control" placeholder="Paid Amount" :class="{ 'is-invalid': !isPaidAmountValid }">
                                             <label>Paid Amount</label>
                                             <div v-if="!isPaidAmountValid" class="invalid-feedback">
@@ -357,7 +366,7 @@
                                             <label>Sisa Pembayaran</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-9">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <textarea v-model="form.description" class="form-control" placeholder="Deskripsi Invoice"></textarea>
                                             <label>Deskripsi Invoice</label>
@@ -374,6 +383,10 @@
                                                         <div class="mb-2">
                                                             <span class="text-muted">Subtotal:</span><br>
                                                             <strong>{{ formatRupiah(form.total) }}</strong>
+                                                        </div>
+                                                        <div class="mb-2">
+                                                            <span class="text-muted">DPP (Subtotal × 11/12):</span><br>
+                                                            <strong class="text-info">{{ formatRupiah(form.dpp) }}</strong>
                                                         </div>
                                                         <div class="mb-2">
                                                             <span class="text-muted">Discount ({{ form.discountPercent }}%):</span><br>
@@ -608,6 +621,15 @@ const discountAmount = computed(() => {
   return Math.round(result);
 });
 
+// Computed untuk DPP (Dasar Pengenaan Pajak) = subtotal sales order items * 11/12
+const dppAmount = computed(() => {
+  // DPP dihitung dari subtotal sales invoice items, bukan dari total
+  const subtotalItems = salesInvoiceItemsTotal.value;
+  const result = subtotalItems * 11 / 12;
+  // Bulatkan ke integer untuk menghindari desimal
+  return Math.round(result);
+});
+
 // Computed untuk tax amount dalam rupiah
 const taxAmount = computed(() => {
   const total = Number(form.value.total) || 0;
@@ -654,6 +676,12 @@ watch(salesInvoiceItemsTotal, (newTotal) => {
   if (!form.value.salesOrderId) {
     form.value.total = Math.round(newTotal);
   }
+});
+
+// ✅ NEW: Watcher untuk auto update DPP berdasarkan subtotal items
+watch(salesInvoiceItemsTotal, (newSubtotal) => {
+  // Auto calculate DPP: subtotal items * 11/12
+  form.value.dpp = Math.round(Number(newSubtotal) * 11 / 12);
 });
 
 const statusOptions = ref([
@@ -816,6 +844,8 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
               form.value.salesInvoiceItems.push(invoiceItem);
             });
             
+            // DPP akan otomatis dihitung dari watcher salesInvoiceItemsTotal
+            
           }
         } catch (error) {
           console.error('❌ Error fetching sales order details for auto fill:', error);
@@ -836,6 +866,7 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
       form.value.discountPercent = 0;
       form.value.taxPercent = 0;
       form.value.total = 0;
+      form.value.dpp = 0;
       form.value.paidAmount = 0;
       form.value.status = 'unpaid';
       // Clear sales invoice items

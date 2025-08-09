@@ -169,6 +169,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         remainingAmount : 0,
         source          : '',
         total           : 0,
+        dpp             : 0,
         discountPercent : 0,
         taxPercent      : 0,
         description     : '',
@@ -297,6 +298,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
             formData.append('paidAmount', this.form.paidAmount?.toString() || '0');
             formData.append('discountPercent', this.form.discountPercent?.toString() || '0');
             formData.append('taxPercent', this.form.taxPercent?.toString() || '0');
+            formData.append('dpp', this.form.dpp?.toString() || '0');
             formData.append('description', this.form.description || '');
             formData.append('total', this.form.total?.toString() || '0');
             
@@ -492,6 +494,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         discountPercent: 0,
         taxPercent: 0,
         total: 0,
+        dpp: 0,
         description: '',
         attachment: null,
         status: 'unpaid',
