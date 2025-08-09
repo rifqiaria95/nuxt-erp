@@ -645,7 +645,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
                     'Content-Type': 'application/json',
                 },
                 body: { 
-                    statusPartial: status, 
                     deliveredQty: deliveredQty 
                 },
                 credentials: 'include',

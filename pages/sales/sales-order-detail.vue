@@ -82,18 +82,7 @@
                                     <th>Qty</th>
                                     <th>Delivered Qty</th>
                                     <th>Total Price</th>
-                                    <th>
-                                        Status
-                                        <!-- ✅ DISABLE MASTER CHECKBOX ketika DELIVERED atau ada item tanpa delivered_qty -->
-                                        <input 
-                                            type="checkbox" 
-                                            class="form-check-input ms-2" 
-                                            :checked="allItemsCompleted"
-                                            @change="toggleAllItemsStatus"
-                                            :disabled="isDelivered || !canToggleAllItems"
-                                            :title="getMasterCheckboxTooltip()" 
-                                        />
-                                    </th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,38 +92,57 @@
                                     <td>{{ formatRupiah(item.price) }}</td>
                                     <td>{{ item.quantity }}</td>
                                     <td>
-                                        <input
-                                          type="number"
-                                          class="form-control"
-                                          v-model="item.deliveredQty"
-                                          style="width: 80px;"
-                                          :disabled="item.statusPartial || isReturned(item) || isDelivered"
-                                          min="1"
-                                          :max="item.quantity"
-                                        />
+                                        <div class="d-flex align-items-center justify-content-center" style="width: 130px;">
+                                            <button 
+                                                class="btn btn-sm btn-outline-danger me-1 qty-btn" 
+                                                type="button"
+                                                @click="decreaseDeliveredQty(item)"
+                                                :disabled="isReturned(item) || isDelivered || (item.deliveredQty || 0) <= 0"
+                                                title="Kurangi quantity"
+                                            >
+                                                <i class="ri-subtract-line"></i>
+                                            </button>
+                                            <input
+                                                type="number"
+                                                class="form-control mx-1 delivered-qty-input"
+                                                :value="Math.floor(item.deliveredQty || 0)"
+                                                @input="(e) => { 
+                                                    const intValue = Math.floor(parseInt(e.target.value) || 0);
+                                                    item.deliveredQty = intValue;
+                                                    e.target.value = intValue;
+                                                    updateDeliveredQty(item);
+                                                }"
+                                                @keydown="(e) => {
+                                                    // Mencegah input desimal (titik dan koma)
+                                                    if (e.key === '.' || e.key === ',') {
+                                                        e.preventDefault();
+                                                    }
+                                                }"
+                                                @blur="updateDeliveredQty(item)"
+                                                :disabled="isReturned(item) || isDelivered"
+                                                min="0"
+                                                :max="item.quantity"
+                                                step="1"
+                                                placeholder="0"
+                                                :title="`Delivered: ${Math.floor(item.deliveredQty || 0)} / ${item.quantity}`"
+                                            />
+                                            <button 
+                                                class="btn btn-sm btn-outline-success ms-1 qty-btn" 
+                                                type="button"
+                                                @click="increaseDeliveredQty(item)"
+                                                :disabled="isReturned(item) || isDelivered || (item.deliveredQty || 0) >= item.quantity"
+                                                title="Tambah quantity"
+                                            >
+                                                <i class="ri-add-line"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                     <td>{{ formatRupiah(item.subtotal) }}</td>
                                     <td>
-                                        <label class="switch switch-success" v-if="!isReturned(item)">
-                                            <!-- ✅ DISABLE INDIVIDUAL CHECKBOX ketika DELIVERED atau delivered_qty kosong -->
-                                            <input 
-                                                type="checkbox" 
-                                                class="switch-input" 
-                                                :checked="item.statusPartial" 
-                                                @change="updateStatusPartial(item.id, !item.statusPartial, item.deliveredQty)"
-                                                :disabled="isDelivered || !isDeliveredQtyValid(item)"
-                                                :title="getCheckboxTooltip(item)"
-                                            />
-                                            <span class="switch-toggle-slider">
-                                            <span class="switch-on">
-                                                <i class="ri-check-line"></i>
-                                            </span>
-                                            <span class="switch-off">
-                                                <i class="ri-close-line"></i>
-                                            </span>
-                                            </span>
-                                            <span class="switch-label">{{ item.statusPartial ? 'Done' : 'Pending' }}</span>
-                                        </label>
+                                        <span v-if="!isReturned(item)" :class="getDeliveryStatusBadge(item).class">
+                                            {{ getDeliveryStatusBadge(item).text }}
+                                        </span>
+                                        <span v-else class="badge bg-danger">RETURNED</span>
                                     </td>
                                     <!-- ✅ OVERLAY untuk RETURNED items -->
                                     <div v-if="isReturned(item)" class="returned-overlay">
@@ -397,50 +405,111 @@ const isReturned = (item) => {
     return item.salesReturnItems.some(ri => ri.salesReturn && ri.salesReturn.status === 'approved');
 }
 
-// ✅ FUNCTION untuk validasi delivered quantity
-const isDeliveredQtyValid = (item) => {
-    // Jika item sudah statusPartial true, tidak perlu validasi lagi
-    if (item.statusPartial) {
-        return true;
-    }
+// ✅ FUNCTION untuk mendapatkan status badge delivery
+const getDeliveryStatusBadge = (item) => {
+    const deliveredQty = Math.floor(Number(item.deliveredQty) || 0)
+    const totalQty = Math.floor(Number(item.quantity) || 0)
     
-    // Validasi: deliveredQty harus diisi dan > 0
-    return item.deliveredQty && Number(item.deliveredQty) > 0;
+    if (deliveredQty === 0) {
+        return { text: 'Pending', class: 'badge bg-secondary' }
+    } else if (deliveredQty < totalQty) {
+        return { text: `Partial (${deliveredQty}/${totalQty})`, class: 'badge bg-warning' }
+    } else if (deliveredQty === totalQty) {
+        return { text: 'Done', class: 'badge bg-success' }
+    }
+    return { text: 'Error', class: 'badge bg-danger' }
 }
 
-// ✅ FUNCTION untuk tooltip checkbox
-const getCheckboxTooltip = (item) => {
-    if (isDelivered.value) {
-        return 'Tidak dapat mengubah status - Sales Order sudah delivered';
+// ✅ FUNCTION untuk increase delivered quantity
+const increaseDeliveredQty = (item) => {
+    if (isReturned(item) || isDelivered.value) return
+    
+    const currentQty = Math.floor(Number(item.deliveredQty) || 0)
+    const maxQty = Math.floor(Number(item.quantity) || 0)
+    
+    if (currentQty < maxQty) {
+        item.deliveredQty = currentQty + 1
+        updateDeliveredQty(item)
     }
-    if (!isDeliveredQtyValid(item)) {
-        return 'Harap isi quantity yang diterima terlebih dahulu';
-    }
-    return 'Toggle status item';
 }
 
-// ✅ COMPUTED PROPERTY untuk mengecek apakah semua item dapat di-toggle
-const canToggleAllItems = computed(() => {
-    if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
-        return false;
+// ✅ FUNCTION untuk decrease delivered quantity
+const decreaseDeliveredQty = (item) => {
+    if (isReturned(item) || isDelivered.value) return
+    
+    const currentQty = Math.floor(Number(item.deliveredQty) || 0)
+    
+    if (currentQty > 0) {
+        item.deliveredQty = currentQty - 1
+        updateDeliveredQty(item)
     }
-    
-    // Hanya item yang belum di-return yang perlu dicek
-    const activeItems = salesOrder.value.salesOrderItems.filter(item => !isReturned(item));
-    
-    // Semua item harus punya delivered quantity yang valid
-    return activeItems.every(item => isDeliveredQtyValid(item));
-})
+}
 
-// ✅ FUNCTION untuk tooltip master checkbox
-const getMasterCheckboxTooltip = () => {
-    if (isDelivered.value) {
-        return 'Tidak dapat mengubah status - Sales Order sudah delivered';
+// ✅ FUNCTION untuk update delivered quantity ke backend
+const updateDeliveredQty = async (item) => {
+    if (isReturned(item) || isDelivered.value) return
+    
+    // Pastikan deliveredQty memiliki nilai default dan bulatkan ke bawah
+    if (item.deliveredQty === null || item.deliveredQty === undefined || item.deliveredQty === '') {
+        item.deliveredQty = 0
     }
-    if (!canToggleAllItems.value) {
-        return 'Harap isi quantity yang diterima untuk semua item terlebih dahulu';
+    
+    // Bulatkan ke bilangan bulat terdekat
+    const deliveredQty = Math.floor(Number(item.deliveredQty) || 0)
+    const maxQty = Math.floor(Number(item.quantity) || 0)
+    
+    // Update nilai di item agar konsisten
+    item.deliveredQty = deliveredQty
+    
+    // Validasi
+    if (deliveredQty < 0) {
+        item.deliveredQty = 0
+        return
     }
-    return 'Toggle status semua item';
+    
+    if (deliveredQty > maxQty) {
+        item.deliveredQty = maxQty
+        toast.warning({
+            title: 'Peringatan',
+            message: `Quantity tidak boleh melebihi ${maxQty}`,
+            color: 'orange'
+        })
+        return
+    }
+    
+    try {
+        await salesOrderStore.updateStatusPartial(item.id, false, deliveredQty)
+        await refreshSalesOrderDetails()
+        
+        // Check if all items are now done
+        checkAllItemsStatus()
+        
+    } catch (error) {
+        console.error('Failed to update delivered quantity:', error)
+        toast.error({
+            title: 'Update Gagal',
+            message: 'Terjadi kesalahan saat memperbarui quantity.',
+            color: 'red'
+        })
+    }
+}
+
+// ✅ FUNCTION untuk check status semua items
+const checkAllItemsStatus = () => {
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems) return
+    
+    const allItemsDone = salesOrder.value.salesOrderItems.every(item => {
+        if (isReturned(item)) return true // Skip returned items
+        return Math.floor(Number(item.deliveredQty || 0)) === Math.floor(Number(item.quantity || 0))
+    })
+    
+    if (allItemsDone && salesOrder.value.status !== 'delivered') {
+        toast.success({
+            title: 'Semua Item Selesai!',
+            message: 'Semua item telah diterima sepenuhnya. Status berubah menjadi Done.',
+            color: 'green'
+        })
+    }
 }
 
 // ✅ COMPUTED PROPERTY untuk mengecek apakah sales order sudah delivered
@@ -507,171 +576,9 @@ async function refreshSalesOrderDetails() {
     }
 }
 
-async function updateStatusPartial(itemId, status, receivedQty) {
-    // Validasi: Cek apakah sales order sudah delivered
-    if (isDelivered.value) {
-        toast.warning({
-            title: 'Aksi Tidak Diizinkan',
-            message: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
-            icon: 'ri-alert-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-        return
-    }
 
-    const item = salesOrder.value.salesOrderItems.find(i => i.id === itemId)
 
-    if (!item) {
-        console.error('Item not found!')
-        return
-    }
 
-    // ✅ VALIDASI: Cek apakah delivered quantity sudah diisi
-    if (status && (!receivedQty || Number(receivedQty) <= 0)) {
-        toast.error({
-            title: 'Validasi Gagal',
-            message: 'Harap isi quantity yang diterima terlebih dahulu sebelum mengubah status!',
-            icon: 'ri-close-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-        await refreshSalesOrderDetails()
-        return
-    }
-
-    if (receivedQty > item.quantity) {
-        toast.error({
-            title: 'Validasi Gagal',
-            message: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
-            icon: 'ri-close-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-        await refreshSalesOrderDetails()
-        return
-    }
-
-    try {
-        await salesOrderStore.updateStatusPartial(itemId, status, receivedQty)
-        await refreshSalesOrderDetails()
-        toast.success({
-            title: 'Berhasil!',
-            message: 'Status item berhasil diperbarui.',
-            icon: 'ri-check-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-    } catch (error) {
-        console.error('Failed to update status:', error)
-        toast.error({
-            title: 'Update Gagal',
-            message: 'Terjadi kesalahan saat memperbarui status item.',
-            icon: 'ri-close-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-    }
-}
-
-async function toggleAllItemsStatus(event) {
-    // Validasi: Cek apakah sales order sudah delivered
-    if (isDelivered.value) {
-        event.target.checked = allItemsCompleted.value // Reset checkbox
-        toast.warning({
-            title: 'Aksi Tidak Diizinkan',
-            message: 'Sales Order sudah dalam status DELIVERED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.',
-            icon: 'ri-alert-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-        return
-    }
-
-    // ✅ VALIDASI: Cek apakah semua item memiliki delivered quantity
-    if (!canToggleAllItems.value) {
-        event.target.checked = allItemsCompleted.value // Reset checkbox
-        toast.error({
-            title: 'Validasi Gagal',
-            message: 'Harap isi quantity yang diterima untuk semua item terlebih dahulu sebelum mengubah status!',
-            icon: 'ri-close-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-        return
-    }
-
-    const isChecked = event.target.checked
-    
-    if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
-        return
-    }
-
-    if (isChecked) {
-        const result = await Swal.fire({
-            title: 'Konfirmasi',
-            text: 'Apakah Anda yakin ingin mengubah status semua item menjadi selesai?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, ubah semua',
-            cancelButtonText: 'Batal'
-        })
-
-        if (!result.isConfirmed) {
-            event.target.checked = false
-            return
-        }
-    }
-
-    try {
-        loading.value = true
-        const itemsToUpdate = salesOrder.value.salesOrderItems.filter(item => !isReturned(item))
-        
-        for (const item of itemsToUpdate) {
-            const newStatus = isChecked ? true : false
-            const deliveredQty = isChecked ? item.quantity : item.deliveredQty
-            
-            try {
-                await salesOrderStore.updateStatusPartial(item.id, newStatus, deliveredQty)
-            } catch (error) {
-                console.error(`Failed to update item ${item.id}:`, error)
-            }
-        }
-        await refreshSalesOrderDetails()
-        
-        toast.success({
-            title: 'Berhasil!',
-            message: `Status semua item berhasil ${isChecked ? 'diubah menjadi selesai' : 'direset'}`,
-            icon: 'ri-check-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-    } catch (error) {
-        console.error('Failed to update all items status:', error)
-        toast.error({
-            title: 'Gagal!',
-            message: 'Terjadi kesalahan saat memperbarui status semua item.',
-            icon: 'ri-close-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
-        })
-        // Reset checkbox pada error
-        event.target.checked = !isChecked
-    } finally {
-        loading.value = false
-    }
-}
 
 const totalBeforeTax = computed(() => {
     if (salesOrder.value && salesOrder.value.salesOrderItems) {
@@ -682,17 +589,7 @@ const totalBeforeTax = computed(() => {
     return 0
 })
 
-// Computed property untuk mengecek apakah semua item sudah completed
-const allItemsCompleted = computed(() => {
-    if (!salesOrder.value || !salesOrder.value.salesOrderItems || salesOrder.value.salesOrderItems.length === 0) {
-        return false
-    }
-    
-    // Return true hanya jika semua item statusPartial = true dan tidak ada yang di-return
-    return salesOrder.value.salesOrderItems.every(item => 
-        item.statusPartial === true && !isReturned(item)
-    )
-})
+
 
 onMounted(refreshSalesOrderDetails)
 </script>
@@ -763,5 +660,58 @@ onMounted(refreshSalesOrderDetails)
     .switch input:disabled + .switch-toggle-slider + .switch-label {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+    
+    .delivered-qty-input:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.075) !important;
+        color: #212529 !important;
+        background-color: #ffffff !important;
+        outline: none !important;
+    }
+    
+    .delivered-qty-input:disabled {
+        background-color: #e9ecef !important;
+        opacity: 1 !important;
+        color: #495057 !important;
+        cursor: not-allowed !important;
+        border-color: #ced4da !important;
+    }
+    
+    /* Pastikan placeholder terlihat */
+    .delivered-qty-input::placeholder {
+        color: #6c757d !important;
+        opacity: 1 !important;
+        font-weight: 400 !important;
+    }
+    
+    /* Hilangkan spinner pada input number */
+    .delivered-qty-input::-webkit-outer-spin-button,
+    .delivered-qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
+    
+    /* Firefox */
+    .delivered-qty-input[type=number] {
+        -moz-appearance: textfield !important;
+        appearance: textfield !important;
+    }
+    
+    /* ✅ CSS untuk tombol +/- */
+    .qty-btn {
+        width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+    }
+    
+    .qty-btn:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
     }
 </style>

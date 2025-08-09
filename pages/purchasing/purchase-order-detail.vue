@@ -8,6 +8,14 @@
                 </div>
             </div>
             <template v-else-if="purchaseOrder">
+                <!-- ✅ STATUS NOTIFICATION BANNER -->
+                <div v-if="isReceived" class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                    <i class="ri-check-circle-line ri-22px me-2"></i>
+                    <div>
+                        <strong>Status: RECEIVED</strong> - Purchase Order ini sudah selesai dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Purchase Return.
+                    </div>
+                </div>
+                
                 <div class="row invoice-preview">
                 <!-- Invoice -->
                 <div class="col-xl-9 col-md-8 col-12 mb-md-0 mb-6">
@@ -28,14 +36,20 @@
                                 <p class="mb-0">{{ purchaseOrder.perusahaan.npwpPerusahaan }}</p>
                             </div>
                             <div>
-                                <h5 class="mb-6">Purchase Number : {{ purchaseOrder.noPo }}</h5>
+                                <div class="d-flex align-items-center gap-3 mb-6">
+                                    <h5 class="mb-0">Purchase Number : {{ purchaseOrder.noPo }}</h5>
+                                    <!-- ✅ STATUS BADGE -->
+                                    <span :class="getStatusBadgeClass(purchaseOrder.status)">
+                                        {{ getStatusText(purchaseOrder.status) }}
+                                    </span>
+                                </div>
                                 <div class="mb-1">
-                                <span>Date Issues: </span>
-                                <span>{{ new Date(purchaseOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
+                                    <span>Date Issues: </span>
+                                    <span>{{ new Date(purchaseOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
                                 </div>
                                 <div>
-                                <span>Date Due: </span>
-                                <span>{{ new Date(purchaseOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
+                                    <span>Date Due: </span>
+                                    <span>{{ new Date(purchaseOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
                                 </div>
                             </div>
                             </div>
@@ -77,29 +91,56 @@
                                     <td>{{ formatRupiah(item.price) }}</td>
                                     <td>{{ Math.floor(Number(item.quantity) || 0) }}</td>
                                     <td>
-                                        <input
-                                          type="number"
-                                          class="form-control"
-                                          v-model="item.receivedQty"
-                                          @input="item.receivedQty = Math.floor(Number(item.receivedQty) || 0)"
-                                          style="width: 80px;"
-                                          :disabled="item.statusPartial"
-                                        />
+                                        <div class="d-flex align-items-center justify-content-center" style="width: 130px;">
+                                            <button 
+                                                class="btn btn-sm btn-outline-danger me-1 qty-btn" 
+                                                type="button"
+                                                @click="decreaseReceivedQty(item)"
+                                                :disabled="isReceived || (item.receivedQty || 0) <= 0"
+                                                title="Kurangi quantity"
+                                            >
+                                                <i class="ri-subtract-line"></i>
+                                            </button>
+                                            <input
+                                                type="number"
+                                                class="form-control mx-1 received-qty-input"
+                                                :value="Math.floor(item.receivedQty || 0)"
+                                                @input="(e) => { 
+                                                    const intValue = Math.floor(parseInt(e.target.value) || 0);
+                                                    item.receivedQty = intValue;
+                                                    e.target.value = intValue;
+                                                    updateReceivedQty(item);
+                                                }"
+                                                @keydown="(e) => {
+                                                    // Mencegah input desimal (titik dan koma)
+                                                    if (e.key === '.' || e.key === ',') {
+                                                        e.preventDefault();
+                                                    }
+                                                }"
+                                                @blur="updateReceivedQty(item)"
+                                                :disabled="isReceived"
+                                                min="0"
+                                                :max="item.quantity"
+                                                step="1"
+                                                placeholder="0"
+                                                :title="`Received: ${Math.floor(item.receivedQty || 0)} / ${item.quantity}`"
+                                            />
+                                            <button 
+                                                class="btn btn-sm btn-outline-success ms-1 qty-btn" 
+                                                type="button"
+                                                @click="increaseReceivedQty(item)"
+                                                :disabled="isReceived || (item.receivedQty || 0) >= item.quantity"
+                                                title="Tambah quantity"
+                                            >
+                                                <i class="ri-add-line"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                     <td>{{ formatRupiah(Number(item.price) * Number(item.quantity)) }}</td>
                                     <td>
-                                        <label class="switch switch-success">
-                                            <input type="checkbox" class="switch-input" :checked="item.statusPartial" @change="updateStatusPartial(item.id, !item.statusPartial, item.receivedQty)" />
-                                            <span class="switch-toggle-slider">
-                                            <span class="switch-on">
-                                                <i class="ri-check-line"></i>
-                                            </span>
-                                            <span class="switch-off">
-                                                <i class="ri-close-line"></i>
-                                            </span>
-                                            </span>
-                                            <span class="switch-label">{{ item.statusPartial ? 'Done' : 'Pending' }}</span>
-                                        </label>
+                                        <span :class="getReceiveStatusBadge(item).class">
+                                            {{ getReceiveStatusBadge(item).text }}
+                                        </span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -333,6 +374,11 @@ const toast              = useToast()
 const { purchaseOrder, loading } = storeToRefs(purchaseOrderStore)
 const poId = route.query.id
 
+// ✅ COMPUTED untuk check apakah Purchase Order sudah received
+const isReceived = computed(() => {
+    return purchaseOrder.value?.status === 'received'
+})
+
 // ✅ ACTION METHODS
 const printPurchaseOrder = (id) => {
   router.push({
@@ -360,40 +406,143 @@ async function refreshPurchaseOrderDetails() {
     }
 }
 
-async function updateStatusPartial(itemId, status, receivedQty) {
-    const item = purchaseOrder.value.purchaseOrderItems.find(i => i.id === itemId)
-
-    if (!item) {
-        console.error('Item not found!')
-        return
+// ✅ FUNCTION untuk mendapatkan status badge received
+const getReceiveStatusBadge = (item) => {
+    const receivedQty = Math.floor(Number(item.receivedQty) || 0)
+    const totalQty = Math.floor(Number(item.quantity) || 0)
+    
+    if (receivedQty === 0) {
+        return { text: 'Pending', class: 'badge bg-secondary' }
+    } else if (receivedQty < totalQty) {
+        return { text: `Partial (${receivedQty}/${totalQty})`, class: 'badge bg-warning' }
+    } else if (receivedQty === totalQty) {
+        return { text: 'Done', class: 'badge bg-success' }
     }
+    return { text: 'Error', class: 'badge bg-danger' }
+}
 
-    if (status && (receivedQty == 0 || receivedQty == null)) {
-        toast.error({
-            title: 'Validasi Gagal',
-            message: 'Jumlah yang diterima tidak boleh 0!',
+// ✅ FUNCTION untuk increase received quantity
+const increaseReceivedQty = (item) => {
+    if (isReceived.value) return
+    
+    const currentQty = Math.floor(Number(item.receivedQty) || 0)
+    const maxQty = Math.floor(Number(item.quantity) || 0)
+    
+    if (currentQty < maxQty) {
+        item.receivedQty = currentQty + 1
+        updateReceivedQty(item)
+    }
+}
+
+// ✅ FUNCTION untuk decrease received quantity
+const decreaseReceivedQty = (item) => {
+    if (isReceived.value) return
+    
+    const currentQty = Math.floor(Number(item.receivedQty) || 0)
+    
+    if (currentQty > 0) {
+        item.receivedQty = currentQty - 1
+        updateReceivedQty(item)
+    }
+}
+
+// ✅ FUNCTION untuk update received quantity ke backend
+const updateReceivedQty = async (item) => {
+    // Validasi: Cek apakah purchase order sudah received
+    if (isReceived.value) {
+        toast.warning({
+            title: 'Aksi Tidak Diizinkan',
+            message: 'Purchase Order sudah dalam status RECEIVED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Purchase Return.',
+            icon: 'ri-alert-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
         })
-        await refreshPurchaseOrderDetails()
         return
     }
 
-    if (receivedQty > item.quantity) {
-        toast.error({
-            title: 'Validasi Gagal',
-            message: 'Quantity yang diterima tidak boleh melebihi quantity yang dipesan!',
+    // Pastikan receivedQty memiliki nilai default dan bulatkan ke bawah
+    if (item.receivedQty === null || item.receivedQty === undefined || item.receivedQty === '') {
+        item.receivedQty = 0
+    }
+    
+    // Bulatkan ke bilangan bulat terdekat
+    const receivedQty = Math.floor(Number(item.receivedQty) || 0)
+    const maxQty = Math.floor(Number(item.quantity) || 0)
+    
+    // Update nilai di item agar konsisten
+    item.receivedQty = receivedQty
+    
+    // Validasi
+    if (receivedQty < 0) {
+        item.receivedQty = 0
+        return
+    }
+    
+    if (receivedQty > maxQty) {
+        item.receivedQty = maxQty
+        toast.warning({
+            title: 'Peringatan',
+            message: `Quantity tidak boleh melebihi ${maxQty}`,
+            color: 'orange'
         })
-        await refreshPurchaseOrderDetails()
         return
     }
-
+    
     try {
-        await purchaseOrderStore.updateStatusPartial(itemId, status, receivedQty)
+        await purchaseOrderStore.updateStatusPartial(item.id, false, receivedQty)
         await refreshPurchaseOrderDetails()
+        
+        // Check if all items are now done
+        checkAllItemsStatus()
+        
     } catch (error) {
-        console.error('Failed to update status:', error)
+        console.error('Failed to update received quantity:', error)
         toast.error({
             title: 'Update Gagal',
-            message: 'Terjadi kesalahan saat memperbarui status item.',
+            message: 'Terjadi kesalahan saat memperbarui quantity.',
+            color: 'red'
+        })
+    }
+}
+
+// ✅ FUNCTION untuk mendapatkan status badge class
+const getStatusBadgeClass = (status) => {
+    switch (status) {
+        case 'draft': return 'badge bg-secondary'
+        case 'approved': return 'badge bg-primary'
+        case 'partial': return 'badge bg-warning'
+        case 'received': return 'badge bg-success'
+        case 'rejected': return 'badge bg-danger'
+        default: return 'badge bg-light'
+    }
+}
+
+// ✅ FUNCTION untuk mendapatkan status text
+const getStatusText = (status) => {
+    switch (status) {
+        case 'draft': return 'DRAFT'
+        case 'approved': return 'APPROVED'
+        case 'partial': return 'PARTIAL'
+        case 'received': return 'RECEIVED'
+        case 'rejected': return 'REJECTED'
+        default: return 'UNKNOWN'
+    }
+}
+
+// ✅ FUNCTION untuk check status semua items
+const checkAllItemsStatus = () => {
+    if (!purchaseOrder.value || !purchaseOrder.value.purchaseOrderItems) return
+    
+    const allItemsDone = purchaseOrder.value.purchaseOrderItems.every(item => {
+        return Math.floor(Number(item.receivedQty || 0)) === Math.floor(Number(item.quantity || 0))
+    })
+    
+    if (allItemsDone && purchaseOrder.value.status !== 'received') {
+        toast.success({
+            title: 'Semua Item Selesai!',
+            message: 'Semua item telah diterima sepenuhnya. Status berubah menjadi Done.',
+            color: 'green'
         })
     }
 }
@@ -411,7 +560,60 @@ onMounted(refreshPurchaseOrderDetails)
 </script>
 
 <style scoped>
-    .invoice-preview-header {
+        .invoice-preview-header {
         background-color: #F2F3F4;
+    }
+      
+    .received-qty-input:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.075) !important;
+        color: #212529 !important;
+        background-color: #ffffff !important;
+        outline: none !important;
+    }
+    
+    .received-qty-input:disabled {
+        background-color: #e9ecef !important;
+        opacity: 1 !important;
+        color: #495057 !important;
+        cursor: not-allowed !important;
+        border-color: #ced4da !important;
+    }
+    
+    /* Pastikan placeholder terlihat */
+    .received-qty-input::placeholder {
+        color: #6c757d !important;
+        opacity: 1 !important;
+        font-weight: 400 !important;
+    }
+    
+    /* Hilangkan spinner pada input number */
+    .received-qty-input::-webkit-outer-spin-button,
+    .received-qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
+    
+    /* Firefox */
+    .received-qty-input[type=number] {
+        -moz-appearance: textfield !important;
+        appearance: textfield !important;
+    }
+    
+    /* ✅ CSS untuk tombol +/- */
+    .qty-btn {
+        width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+    }
+    
+    .qty-btn:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
     }
 </style>

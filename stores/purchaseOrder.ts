@@ -512,7 +512,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                     'Content-Type': 'application/json',
                 },
                 body: { 
-                    statusPartial: status, 
                     receivedQty: receivedQty 
                 },
                 credentials: 'include',
