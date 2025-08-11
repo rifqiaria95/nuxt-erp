@@ -2,7 +2,8 @@ import { useNuxtApp } from '#app'
 
 // Utilitas fetch terpusat yang secara otomatis menangani otentikasi (Bearer & CSRF).
 export const apiFetch = async <T = any>(url: string, options: any = {}) => {
-  const token = useCookie('token')
+  // Gunakan localStorage token alih-alih cookie token
+  const token = process.client ? localStorage.getItem('token') : null
   const { $api } = useNuxtApp()
 
   const customHeaders: any = {
@@ -10,8 +11,8 @@ export const apiFetch = async <T = any>(url: string, options: any = {}) => {
     Accept: 'application/json',
   }
 
-  if (token.value) {
-    customHeaders.Authorization = `Bearer ${token.value}`
+  if (token) {
+    customHeaders.Authorization = `Bearer ${token}`
   }
 
   const method = options.method?.toUpperCase() || 'GET'
@@ -51,6 +52,17 @@ export const apiFetch = async <T = any>(url: string, options: any = {}) => {
         message: 'Sesi anda telah berakhir, silakan logout dan login kembali',
         color: 'red',
       })
+      
+      // Clear user data dan redirect ke login jika session expired
+      if (process.client) {
+        const { useUserStore } = await import('~/stores/user')
+        const userStore = useUserStore()
+        userStore.clearUser()
+        
+        // Redirect ke login page
+        const router = useRouter()
+        router.push('/auth/login')
+      }
     }
     throw error
   }

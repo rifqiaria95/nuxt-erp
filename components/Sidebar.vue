@@ -99,16 +99,15 @@
     });
 
     const filteredAndSortedMenuGroups = computed(() => {
-      if (!menuGroupsStore.sidebarMenuGroups) return [];
+      // Pastikan user store sudah siap
+      if (!userStore.user) return [];
+      
+      // Gunakan filteredMenuGroups dari store yang sudah memfilter berdasarkan permission
+      const filteredGroups = menuGroupsStore.filteredMenuGroups;
+      
+      if (!filteredGroups || filteredGroups.length === 0) return [];
 
-      return [...menuGroupsStore.sidebarMenuGroups]
-        .filter(group => {
-          if (group.name === 'Admin' || group.jenisMenu === 7) {
-            return isSuperAdmin.value;
-          }
-          return true;
-        })
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      return filteredGroups.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     });
 
     const prefetchMap = {
@@ -152,7 +151,7 @@
     }
 
     const setActiveGroup = () => {
-      const activeGroup = menuGroupsStore.sidebarMenuGroups.find(isGroupActive);
+      const activeGroup = filteredAndSortedMenuGroups.value.find(isGroupActive);
       if (activeGroup) {
         if (!openGroupIds.value.has(activeGroup.id)) {
           openGroupIds.value.clear();
@@ -165,6 +164,14 @@
       await userStore.loadUser();
       await menuGroupsStore.fetchAllMenuGroups();
       setActiveGroup();
+    });
+
+    // Watch untuk user store agar menu groups di-refresh ketika user berubah
+    watch(() => userStore.user, async () => {
+      if (userStore.user) {
+        await menuGroupsStore.fetchAllMenuGroups();
+        setActiveGroup();
+      }
     });
 
     watch(() => route.path, () => {

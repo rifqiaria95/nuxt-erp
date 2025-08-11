@@ -275,6 +275,12 @@
                                       </div>
                                   </div>
                                   <div class="col-md-6">
+                                      <div class="form-floating form-floating-outline">
+                                          <input type="text" v-model="form.penerima" class="form-control" placeholder="Nama Penerima">
+                                          <label>Nama Penerima</label>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-6">
                                     <div class="form-check form-switch mt-3 d-flex align-items-center">
                                         <input
                                           class="form-check-input me-2"
@@ -286,7 +292,7 @@
                                         </label>
                                     </div>
                                   </div>
-                                  <div class="col-md-12" v-if="!alamatSamaDenganCustomer">
+                                  <div class="col-md-6" v-if="!alamatSamaDenganCustomer">
                                       <div class="form-floating form-floating-outline">
                                           <textarea v-model="form.alamatPengiriman" class="form-control" placeholder="Alamat Pengiriman"></textarea>
                                           <label>Alamat Pengiriman</label>

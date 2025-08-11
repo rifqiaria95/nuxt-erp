@@ -44,6 +44,7 @@ export interface SuratJalan {
   id           : string
   noSuratJalan : string
   picName      : string
+  penerima     : string
   date         : string
   description  : string
   alamatPengiriman: string
@@ -139,6 +140,7 @@ export const useSuratJalanStore = defineStore('suratJalan', {
     form: {
         noSuratJalan    : '',
         picName         : '',
+        penerima        : '',
         date            : '',
         description     : '',
         alamatPengiriman: '',
@@ -261,6 +263,7 @@ export const useSuratJalanStore = defineStore('suratJalan', {
                 description: this.form.description !== undefined ? this.form.description : '', // ✅ Always include
                 alamatPengiriman: this.form.alamatPengiriman !== undefined ? this.form.alamatPengiriman : '', // ✅ Always include
                 picName: this.form.picName || '',
+                penerima: this.form.penerima || '',
             };
 
             
@@ -415,6 +418,7 @@ export const useSuratJalanStore = defineStore('suratJalan', {
               id: fullData.id,
               noSuratJalan: fullData.noSuratJalan || '',
               picName: fullData.picName || '',
+              penerima: fullData.penerima || '',
               date: formatDate(fullData.date),
               description: fullData.description || '',
               alamatPengiriman: fullData.alamatPengiriman || '',
@@ -455,6 +459,7 @@ export const useSuratJalanStore = defineStore('suratJalan', {
         customerId: null,
         picName: '',
         salesOrderId: null,
+        penerima: '',
         date: new Date().toISOString().split('T')[0],
         description: '',
         alamatPengiriman: '',

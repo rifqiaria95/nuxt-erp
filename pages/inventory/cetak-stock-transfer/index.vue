@@ -18,7 +18,7 @@
           <p class="mb-0">{{ stockTransfer.perusahaan.emailPerusahaan }}</p>
         </div>
         <div>
-          <h5 class="mb-6 text-capitalize">NO. BERITA ACARA #{{ stockTransfer.noTransfer }}</h5>
+          <h5 class="mb-6 text-capitalize">NO. BERITA ACARA : {{ stockTransfer.noTransfer }}</h5>
           <div class="mb-1 text-end">
             <span class="me-2">Tanggal:</span>
             <span>{{ new Date(stockTransfer.date).toLocaleDateString() }}</span>

@@ -7,6 +7,31 @@ export const useUserStore = defineStore('user', {
     user: null as null | User,
     loading: false,
   }),
+  getters: {
+    // Mendapatkan semua permission user dari semua role
+    userPermissions: (state) => {
+      if (!state.user || !state.user.roles) return []
+      return state.user.roles.flatMap(role => role.permissions || []).map(p => p.name)
+    },
+    
+    // Fungsi untuk mengecek apakah user memiliki permission tertentu
+    hasPermission: (state) => (permissionName: string) => {
+      if (!state.user || !state.user.roles) return false
+      return state.user.roles.some(role => 
+        role.permissions?.some(permission => permission.name === permissionName)
+      )
+    },
+    
+    // Fungsi untuk mengecek apakah user memiliki salah satu dari permission yang diberikan
+    hasAnyPermission: (state) => (permissionNames: string[]) => {
+      if (!state.user || !state.user.roles) return false
+      return permissionNames.some(permissionName => 
+        state.user!.roles.some(role => 
+          role.permissions?.some(permission => permission.name === permissionName)
+        )
+      )
+    }
+  },
   actions: {
     setUser(user: any) {
       this.user = user

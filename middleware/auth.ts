@@ -11,10 +11,18 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     try {
       const token = localStorage.getItem('token')
       const { $api } = useNuxtApp()
-      await $fetch($api.me(), {
-        headers: { Authorization: `Bearer ${token}` },
+      
+      const response = await fetch($api.me(), {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
         credentials: 'include',
       })
+      
+      if (!response.ok) {
+        throw new Error('Token tidak valid')
+      }
     } catch (e) {
       const toast = useToast()
       toast.error({
