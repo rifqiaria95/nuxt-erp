@@ -10,10 +10,7 @@
         <div v-if="quotation.perusahaan" class="w-60">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
-               <img v-if="quotation.perusahaan.logoPerusahaan"
-               :src="getLogoUrl(quotation.perusahaan.logoPerusahaan)"
-               alt="Logo Perusahaan"
-               style="width: 200px;">
+              <img src="~/public/img/branding/andara.png" alt="logo" width="200">
             </span>
           </div>
           <h4 class="mb-2 text-primary text-nowrap">{{ quotation.perusahaan.nmPerusahaan }}</h4>
