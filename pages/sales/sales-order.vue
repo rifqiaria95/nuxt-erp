@@ -551,7 +551,7 @@ const statusOptions = ref([
 ]);
 
 let modalInstance = null;
-onMounted(() => {
+onMounted(async () => {
     salesOrderStore.fetchSalesOrders();
     salesOrderStore.fetchStats(); // <--- TAMBAHKAN INI
     customerStore.fetchCustomers();
@@ -561,6 +561,26 @@ onMounted(() => {
     warehouseStore.fetchWarehouses();
     permissionStore.fetchPermissions();
     userStore.loadUser();
+
+    // Gunakan endpoint data baru untuk load data
+    try {
+        const [perusahaanData, cabangData, customerData] = await Promise.all([
+            salesOrderStore.fetchPerusahaanData(),
+            salesOrderStore.fetchCabangData(),
+            salesOrderStore.fetchCustomerData()
+        ]);
+        
+        // Assign data ke store yang sesuai
+        perusahaanStore.perusahaans = perusahaanData;
+        cabangStore.cabangs = cabangData;
+        customerStore.customers = customerData;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback ke method lama jika endpoint data baru gagal
+        customerStore.fetchCustomers();
+        perusahaanStore.fetchPerusahaans();
+        cabangStore.fetchCabangs();
+    }
 
     const modalElement = document.getElementById('SalesOrderModal')
     if (modalElement) {

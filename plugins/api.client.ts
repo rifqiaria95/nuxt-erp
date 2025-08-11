@@ -149,6 +149,14 @@ export default defineNuxtPlugin(() => {
     approveQuotation: (id: number | string) => `${apiBase}/quotation/approveQuotation/${id}`,
     rejectQuotation: (id: number | string) => `${apiBase}/quotation/rejectQuotation/${id}`,
     getQuotationDetails: (id: number | string) => `${apiBase}/quotation/getQuotationDetails/${id}`,
+
+    // Data Access - untuk akses data tanpa permission menu
+    dataPerusahaan: () => `${apiBase}/data/perusahaan`,
+    dataCabang: () => `${apiBase}/data/cabang`,
+    dataWarehouse: () => `${apiBase}/data/warehouse`,
+    dataProduct: () => `${apiBase}/data/product`,
+    dataCustomer: () => `${apiBase}/data/customer`,
+    dataVendor: () => `${apiBase}/data/vendor`,
   };
 
   // Inject ke context Nuxt

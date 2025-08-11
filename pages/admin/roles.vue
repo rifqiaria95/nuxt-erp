@@ -218,7 +218,7 @@ const {
 const globalFilterValue = ref('');
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 const permissionSearch = ref('');
-const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show', 'Approve', 'Reject'];
+const masterPermissionNames = ['View', 'Create', 'Edit', 'Delete', 'Show', 'Approve', 'Reject', 'Access'];
 const permissionTableRows = ref(10);
 const permissionRowsOptions = ref([5, 10, 25, 50]);
 
@@ -269,6 +269,7 @@ const menuDetailsWithPermissions = computed(() => {
         else if (permName.includes('show')) displayPermissionName = 'Show';
         else if (permName.includes('approve')) displayPermissionName = 'Approve';
         else if (permName.includes('reject')) displayPermissionName = 'Reject';
+        else if (permName.includes('access')) displayPermissionName = 'Access';
 
         if (!displayPermissionName) return;
 

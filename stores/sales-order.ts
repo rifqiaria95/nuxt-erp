@@ -678,6 +678,103 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         }
     },
 
+    // Fungsi untuk mengambil data perusahaan menggunakan endpoint data
+    async fetchPerusahaanData() {
+      const toast = useToast();
+      try {
+        const { $api } = useNuxtApp();
+        const token = localStorage.getItem('token');
+        const response = await fetch($api.dataPerusahaan(), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Gagal memuat data perusahaan.');
+        }
+
+        const result = await response.json();
+        return result;
+
+      } catch (error) {
+        console.error(error);
+        toast.error({
+          title: 'Error',
+          message: 'Gagal memuat daftar perusahaan.',
+          color: 'red'
+        });
+        return [];
+      }
+    },
+
+    // Fungsi untuk mengambil data cabang menggunakan endpoint data
+    async fetchCabangData(perusahaanId?: number) {
+        const toast = useToast();
+        try {
+            const { $api } = useNuxtApp();
+            const token = localStorage.getItem('token');
+            const url = perusahaanId 
+            ? `${$api.dataCabang()}?perusahaanId=${perusahaanId}`
+            : $api.dataCabang();
+            
+            const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+            }
+            });
+
+            if (!response.ok) {
+            throw new Error('Gagal memuat data cabang.');
+            }
+
+            const result = await response.json();
+            return result;
+
+        } catch (error) {
+            console.error(error);
+            toast.error({
+            title: 'Error',
+            message: 'Gagal memuat daftar cabang.',
+            color: 'red'
+            });
+            return [];
+        }
+    },
+
+    // Fungsi untuk mengambil data warehouse menggunakan endpoint data
+    async fetchCustomerData() {
+        const toast = useToast();
+        try {
+            const { $api } = useNuxtApp();
+            const token = localStorage.getItem('token');
+            const response = await fetch($api.dataCustomer(), {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+            }
+            });
+
+            if (!response.ok) {
+            throw new Error('Gagal memuat data customer.');
+            }
+
+            const result = await response.json();
+            return result;
+
+        } catch (error) {
+            console.error(error);
+            toast.error({
+            title: 'Error',
+            message: 'Gagal memuat daftar customer.',
+            color: 'red'
+            });
+            return [];
+        }
+    },
+
     async openModal(salesOrderData: SalesOrder | null = null, source: 'admin' | 'pos' | null = null) {
       const toast     = useToast();
       this.isEditMode = !!salesOrderData;

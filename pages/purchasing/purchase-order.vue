@@ -557,7 +557,7 @@ const statusOptions = ref([
 
 
 let modalInstance = null;
-onMounted(() => {
+onMounted(async () => {
     purchaseOrderStore.fetchPurchaseOrders();
     vendorStore.fetchVendors();
     perusahaanStore.fetchPerusahaans();
@@ -566,6 +566,26 @@ onMounted(() => {
     warehouseStore.fetchWarehouses();
     userStore.loadUser();
     permissionStore.fetchPermissions();
+
+    // Gunakan endpoint data baru untuk load data
+    try {
+        const [perusahaanData, cabangData, vendorData] = await Promise.all([
+            purchaseOrderStore.fetchPerusahaanData(),
+            purchaseOrderStore.fetchCabangData(),
+            purchaseOrderStore.fetchVendorData()
+        ]);
+        
+        // Assign data ke store yang sesuai
+        perusahaanStore.perusahaans = perusahaanData;
+        cabangStore.cabangs = cabangData;
+        vendorStore.vendors = vendorData;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback ke method lama jika endpoint data baru gagal
+        vendorStore.fetchVendors();
+        perusahaanStore.fetchPerusahaans();
+        cabangStore.fetchCabangs();
+    }
     
     const modalElement = document.getElementById('PurchaseOrderModal')
     if (modalElement) {

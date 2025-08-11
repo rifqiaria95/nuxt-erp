@@ -526,14 +526,31 @@ const loadLazyData = async () => {
     }
 };
 
-onMounted(() => {
+onMounted(async () => {
     permissionStore.fetchPermissions();
     userStore.loadUser();
     loadLazyData();
     stockTransferStore.fetchStats();
-    warehouseStore.fetchAllWarehouses();
-    perusahaanStore.fetchPerusahaans();
-    cabangStore.fetchCabangs();
+    
+    // Gunakan endpoint data baru untuk load data
+    try {
+        const [perusahaanData, cabangData, warehouseData] = await Promise.all([
+            stockTransferStore.fetchPerusahaanData(),
+            stockTransferStore.fetchCabangData(),
+            stockTransferStore.fetchWarehouseData()
+        ]);
+        
+        // Assign data ke store yang sesuai
+        perusahaanStore.perusahaans = perusahaanData;
+        cabangStore.cabangs = cabangData;
+        warehouseStore.warehouseList = warehouseData;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback ke method lama jika endpoint data baru gagal
+        warehouseStore.fetchAllWarehouses();
+        perusahaanStore.fetchPerusahaans();
+        cabangStore.fetchCabangs();
+    }
 });
 
 const exportData = (format) => {
