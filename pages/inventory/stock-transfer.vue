@@ -261,6 +261,18 @@
                                     <input 
                                         type="text" 
                                         class="form-control" 
+                                        id="penerima" 
+                                        v-model="form.penerima" 
+                                        placeholder="Masukkan Nama Penerima"
+                                    >
+                                    <label for="penerima">Nama Penerima</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
                                         id="description" 
                                         v-model="form.description" 
                                         placeholder="Masukkan deskripsi"

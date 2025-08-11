@@ -7,6 +7,7 @@ export interface StockTransfer {
   id                 : string
   noTransfer         : string
   perusahaanId       : number
+  penerima           : string
   cabangId           : number
   date               : string
   fromWarehouseId    : string
@@ -75,6 +76,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
     form: {
       perusahaanId: null,
       cabangId: null,
+      penerima: '',
       noTransfer: '',
       date: '',
       fromWarehouseId: null,
@@ -129,6 +131,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
     },
 
     async saveStockTransfer() {
+      const toast     = useToast();
       this.loading = true
       try {
         const { $api } = useNuxtApp()
@@ -138,6 +141,7 @@ export const useStockTransferStore = defineStore('stockTransfer', {
   
         const payload: any = {
           perusahaanId   : this.form.perusahaanId,
+          penerima       : this.form.penerima,
           cabangId       : this.form.cabangId,
           date           : this.form.date,
           fromWarehouseId: this.form.fromWarehouseId,
@@ -188,15 +192,26 @@ export const useStockTransferStore = defineStore('stockTransfer', {
             this.validationErrors = [{ message: errorData.message }];
           }
           throw new Error(errorData.message || 'Terjadi kesalahan');
+        } else {
+          this.closeModal();
+          this.selectedStockTransfer = null;
+          await this.fetchStockTransfersPaginated();
+          toast.success({
+            title: 'Success',
+            message: `Stock Transfer berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`,
+            color: 'green'
+          });
         }
-  
-        return await response.json()
-      }
-      catch (error) {
-        throw error
-      }
-      finally {
-        this.loading = false
+      } catch (error: any) {
+        // Clear validation errors on new general error
+        this.validationErrors = [];
+        toast.error({
+          title: 'Error',
+          message: error.message || 'Operasi gagal',
+          color: 'red'
+        });
+      } finally {
+          this.loading = false;
       }
     },
     // Fungsi untuk mengambil data stock transfer
