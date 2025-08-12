@@ -213,7 +213,7 @@
                                                             <i class="ri-close-line me-2"></i> Reject
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('view_purchase_order') && (slotProps.data.status == 'approved' || slotProps.data.status == 'partial' || slotProps.data.status == 'partial'))">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('view_purchase_order'))">
                                                         <a class="dropdown-item" href="javascript:void(0)" @click="viewPurchaseOrderDetails(slotProps.data.id)">
                                                             <i class="ri-eye-line me-2"></i> Lihat Detail
                                                         </a>
