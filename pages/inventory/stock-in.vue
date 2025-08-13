@@ -255,6 +255,10 @@ import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissions } from '~/composables/usePermissions'
 import { usePermissionsStore } from '~/stores/permissions'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const { $api } = useNuxtApp()
 
@@ -391,6 +395,7 @@ onMounted(() => {
     warehouseStore.fetchWarehouses();
     permissionStore.fetchPermissions()
     userStore.loadUser()
+    setListTitle('Stock In', stockIns.value.length)
 });
 
 const exportData = (format) => {

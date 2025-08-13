@@ -733,11 +733,21 @@ import { useDashboardStore } from '~/stores/dashboard'
 import { useSalesOrderStore } from '~/stores/sales-order'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
 
 definePageMeta({
   layout: 'default',
   middleware: 'auth',
+  title: 'Dashboard',
+  description: 'Dashboard',
+  keywords: 'Dashboard, Kainnova Digital Solutions',
+  author: 'Kainnova Digital Solutions',
+  robots: 'index, follow',
+  viewport: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
 });
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const userStore = useUserStore()
 const dashboardStore = useDashboardStore()
@@ -749,6 +759,7 @@ onMounted(async () => {
   userStore.loadUser();
   await salesOrderStore.fetchStats();
   await dashboardStore.fetchAssociationRules();
+  setListTitle('Dashboard')
 })
 </script>
 

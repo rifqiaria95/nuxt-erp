@@ -297,6 +297,14 @@
 </template>
 
 <script setup>
+definePageMeta({
+    title: 'Quotation Detail',
+    description: 'Quotation Detail',
+    keywords: 'Quotation Detail, Kainnova Digital Solutions',
+    author: 'Kainnova Digital Solutions',
+    robots: 'index, follow',
+    viewport: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
+})
 import { computed, onMounted } from 'vue'
 import { useQuotationStore } from '~/stores/quotation'
 import { useRoute, useRouter } from 'vue-router'

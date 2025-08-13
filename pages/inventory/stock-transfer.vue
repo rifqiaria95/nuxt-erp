@@ -368,6 +368,10 @@ import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const { $api } = useNuxtApp()
 
@@ -531,7 +535,7 @@ onMounted(async () => {
     userStore.loadUser();
     loadLazyData();
     stockTransferStore.fetchStats();
-    
+    setListTitle('Stock Transfer', stockTransfers.value.length)
     // Gunakan endpoint data baru untuk load data
     try {
         const [perusahaanData, cabangData, warehouseData] = await Promise.all([

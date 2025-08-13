@@ -30,8 +30,18 @@
 </template>
 
 <script setup>
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 definePageMeta({
-    layout: 'auth'
+    layout: 'auth',
+    title: '401 - Unauthorized',
+    description: '401 - Unauthorized',
+    keywords: '401 - Unauthorized, Kainnova Digital Solutions',
+    author: 'Kainnova Digital Solutions',
+    robots: 'index, follow',
+    viewport: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
 })
 </script>

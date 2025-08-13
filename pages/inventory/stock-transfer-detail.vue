@@ -100,6 +100,10 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 import Column from 'primevue/column'
 import { useStockTransferStore } from '~/stores/stock-transfer'
 import Swal from 'sweetalert2'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setDetailTitle } = useDynamicTitle()
 
 const { $api } = useNuxtApp();
 
@@ -112,6 +116,7 @@ onMounted(async () => {
   if (stockTransferId) {
     try {
       await stockTransferStore.fetchStockTransferById(stockTransferId);
+      setDetailTitle('Stock Transfer', stockTransfer.value.noTransfer)
     } catch (e) {
       toast.fire('Error', e.message || 'Gagal memuat detail stock transfer.', 'error');
     }

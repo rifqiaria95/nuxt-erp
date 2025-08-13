@@ -378,6 +378,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setDetailTitle } = useDynamicTitle()
 
 const salesOrderStore = useSalesOrderStore()
 const route           = useRoute()
@@ -592,6 +596,7 @@ const totalBeforeTax = computed(() => {
 
 
 onMounted(refreshSalesOrderDetails)
+setDetailTitle('Sales Order', salesOrder.value.noSalesOrder)
 </script>
 
 <style scoped>

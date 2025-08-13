@@ -176,7 +176,11 @@
   import { useSuratJalanStore } from '~/stores/surat-jalan'
   import { storeToRefs } from 'pinia'
   import Swal from 'sweetalert2'
+  import { useDynamicTitle } from '~/composables/useDynamicTitle'
   
+  // Composables
+  const { setDetailTitle } = useDynamicTitle()
+
   const route = useRoute()
   const router = useRouter()
   const suratJalanStore = useSuratJalanStore()
@@ -232,6 +236,7 @@
   
   onMounted(() => {
     fetchSuratJalanDetails()
+    setDetailTitle('Surat Jalan', suratJalan.value.noSuratJalan)
   })
   </script>
   

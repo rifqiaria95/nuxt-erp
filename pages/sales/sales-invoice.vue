@@ -543,6 +543,10 @@ import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -718,6 +722,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Sales Invoice', salesInvoices.value.length)
 });
 
 watch(showModal, (newValue) => {

@@ -13,13 +13,13 @@
               <img src="~/public/img/branding/andara.png" alt="logo" width="200">
             </span>
           </div>
-          <h4 class="mb-2 text-primary text-nowrap">{{ quotation.perusahaan.nmPerusahaan }}</h4>
+          <h4 class="mb-2 text-primary text-nowrap fw-bold">{{ quotation.perusahaan.nmPerusahaan }}</h4>
           <p class="mb-1">{{ quotation.perusahaan.alamatPerusahaan }}</p>
           <p class="mb-0">{{ quotation.perusahaan.tlpPerusahaan }}</p>
           <p class="mb-0">{{ quotation.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h5 class="mb-6 text-capitalize text-end">QUOTATION NUMBER : {{ quotation.noQuotation }}</h5>
+          <h6 class="mb-6 text-capitalize text-end fw-bold">QUOTATION NUMBER : {{ quotation.noQuotation }}</h6>
           <div style="margin-left: 100px;">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
               <tr>
@@ -207,6 +207,7 @@
 <script setup>
   definePageMeta({
     layout: 'cetak',
+    title: 'Cetak Quotation',
   })
   import { onMounted, computed } from 'vue';
   import { useQuotationStore } from '~/stores/quotation';

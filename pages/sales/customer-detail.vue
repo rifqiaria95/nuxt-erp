@@ -79,6 +79,10 @@ import { useRoute } from 'vue-router'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { useCustomerStore } from '~/stores/customer'
 import { storeToRefs } from 'pinia'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setDetailTitle } = useDynamicTitle()
 
 const route         = useRoute()
 const config        = useRuntimeConfig();
@@ -108,5 +112,6 @@ onMounted(async () => {
   if (customerId) {
     await customerStore.getCustomerDetails(customerId)
   }
+  setDetailTitle('Customer', customer.value.name)
 })
 </script>

@@ -233,6 +233,10 @@ import 'vue-select/dist/vue-select.css'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import { FilterMatchMode } from '@primevue/core/api'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const { $api } = useNuxtApp()
 const toast     = useToast();
@@ -577,6 +581,7 @@ const fetchMenuDetails = async (groupId) => {
 
 onMounted(() => {
     fetchAllPageData();
+    setListTitle('Permissions', permissions.value.length)
 });
 
 const fetchAllPageData = async () => {

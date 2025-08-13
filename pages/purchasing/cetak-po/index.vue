@@ -211,7 +211,11 @@
   import { usePurchaseOrderStore } from '~/stores/purchaseOrder';
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
-  
+  import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+  // Composables
+  const { setDetailTitle } = useDynamicTitle()
+
   const config             = useRuntimeConfig();
   const purchaseOrderStore = usePurchaseOrderStore();
   const route              = useRoute();
@@ -281,7 +285,7 @@
     if (purchaseOrderId) {
       try {
         await purchaseOrderStore.getPurchaseOrderDetails(purchaseOrderId);
-        
+        setDetailTitle('Purchase Order', purchaseOrder.value.noPo)
       } catch (e) {
         toast.error({
           title: 'Gagal!',

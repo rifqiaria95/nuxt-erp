@@ -152,7 +152,11 @@
   import { useSuratJalanStore } from '~/stores/surat-jalan';
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
+  import { useDynamicTitle } from '~/composables/useDynamicTitle'
   
+  // Composables
+  const { setDetailTitle } = useDynamicTitle()
+
   const config          = useRuntimeConfig();
   const suratJalanStore = useSuratJalanStore();
   const route           = useRoute();
@@ -181,7 +185,7 @@
     if (suratJalanId) {
       try {
         await suratJalanStore.fetchSuratJalanDetailWithItems(suratJalanId);
-        
+        setDetailTitle('Surat Jalan', suratJalan.value.noSuratJalan)
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail surat jalan.', 'error');
       }

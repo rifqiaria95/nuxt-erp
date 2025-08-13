@@ -137,6 +137,10 @@ import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const { $api } = useNuxtApp()
 
@@ -184,6 +188,7 @@ onMounted(() => {
     stocksStore.fetchStats();
     permissionStore.fetchPermissions()
     userStore.loadUser()
+    setListTitle('Stock', stocks.value.length)
 });
 
 const exportData = (format) => {

@@ -37,9 +37,8 @@ export default defineNuxtConfig({
   ],
   app: {
     baseURL: '/',
-    target: 'static',
     head: {
-      title: 'Kainnova Digital Solutions',
+      titleTemplate: '%s - Kainnova Digital Solutions',
       htmlAttrs: {
         lang: 'en',
         dir: 'ltr',

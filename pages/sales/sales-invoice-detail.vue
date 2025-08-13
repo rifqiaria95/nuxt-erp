@@ -259,6 +259,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useSalesInvoiceStore } from '~/stores/sales-invoice'
 import { storeToRefs } from 'pinia'
 import Swal from 'sweetalert2'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setDetailTitle } = useDynamicTitle()
 
 const route = useRoute()
 const router = useRouter()
@@ -383,6 +387,7 @@ async function fetchInvoiceDetails() {
 
 onMounted(() => {
   fetchInvoiceDetails()
+  setDetailTitle('Sales Invoice', salesInvoice.value.noInvoice)
 })
 </script>
 

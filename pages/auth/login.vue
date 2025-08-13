@@ -82,6 +82,12 @@
   definePageMeta({
       layout: 'auth',
       middleware: 'redirect-auth',
+      title: 'Login',
+      description: 'Login',
+      keywords: 'Login, Kainnova Digital Solutions',
+      author: 'Kainnova Digital Solutions',
+      robots: 'index, follow',
+      viewport: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
   })
 
   import { ref, onMounted } from 'vue';

@@ -221,7 +221,11 @@
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
   import Swal from 'sweetalert2';
-  
+  import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+  // Composables
+  const { setDetailTitle } = useDynamicTitle()
+
   const config = useRuntimeConfig();
   const salesInvoiceStore = useSalesInvoiceStore();
   const route = useRoute();
@@ -290,7 +294,7 @@
     if (salesInvoiceId) {
       try {
         await salesInvoiceStore.fetchSalesInvoiceById(salesInvoiceId);
-        
+        setDetailTitle('Sales Invoice', salesInvoice.value.noInvoice)
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail sales invoice.', 'error');
       }

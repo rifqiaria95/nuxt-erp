@@ -459,6 +459,10 @@ import InputText from 'primevue/inputtext'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -586,6 +590,7 @@ onMounted(async () => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Sales Order', salesOrders.value.length)
 });
 
 watch(showModal, (newValue) => {

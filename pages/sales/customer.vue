@@ -395,6 +395,7 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia';
 import Modal from '~/components/modal/Modal.vue'
@@ -412,6 +413,10 @@ import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
 import { useUserStore } from '~/stores/user'
 import { useRouter } from 'vue-router'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const config   = useRuntimeConfig();
 const router = useRouter()
@@ -461,6 +466,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Customer', customers.value.length)
 });
 
 watch(showModal, (newValue) => {

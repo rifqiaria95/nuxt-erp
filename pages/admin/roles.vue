@@ -200,6 +200,10 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import DataTable from 'primevue/datatable'
 import { useDebounceFn } from '@vueuse/core'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const myDataTableRef = ref(null);
 const rolesStore = useRolesStore();
@@ -326,6 +330,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement);
     }
+    setListTitle('Roles', roles.value.length)
 });
 
 watch(showModal, (newValue) => {

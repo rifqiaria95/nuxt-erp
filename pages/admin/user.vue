@@ -233,6 +233,10 @@ import 'vue-select/dist/vue-select.css'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const myDataTableRef = ref(null);
 const userStore = useUserManagementStore()
@@ -269,6 +273,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('User', users.value.length)
 });
 
 watch(showModal, (newValue) => {

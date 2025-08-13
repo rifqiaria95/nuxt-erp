@@ -485,7 +485,10 @@ import { usePermissions } from '~/composables/usePermissions'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
 
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 // Import komponen
 import CardBox from '~/components/cards/Cards.vue'
@@ -535,6 +538,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Pegawai', pegawais.value.length)
 })
 
 watch(showModal, (newValue) => {

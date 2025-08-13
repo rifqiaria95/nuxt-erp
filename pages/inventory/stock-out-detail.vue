@@ -96,6 +96,10 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 import Column from 'primevue/column'
 import { useStockOutStore } from '~/stores/stockout'
 import Swal from 'sweetalert2'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setDetailTitle } = useDynamicTitle()
 
 const route = useRoute()
 const stockOutStore = useStockOutStore()
@@ -106,6 +110,7 @@ onMounted(async () => {
   if (stockOutId) {
     try {
       await stockOutStore.fetchStockOutById(stockOutId);
+      setDetailTitle('Stock Out', stockOut.value.noSo)
     } catch (e) {
       Swal.fire('Error', e.message || 'Gagal memuat detail stock out.', 'error');
     }

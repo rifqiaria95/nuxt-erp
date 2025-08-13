@@ -375,6 +375,10 @@ import InputText from 'primevue/inputtext'
 import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
 import { useUserStore } from '~/stores/user'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const config = useRuntimeConfig();
 const getLogoUrl = (logoPath) => {
@@ -416,6 +420,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Perusahaan', perusahaans.value.length)
 });
 
 watch(showModal, (newValue) => {

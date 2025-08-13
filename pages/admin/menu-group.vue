@@ -207,6 +207,10 @@ import InputText from 'primevue/inputtext'
 import { useDebounceFn } from '@vueuse/core'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const myDataTableRef = ref(null)
 const menuGroupStore = useMenuGroupStore()
@@ -226,6 +230,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Menu Group', menuGroups.value.length)
 });
 
 watch(showModal, (newValue) => {

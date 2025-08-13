@@ -313,6 +313,10 @@ import InputText from 'primevue/inputtext'
 import Swal from 'sweetalert2'
 import { useDebounceFn } from '@vueuse/core'
 import { useUserStore } from '~/stores/user'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const { $api } = useNuxtApp()
 
@@ -344,6 +348,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance.value = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Cabang', cabangs.value.length)
 })
 
 watch(showModal, (newValue) => {

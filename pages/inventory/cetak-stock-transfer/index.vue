@@ -110,12 +110,23 @@
 <script setup>
   definePageMeta({
     layout: 'cetak',
+    title: 'Cetak Stock Transfer',
+    description: 'Cetak Stock Transfer',
+    keywords: 'Cetak Stock Transfer, Kainnova Digital Solutions',
+    author: 'Kainnova Digital Solutions',
+    robots: 'index, follow',
+    viewport: 'width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'
   })
   import { onMounted } from 'vue';
   import { useStockTransferStore } from '~/stores/stock-transfer';
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
   import Swal from 'sweetalert2';
+  import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+  // Composables
+  const { setListTitle, setFormTitle } = useDynamicTitle()
+
   const config = useRuntimeConfig();
   const stockTransferStore = useStockTransferStore();
   const route = useRoute();
@@ -146,6 +157,7 @@
         toast('Error', e.message || 'Gagal memuat detail stock transfer.', 'error');
       }
     }
+    setListTitle('Stock Transfer', stockTransfer.value.length)
   });
 </script>
 

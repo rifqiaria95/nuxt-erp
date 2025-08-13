@@ -21,6 +21,10 @@
 <script setup>
 import { useLayoutStore } from '~/stores/layout';
 import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const title = route.meta.title;
 
 const layoutStore = useLayoutStore();
 

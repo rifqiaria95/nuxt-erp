@@ -333,6 +333,10 @@ import { useDebounceFn } from '@vueuse/core'
 import { usePermissions } from '~/composables/usePermissions'
 import { usePermissionsStore } from '~/stores/permissions'
 import { useUserStore } from '~/stores/user'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const { userHasPermission, userHasRole } = usePermissions();
 
@@ -354,6 +358,7 @@ onMounted(() => {
     permissionStore.fetchPermissions()
     userStore.loadUser()
     vendorStore.fetchVendors();
+    setListTitle('Vendor', vendors.value.length)
     const modalElement = document.getElementById('VendorModal')
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)

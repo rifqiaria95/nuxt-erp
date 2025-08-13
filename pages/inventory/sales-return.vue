@@ -393,6 +393,10 @@ import InputText from 'primevue/inputtext'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -462,6 +466,7 @@ onMounted(() => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+    setListTitle('Sales Return', salesReturns.value.length)
 });
 
 watch(showModal, (newValue) => {
@@ -583,11 +588,6 @@ const onProductChange = (index) => {
     calculateSubtotal(index);
     updateStockInfo(index)
   }
-};
-
-const viewSalesReturnDetails = (salesReturnId) => {
-    // Implement navigation to sales return detail page if exists
-    // router.push({ path: `/sales/sales-return-detail`, query: { id: salesReturnId } });
 };
 
 const getStatusBadge = (status) => {

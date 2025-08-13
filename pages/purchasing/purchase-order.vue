@@ -478,6 +478,10 @@ import InputText from 'primevue/inputtext'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setListTitle, setFormTitle } = useDynamicTitle()
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -566,7 +570,8 @@ onMounted(async () => {
     warehouseStore.fetchWarehouses();
     userStore.loadUser();
     permissionStore.fetchPermissions();
-
+    setListTitle('Purchase Order', purchaseOrders.value.length)
+    
     // Gunakan endpoint data baru untuk load data
     try {
         const [perusahaanData, cabangData, vendorData] = await Promise.all([

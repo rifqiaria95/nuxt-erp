@@ -364,6 +364,10 @@ import { computed, onMounted } from 'vue'
 import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+// Composables
+const { setDetailTitle } = useDynamicTitle()
 
 const purchaseOrderStore = usePurchaseOrderStore()
 const route              = useRoute()
@@ -396,6 +400,7 @@ async function refreshPurchaseOrderDetails() {
         loading.value = true
         try {
             await purchaseOrderStore.getPurchaseOrderDetails(poIdToFetch)
+            setDetailTitle('Purchase Order', purchaseOrder.value.noPo)
         } catch (error) {
         console.error("Failed to refresh PO details:", error)
         } finally {
