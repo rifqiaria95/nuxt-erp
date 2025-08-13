@@ -60,30 +60,30 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <v-select v-model="filters.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <v-select v-model="filters.source" :options="sourceOptions" label="label" :reduce="option => option.value" placeholder="Pilih Source" class="v-select-style"/>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
                                 </div>
                             </div>
                             <div class="row mt-5">
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <div class="form-floating form-floating-outline">
                                         <input type="date" v-model="filters.startDate" class="form-control" placeholder="Tanggal Mulai" @change="onDateChange">
                                         <label>Tanggal Mulai</label>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <div class="form-floating form-floating-outline">
                                         <input type="date" v-model="filters.endDate" class="form-control" placeholder="Tanggal Akhir" @change="onDateChange">
                                         <label>Tanggal Akhir</label>
                                     </div>
                                 </div>
-                                <div class="col-md-4 reset-filter-button">
+                                <div class="col-md-4 mb-3 reset-filter-button">
                                     <button @click="clearDateFilters" class="btn btn-outline-secondary me-2">
                                         <i class="ri-refresh-line me-1"></i> Reset Filter
                                     </button>
@@ -95,31 +95,15 @@
                 <div class="col-12">
                     <!-- salesOrder Table -->
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
-                                </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari Sales Order..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="card-header">
+                            <TableControls
+                                v-model="tableControls"
+                                :rows-per-page-options="rowsPerPageOptionsArray"
+                                search-placeholder="Cari Sales Order..."
+                                @rows-change="handleRowsChange"
+                                @search="handleSearch"
+                                @export="exportData"
+                            />
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
@@ -456,6 +440,7 @@ import { usePermissions } from '~/composables/usePermissions'
 import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import TableControls from '~/components/table/TableControls.vue'
 import vSelect from 'vue-select'
 import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
@@ -507,6 +492,12 @@ const filters = ref({
 });
 const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
+
+// Table controls data
+const tableControls = ref({
+  rows: 10,
+  search: ''
+});
 
 const cardBoxColumnClass = computed(() => {
   return stats.value.total !== undefined ? 'col-6' : 'col-xl-4 col-lg-6 col-md-6';
@@ -606,6 +597,19 @@ onMounted(async () => {
         modalInstance = new bootstrap.Modal(modalElement)
     }
     setListTitle('Sales Order', salesOrders.value.length)
+    
+    // Initialize table controls
+    tableControls.value.rows = params.value.rows;
+    tableControls.value.search = globalFilterValue.value;
+});
+
+// Watch untuk sinkronisasi table controls
+watch(() => params.value.rows, (newValue) => {
+    tableControls.value.rows = newValue;
+});
+
+watch(() => globalFilterValue.value, (newValue) => {
+    tableControls.value.search = newValue;
 });
 
 watch(showModal, (newValue) => {
@@ -690,7 +694,14 @@ const onPage = (event) => {
     params.value.first = event.first;
     salesOrderStore.fetchSalesOrders();
 };
-const handleRowsChange = () => {
+const handleRowsChange = (value) => {
+    params.value.rows = value;
+    params.value.first = 0;
+    salesOrderStore.fetchSalesOrders();
+};
+
+const handleSearch = (value) => {
+    globalFilterValue.value = value;
     params.value.first = 0;
     salesOrderStore.fetchSalesOrders();
 };
@@ -1195,4 +1206,15 @@ const exportSalesOrderPDF = async (dataToExport) => {
         height: 48px !important;
         border-radius: 7px;
     }
+
+    @media (max-width: 575.98px) {
+        .reset-filter-button {
+            width: 25rem !important;
+        }
+        .reset-filter-button .btn {
+            width: 100%;
+        }
+    }
+
+
 </style>

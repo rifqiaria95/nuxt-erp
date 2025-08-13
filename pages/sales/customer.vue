@@ -160,31 +160,15 @@
                 <div class="col-12">
                     <!-- customer Table -->
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
-                                </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari customer..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="card-header">
+                            <TableControls
+                                v-model="tableControls"
+                                :rows-per-page-options="rowsPerPageOptionsArray"
+                                search-placeholder="Cari customer..."
+                                @rows-change="handleRowsChange"
+                                @search="handleSearch"
+                                @export="exportData"
+                            />
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                         <MyDataTable 
@@ -400,6 +384,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia';
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import TableControls from '~/components/table/TableControls.vue'
 import { useCustomerStore } from '~/stores/customer'
 import { useProductStore } from '~/stores/product'
 import Dropdown from 'primevue/dropdown'
@@ -436,6 +421,12 @@ const { permissions } = storeToRefs(permissionStore)
 const globalFilterValue = ref('')
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 
+// Table controls data
+const tableControls = ref({
+  rows: 10,
+  search: ''
+});
+
 const modalTitle = computed(() => isEditMode.value ? 'Edit Customer' : 'Tambah Customer');
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data customer di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan customer baru.');
 
@@ -467,6 +458,19 @@ onMounted(() => {
         modalInstance = new bootstrap.Modal(modalElement)
     }
     setListTitle('Customer', customers.value.length)
+    
+    // Initialize table controls
+    tableControls.value.rows = params.value.rows;
+    tableControls.value.search = globalFilterValue.value;
+});
+
+// Watch untuk sinkronisasi table controls
+watch(() => params.value.rows, (newValue) => {
+    tableControls.value.rows = newValue;
+});
+
+watch(() => globalFilterValue.value, (newValue) => {
+    tableControls.value.search = newValue;
 });
 
 watch(showModal, (newValue) => {
@@ -485,7 +489,14 @@ watch(globalFilterValue, debouncedSearch);
 // Fungsi untuk menangani event load lazy data dari customer
 const onPage = (event) => customerStore.setPagination(event);
 
-const handleRowsChange = () => {
+const handleRowsChange = (value) => {
+    params.value.rows = value;
+    params.value.first = 0;
+    customerStore.fetchCustomers();
+};
+
+const handleSearch = (value) => {
+    globalFilterValue.value = value;
     params.value.first = 0;
     customerStore.fetchCustomers();
 };
