@@ -79,17 +79,16 @@ export const useImageUrl = () => {
   }
 
   /**
-   * Debug image URL untuk troubleshooting
+   * Test image URL accessibility
    */
-  const debugImageUrl = (path: string | null | undefined) => {
-    const url = getImageUrl(path)
-    console.log('🖼️ Image Debug:', {
-      originalPath: path,
-      finalUrl: url,
-      isS3: isS3Url(url || ''),
-      storageDriver: config.public.storageDriver
-    })
-    return url
+  const testImageUrl = async (url: string): Promise<boolean> => {
+    try {
+      const response = await fetch(url, { method: 'HEAD' })
+      return response.ok
+    } catch (error) {
+      console.error('Image URL test failed:', error)
+      return false
+    }
   }
 
   return {
@@ -101,6 +100,6 @@ export const useImageUrl = () => {
     isS3Url,
     getFileExtension,
     isImageFile,
-    debugImageUrl
+    testImageUrl
   }
 }
