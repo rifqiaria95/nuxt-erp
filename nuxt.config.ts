@@ -21,6 +21,7 @@ export default defineNuxtConfig({
       apiBase: process.env.NUXT_PUBLIC_API_BASE,
       authBase: process.env.NUXT_PUBLIC_AUTH_BASE,
       storageBase: process.env.NUXT_PUBLIC_STORAGE_BASE,
+      storageDriver: process.env.NUXT_PUBLIC_STORAGE_DRIVER || 'local',
     }
   },
   imports: {

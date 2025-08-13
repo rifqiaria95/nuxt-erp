@@ -187,10 +187,19 @@
                                 <Column field="logo" header="Logo" :sortable="true">
                                     <template #body="slotProps">
                                         <div v-if="slotProps.data.logo">
-                                            <img :src="getLogoUrl(slotProps.data.logo)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                            <img 
+                                                :src="getCustomerLogo(slotProps.data.logo)" 
+                                                alt="Logo Customer" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;" 
+                                                @error="(e) => handleImageError(e, '/img/default-customer-logo.png')"
+                                            />
                                         </div>
                                         <div v-else>
-                                            <span class="text-muted">Tidak ada logo</span>
+                                            <img 
+                                                src="/img/default-customer-logo.png" 
+                                                alt="Default Logo" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;"
+                                            />
                                         </div>
                                     </template>
                                 </Column>
@@ -399,9 +408,11 @@ import { usePermissions } from '~/composables/usePermissions'
 import { useUserStore } from '~/stores/user'
 import { useRouter } from 'vue-router'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl';
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getCustomerLogo, handleImageError } = useImageUrl();
 
 const config   = useRuntimeConfig();
 const router = useRouter()
@@ -430,20 +441,7 @@ const tableControls = ref({
 const modalTitle = computed(() => isEditMode.value ? 'Edit Customer' : 'Tambah Customer');
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data customer di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan customer baru.');
 
-const getLogoUrl = (logoPath) => {
-    if (!logoPath || typeof logoPath !== 'string') {
-        return null;
-    }
-    if (logoPath.startsWith('http')) {
-        return logoPath;
-    }
-    if (!config.public.apiBase) {
-        return logoPath;
-    }
-    const origin = new URL(config.public.apiBase).origin;
-    const imageUrl = `${origin}/${logoPath}`;
-    return imageUrl;
-};
+
 
 let modalInstance = null
 onMounted(() => {

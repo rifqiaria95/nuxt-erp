@@ -19,10 +19,11 @@
                   </p>
                 </div>
                 <img 
-                  :src="getLogoUrl(customer.logo)" 
+                  :src="getCustomerLogo(customer.logo)" 
                   alt="Logo Customer" 
                   class="mt-8 ml-3 img-fluid" 
                   style="max-width: 200px; object-fit: contain;"
+                  @error="(e) => handleImageError(e, '/img/default-customer-logo.png')"
                 >
               </div>
               <div class="row mt-4">
@@ -77,36 +78,25 @@
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import Column from 'primevue/column'
 import { useCustomerStore } from '~/stores/customer'
 import { storeToRefs } from 'pinia'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
+import { useFormatRupiah } from '~/composables/formatRupiah'
 
 // Composables
 const { setDetailTitle } = useDynamicTitle()
+const { getCustomerLogo, handleImageError } = useImageUrl();
 
 const route         = useRoute()
-const config        = useRuntimeConfig();
-const { $api }      = useNuxtApp()
 const formatRupiah  = useFormatRupiah()
 const customerStore = useCustomerStore()
 const customerId    = route.query.id
 
 const { selectedCustomer: customer, loading } = storeToRefs(customerStore)
 
-const getLogoUrl = (logoPath) => {
-    if (!logoPath || typeof logoPath !== 'string') {
-        return null;
-    }
-    if (logoPath.startsWith('http')) {
-        return logoPath;
-    }
-    if (!config.public.apiBase) {
-        return logoPath;
-    }
-    const origin = new URL(config.public.apiBase).origin;
-    const logoUrl = `${origin}/${logoPath}`;
-    return logoUrl;
-};
+
 
 onMounted(async () => {
   if (customerId) {
