@@ -109,7 +109,7 @@
                             <MyDataTable 
                                 ref="myDataTableRef"
                                 :data="salesOrders" 
-                                :rows="params.rows" 
+                                :rows="Number(params.rows)" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
                                 :lazy="true"
@@ -599,13 +599,13 @@ onMounted(async () => {
     setListTitle('Sales Order', salesOrders.value.length)
     
     // Initialize table controls
-    tableControls.value.rows = params.value.rows;
+    tableControls.value.rows = Number(params.value.rows) || 10;
     tableControls.value.search = globalFilterValue.value;
 });
 
 // Watch untuk sinkronisasi table controls
 watch(() => params.value.rows, (newValue) => {
-    tableControls.value.rows = newValue;
+    tableControls.value.rows = Number(newValue) || 10;
 });
 
 watch(() => globalFilterValue.value, (newValue) => {
@@ -691,11 +691,20 @@ watch(filters, (newFilters) => {
 }, { deep: true });
 
 const onPage = (event) => {
-    params.value.first = event.first;
-    salesOrderStore.fetchSalesOrders();
+    if (event) {
+        // Ensure the event has valid values
+        const validEvent = {
+            first: Number(event.first) || 0,
+            rows: Number(event.rows) || 10,
+            page: Number(event.page) || 0
+        };
+        salesOrderStore.setPagination(validEvent);
+    }
 };
+
 const handleRowsChange = (value) => {
-    params.value.rows = value;
+    const rowsValue = Number(value) || 10;
+    params.value.rows = rowsValue;
     params.value.first = 0;
     salesOrderStore.fetchSalesOrders();
 };
@@ -705,10 +714,11 @@ const handleSearch = (value) => {
     params.value.first = 0;
     salesOrderStore.fetchSalesOrders();
 };
+
 const onSort = (event) => {
-    params.value.sortField = event.sortField;
-    params.value.sortOrder = event.sortOrder;
-    salesOrderStore.fetchSalesOrders();
+    if (event) {
+        salesOrderStore.setSort(event);
+    }
 };
 
 const exportData = async (format) => {

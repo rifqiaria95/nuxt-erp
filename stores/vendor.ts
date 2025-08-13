@@ -70,8 +70,8 @@ export const useVendorStore = defineStore('vendor', {
           credentials: 'include'
         })
         const params = new URLSearchParams({
-            page     : ((this.params.first / this.params.rows) + 1).toString(),
-            rows     : this.params.rows.toString(),
+            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows     : Math.floor(this.params.rows).toString(),
             sortField: this.params.sortField || '',
             sortOrder: (this.params.sortOrder || 1) > 0 ? 'asc' : 'desc',
             search   : this.params.search || '',
@@ -241,8 +241,8 @@ export const useVendorStore = defineStore('vendor', {
     },
 
     setPagination(event: any) {
-        this.params.first = event.first;
-        this.params.rows = event.rows;
+        this.params.first = Number(event.first) || 0;
+        this.params.rows = Number(event.rows) || 10;
         this.fetchVendors();
     },
 

@@ -114,7 +114,7 @@
                             <MyDataTable 
                                 ref="myDataTableRef"
                                 :data="quotations" 
-                                :rows="params.rows" 
+                                :rows="Number(params.rows)" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
                                 :lazy="true"
@@ -563,6 +563,7 @@ const onPage = (event) => {
 };
 const handleRowsChange = () => {
     if (!params.value) return;
+    params.value.rows = Number(params.value.rows) || 10;
     params.value.first = 0;
     quotationStore.fetchQuotations();
 };

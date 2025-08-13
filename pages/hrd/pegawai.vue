@@ -86,7 +86,7 @@
                             <MyDataTable 
                                 ref="myDataTableRef"
                                 :data="pegawais" 
-                                :rows="params.rows" 
+                                :rows="Number(params.rows)" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
                                 :lazy="true"

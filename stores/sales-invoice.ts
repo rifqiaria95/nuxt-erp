@@ -197,8 +197,8 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
 
         const url = new URL($api.salesInvoice())
         const params = new URLSearchParams({
-            page     : ((this.params.first / this.params.rows) + 1).toString(),
-            rows     : this.params.rows.toString(),
+            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows     : Math.floor(this.params.rows).toString(),
             sortField: this.params.sortField || '',
             sortOrder: this.params.sortOrder?.toString() || '',
             draw     : this.params.draw.toString(),
@@ -509,14 +509,14 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
     },
 
     setPagination(event: any) {
-        this.params.first = event.first;
-        this.params.rows = event.rows;
+        this.params.first = Number(event.first) || 0;
+        this.params.rows = Number(event.rows) || 10;
         this.fetchSalesInvoices();
     },
 
     setSort(event: any) {
-        this.params.sortField = event.sortField;
-        this.params.sortOrder = event.sortOrder;
+        this.params.sortField = event.sortField || null;
+        this.params.sortOrder = Number(event.sortOrder) || null;
         this.fetchSalesInvoices();
     },
         

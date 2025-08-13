@@ -187,7 +187,7 @@
                         <MyDataTable 
                             ref="myDataTableRef"
                             :data="vendors" 
-                            :rows="params.rows" 
+                            :rows="Number(params.rows)" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
@@ -385,6 +385,7 @@ watch(globalFilterValue, debouncedSearch);
 
 const onPage = (event) => vendorStore.setPagination(event);
 const handleRowsChange = () => {
+    params.value.rows = Number(params.value.rows) || 10;
     params.value.first = 0;
     vendorStore.fetchVendors();
 };

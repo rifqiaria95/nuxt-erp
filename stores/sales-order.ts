@@ -199,8 +199,8 @@ export const useSalesOrderStore = defineStore('salesOrder', {
 
         const url = new URL($api.salesOrder())
         const params = new URLSearchParams({
-            page     : ((this.params.first / this.params.rows) + 1).toString(),
-            rows     : this.params.rows.toString(),
+            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows     : Math.floor(this.params.rows).toString(),
             sortField: this.params.sortField || '',
             sortOrder: this.params.sortOrder?.toString() || '',
             draw     : this.params.draw.toString(),
@@ -898,14 +898,14 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     },
 
     setPagination(event: any) {
-        this.params.first = event.first;
-        this.params.rows = event.rows;
+        this.params.first = Number(event.first) || 0;
+        this.params.rows = Number(event.rows) || 10;
         this.fetchSalesOrders();
     },
 
     setSort(event: any) {
-        this.params.sortField = event.sortField;
-        this.params.sortOrder = event.sortOrder;
+        this.params.sortField = event.sortField || null;
+        this.params.sortOrder = Number(event.sortOrder) || null;
         this.fetchSalesOrders();
     },
         

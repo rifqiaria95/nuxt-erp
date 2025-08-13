@@ -40,7 +40,7 @@
                         <MyDataTable 
                             ref="myDataTableRef"
                             :data="units" 
-                            :rows="params.rows" 
+                            :rows="Number(params.rows)" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"

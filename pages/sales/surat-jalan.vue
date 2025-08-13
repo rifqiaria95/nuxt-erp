@@ -111,7 +111,7 @@
                           <MyDataTable 
                               ref="myDataTableRef"
                               :data="suratJalans"
-                              :rows="params.rows" 
+                              :rows="Number(params.rows)" 
                               :loading="loading"
                               :totalRecords="totalRecords"
                               :lazy="true"
@@ -599,17 +599,22 @@ watch(filters, (newFilters) => {
 }, { deep: true });
 
 const onPage = (event) => {
-  params.value.first = event.first;
-  suratJalanStore.fetchSuratJalans();
+  if (event) {
+    suratJalanStore.setPagination(event);
+  }
 };
-const handleRowsChange = () => {
+
+const handleRowsChange = (value) => {
+  const rowsValue = Number(value) || 10;
+  params.value.rows = rowsValue;
   params.value.first = 0;
   suratJalanStore.fetchSuratJalans();
 };
+
 const onSort = (event) => {
-  params.value.sortField = event.sortField;
-  params.value.sortOrder = event.sortOrder;
-  suratJalanStore.fetchSuratJalans();
+  if (event) {
+    suratJalanStore.setSort(event);
+  }
 };
 
 const exportData = (format) => {

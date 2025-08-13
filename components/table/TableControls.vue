@@ -9,7 +9,8 @@
           :options="rowsPerPageOptions" 
           @change="handleRowsChange" 
           placeholder="Jumlah" 
-          style="width: 8rem;" 
+          style="width: 8rem;"
+          :showClear="false"
         />
       </div>
       <div class="d-flex align-items-center">
@@ -45,7 +46,8 @@
             :options="rowsPerPageOptions" 
             @change="handleRowsChange" 
             placeholder="Jumlah" 
-            class="mobile-dropdown" 
+            class="mobile-dropdown"
+            :showClear="false"
           />
         </div>
       </div>
@@ -105,7 +107,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'rows-change', 'search', 'export'])
 
-const rowsPerPage = ref(props.modelValue.rows || 10)
+const rowsPerPage = ref(Number(props.modelValue.rows) || 10)
 const searchValue = ref(props.modelValue.search || '')
 
 const handleRowsChange = (value) => {
@@ -126,7 +128,7 @@ const handleExport = (type) => {
 
 // Watch for external changes
 watch(() => props.modelValue, (newValue) => {
-  if (newValue.rows !== undefined) rowsPerPage.value = newValue.rows
+  if (newValue.rows !== undefined) rowsPerPage.value = Number(newValue.rows) || 10
   if (newValue.search !== undefined) searchValue.value = newValue.search
 }, { deep: true })
 </script>

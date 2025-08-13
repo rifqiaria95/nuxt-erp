@@ -76,7 +76,7 @@
                         <MyDataTable 
                             ref="myDataTableRef"
                             :data="stockTransfers" 
-                            :rows="params.rows" 
+                            :rows="Number(params.rows)" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"

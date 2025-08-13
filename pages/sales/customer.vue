@@ -174,7 +174,7 @@
                         <MyDataTable 
                             ref="myDataTableRef"
                             :data="customers" 
-                            :rows="params.rows" 
+                            :rows="Number(params.rows)" 
                             :loading="loading"
                             :totalRecords="totalRecords"
                             :lazy="true"
@@ -490,7 +490,8 @@ watch(globalFilterValue, debouncedSearch);
 const onPage = (event) => customerStore.setPagination(event);
 
 const handleRowsChange = (value) => {
-    params.value.rows = value;
+    const rowsValue = Number(value) || 10;
+    params.value.rows = rowsValue;
     params.value.first = 0;
     customerStore.fetchCustomers();
 };

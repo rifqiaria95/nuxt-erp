@@ -71,10 +71,10 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-6 mb-3">
                                     <v-select v-model="filters.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 mb-3">
                                     <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
                                 </div>
                             </div>
@@ -84,37 +84,21 @@
                 <div class="col-12">
                     <!-- salesInvoice Table -->
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
-                                </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari Sales Invoice..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="card-header">
+                            <TableControls
+                                v-model="tableControls"
+                                :rows-per-page-options="rowsPerPageOptionsArray"
+                                search-placeholder="Cari Sales Order..."
+                                @rows-change="handleRowsChange"
+                                @search="handleSearch"
+                                @export="exportData"
+                            />
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
                                 ref="myDataTableRef"
                                 :data="salesInvoices"
-                                :rows="params.rows" 
+                                :rows="Number(params.rows)" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
                                 :lazy="true"
@@ -535,6 +519,7 @@ import { usePermissions } from '~/composables/usePermissions'
 import { useSalesOrderStore } from '~/stores/sales-order'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import TableControls from '~/components/table/TableControls.vue'
 import vSelect from 'vue-select'
 import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
@@ -569,6 +554,12 @@ const { salesInvoices, loading, totalRecords, params, form, isEditMode, showModa
 const { customers }   = storeToRefs(customerStore)
 const { salesOrders, customerProducts } = storeToRefs(salesOrderStore)
 const { warehouses }  = storeToRefs(warehouseStore)
+
+// Table Controls
+const tableControls = ref({
+    rows: 10,
+    search: '',
+});
 
 // State
 const filters = ref({
@@ -680,6 +671,15 @@ const salesInvoiceItemsTotal = computed(() => {
   return Math.round(result);
 });
 
+// Watch untuk sinkronisasi table controls
+watch(() => params.value.rows, (newValue) => {
+    tableControls.value.rows = Number(newValue) || 10;
+});
+
+watch(() => globalFilterValue.value, (newValue) => {
+    tableControls.value.search = newValue;
+});
+
 // ✅ NEW: Watcher untuk mengupdate total form berdasarkan sales invoice items
 watch(salesInvoiceItemsTotal, (newTotal) => {
   // Hanya update jika tidak ada sales order yang dipilih (manual input)
@@ -723,6 +723,10 @@ onMounted(() => {
         modalInstance = new bootstrap.Modal(modalElement)
     }
     setListTitle('Sales Invoice', salesInvoices.value.length)
+
+    // Initialize table controls
+    tableControls.value.rows = Number(params.value.rows) || 10;
+    tableControls.value.search = globalFilterValue.value;
 });
 
 watch(showModal, (newValue) => {
@@ -991,17 +995,34 @@ watch(filters, (newFilters) => {
 }, { deep: true });
 
 const onPage = (event) => {
-    params.value.first = event.first;
-    salesInvoiceStore.fetchSalesInvoices();
+    if (event) {
+        // Ensure the event has valid values
+        const validEvent = {
+            first: Number(event.first) || 0,
+            rows: Number(event.rows) || 10,
+            page: Number(event.page) || 0
+        };
+        salesInvoiceStore.setPagination(validEvent);
+    }
 };
-const handleRowsChange = () => {
+
+const handleRowsChange = (value) => {
+    const rowsValue = Number(value) || 10;
+    params.value.rows = rowsValue;
     params.value.first = 0;
     salesInvoiceStore.fetchSalesInvoices();
 };
-const onSort = (event) => {
-    params.value.sortField = event.sortField;
-    params.value.sortOrder = event.sortOrder;
+
+const handleSearch = (value) => {
+    globalFilterValue.value = value;
+    params.value.first = 0;
     salesInvoiceStore.fetchSalesInvoices();
+};
+
+const onSort = (event) => {
+    if (event) {
+        salesInvoiceStore.setSort(event);
+    }
 };
 
 const exportData = (format) => {

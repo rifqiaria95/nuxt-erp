@@ -78,7 +78,7 @@
                                 <MyDataTable 
                                     ref="myDataTableRef"
                                     :data="products" 
-                                    :rows="params.rows" 
+                                    :rows="Number(params.rows)" 
                                     :loading="loading"
                                     :totalRecords="totalRecords"
                                     :lazy="true"

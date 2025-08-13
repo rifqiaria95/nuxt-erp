@@ -71,14 +71,13 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <v-select v-model="filters.vendorId" :options="vendors || []" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
                                 </div>
-                                
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <v-select v-model="filters.poType" :options="poTypeOptions" label="label" :reduce="option => option.value" placeholder="Pilih Tipe PO" class="v-select-style"/>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 mb-3">
                                     <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
                                 </div>
                             </div>
@@ -88,37 +87,21 @@
                 <div class="col-12">
                     <!-- purchaseOrder Table -->
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
-                            <div class="d-flex align-items-center me-3 mb-2 mb-md-0">
-                                <span class="me-2">Baris:</span>
-                                <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="ri-upload-2-line me-1"></i> Export
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                    </ul>
-                                </div>
-                                <div class="input-group">
-                                    <span class="p-input-icon-left">
-                                        <InputText
-                                            v-model="globalFilterValue"
-                                            placeholder="Cari Purchase Order..."
-                                            class="w-full md:w-20rem"
-                                        />
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="card-header">
+                            <TableControls
+                                v-model="tableControls"
+                                :rows-per-page-options="rowsPerPageOptionsArray"
+                                search-placeholder="Cari Sales Order..."
+                                @rows-change="handleRowsChange"
+                                @search="handleSearch"
+                                @export="exportData"
+                            />
                         </div>
                         <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable 
                                 ref="myDataTableRef"
                                 :data="purchaseOrders" 
-                                :rows="params.rows" 
+                                :rows="Number(params.rows)" 
                                 :loading="loading"
                                 :totalRecords="totalRecords"
                                 :lazy="true"
@@ -471,6 +454,7 @@ import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
 import Modal from '~/components/modal/Modal.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
+import TableControls from '~/components/table/TableControls.vue'
 import vSelect from 'vue-select'
 import Dropdown from 'primevue/dropdown'
 import Column from 'primevue/column'
@@ -511,6 +495,10 @@ const { permissions } = storeToRefs(permissionStore)
 // State
 const globalFilterValue = ref('');
 const attachmentPreview = ref(null);
+const tableControls = ref({
+    rows: 10,
+    search: '',
+});
 const filters = ref({
     search: '',
     vendorId: null,
@@ -596,6 +584,19 @@ onMounted(async () => {
     if (modalElement) {
         modalInstance = new bootstrap.Modal(modalElement)
     }
+
+    // Initialize table controls
+    tableControls.value.rows = Number(params.value.rows) || 10;
+    tableControls.value.search = globalFilterValue.value;
+});
+
+// Watch untuk sinkronisasi table controls
+watch(() => params.value.rows, (newValue) => {
+    tableControls.value.rows = Number(newValue) || 10;
+});
+
+watch(() => globalFilterValue.value, (newValue) => {
+    tableControls.value.search = newValue;
 });
 
 watch(showModal, (newValue) => {
@@ -659,14 +660,28 @@ watch(globalFilterValue, (newValue) => {
 
 const onPage = (event) => {
     if (event) {
-        purchaseOrderStore.setPagination(event);
+        // Ensure the event has valid values
+        const validEvent = {
+            first: Number(event.first) || 0,
+            rows: Number(event.rows) || 10,
+            page: Number(event.page) || 0
+        };
+        purchaseOrderStore.setPagination(validEvent);
     }
 };
-const handleRowsChange = () => {
-    if (!params.value) return;
+const handleRowsChange = (value) => {
+    const rowsValue = Number(value) || 10;
+    params.value.rows = rowsValue;
     params.value.first = 0;
     purchaseOrderStore.fetchPurchaseOrders();
 };
+
+const handleSearch = (value) => {
+    globalFilterValue.value = value;
+    params.value.first = 0;
+    purchaseOrderStore.fetchPurchaseOrders();
+};
+
 const onSort = (event) => {
     if (event) {
         purchaseOrderStore.setSort(event);

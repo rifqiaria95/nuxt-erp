@@ -95,8 +95,8 @@ export const useStockTransferStore = defineStore('stockTransfer', {
         const { $api } = useNuxtApp();
         const token = localStorage.getItem('token');
         const params = new URLSearchParams({
-            page     : ((this.params.first / this.params.rows) + 1).toString(),
-            rows     : this.params.rows.toString(),
+            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows     : Math.floor(this.params.rows).toString(),
             sortField: this.params.sortField || '',
             sortOrder: this.params.sortOrder ? this.params.sortOrder.toString() : '',
             draw     : (this.params.draw || 1).toString(),

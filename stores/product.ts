@@ -103,8 +103,8 @@ export const useProductStore = defineStore('product', {
       try {
         const token = localStorage.getItem('token')
         const params = new URLSearchParams({
-            page: ((this.params.first / this.params.rows) + 1).toString(),
-            rows: this.params.rows.toString(),
+            page: Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows: Math.floor(this.params.rows).toString(),
             sortField: this.params.sortField || 'id',
             sortOrder: this.params.sortOrder === -1 ? 'desc' : 'asc',
             search: this.params.search || '',

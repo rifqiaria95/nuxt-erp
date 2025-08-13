@@ -127,8 +127,8 @@ export const useQuotationStore = defineStore('quotation', {
         const token = localStorage.getItem('token');
         const url = new URL($api.quotation())
         const params = new URLSearchParams({
-            page     : ((this.params.first / this.params.rows) + 1).toString(),
-            rows     : this.params.rows.toString(),
+            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows     : Math.floor(this.params.rows).toString(),
             sortField: this.params.sortField || '',
             sortOrder: this.params.sortOrder?.toString() || '',
             draw     : this.params.draw.toString(),
@@ -565,8 +565,8 @@ export const useQuotationStore = defineStore('quotation', {
     },
 
     setPagination(event: any) {
-        this.params.first = event.first;
-        this.params.rows = event.rows;
+        this.params.first = Number(event.first) || 0;
+        this.params.rows = Number(event.rows) || 10;
         this.fetchQuotations();
     },
 
