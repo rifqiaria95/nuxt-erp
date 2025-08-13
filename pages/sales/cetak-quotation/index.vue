@@ -141,13 +141,13 @@
       <div class="table-responsive">
         <table class="table mt-2 table-borderless" style="font-size: 12px;">
           <tbody>
-            <tr v-if="quotation.description">
+            <tr>
               <td colspan="2" class="px-0 pt-6 align-top" style="max-width: 320px; width: 320px; min-width: 220px;">
                 <p class="mb-2">
                   <span class="fw-medium text-heading">Catatan:</span>
                 </p>
                 <p class="mb-0" style="white-space: pre-line; word-break: break-word; max-width: 320px; font-size: 12px;">
-                  {{ quotation.description }}
+                  {{ quotation.description && quotation.description.trim() !== '' ? quotation.description : '-' }}
                 </p>
               </td>
               <td colspan="4" class="px-0 pt-6 align-top">
@@ -206,15 +206,18 @@
 
 <script setup>
   definePageMeta({
-    layout: 'cetak',
-    title: 'Cetak Quotation',
+    layout: 'cetak'
   })
   import { onMounted, computed } from 'vue';
   import { useQuotationStore } from '~/stores/quotation';
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
   import Swal from 'sweetalert2';
-  
+  import { useDynamicTitle } from '~/composables/useDynamicTitle'
+
+  // Composables
+  const { setDetailTitle } = useDynamicTitle()
+
   const config = useRuntimeConfig();
   const quotationStore = useQuotationStore();
   const route = useRoute();
@@ -283,7 +286,7 @@
     if (quotationId) {
       try {
         await quotationStore.getQuotationDetails(quotationId);
-        
+        setDetailTitle('Cetak Quotation', quotation.value.noQuotation)
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail quotation.', 'error');
       }
