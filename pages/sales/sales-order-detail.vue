@@ -38,11 +38,17 @@
                             </div>
                             <div>
                                 <div class="d-flex align-items-center gap-3 mb-6">
-                                    <h5 class="mb-0">Sales Number : {{ salesOrder.noSo }}</h5>
+                                    <h6 class="mb-0">Sales Number : {{ salesOrder.noSo }}</h6>
                                     <!-- ✅ STATUS BADGE -->
                                     <span :class="getStatusBadgeClass(salesOrder.status)">
                                         {{ getStatusText(salesOrder.status) }}
                                     </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 mb-6">
+                                    <h6 class="mb-0">
+                                        Quotation Number : 
+                                        {{ salesOrder.quotation?.noQuotation ? salesOrder.quotation.noQuotation : '-' }}
+                                    </h6>
                                 </div>
                                 <div class="mb-1">
                                 <span>Date Issues: </span>
@@ -580,10 +586,6 @@ async function refreshSalesOrderDetails() {
     }
 }
 
-
-
-
-
 const totalBeforeTax = computed(() => {
     if (salesOrder.value && salesOrder.value.salesOrderItems) {
         const subtotal = salesOrder.value.salesOrderItems.reduce((sum, item) => sum + Number(item.subtotal), 0)
@@ -593,10 +595,8 @@ const totalBeforeTax = computed(() => {
     return 0
 })
 
-
-
 onMounted(refreshSalesOrderDetails)
-setDetailTitle('Sales Order', salesOrder.value.noSalesOrder)
+setDetailTitle('Sales Order - ' + salesOrder.value.noSo)
 </script>
 
 <style scoped>

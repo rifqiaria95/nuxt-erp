@@ -300,6 +300,9 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
+                                        <v-select v-model="form.quotationId" :options="quotations" label="noQuotation" :reduce="q => q.id" placeholder="Pilih Quotation" class="v-select-style"/>
+                                    </div>
+                                    <div class="col-md-6">
                                         <v-select v-model="form.customerId" :options="customers" label="name" :reduce="c => c.id" placeholder="Pilih Customer" class="v-select-style"/>
                                     </div>
                                     <div class="col-md-6">
@@ -343,26 +346,26 @@
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)">
-                                            <label>Discount SO (%)</label>
+                                            <label>Discount (%)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="number" v-model="form.taxPercent" class="form-control" placeholder="Tax (%)">
-                                            <label>Tax SO (%)</label>
+                                            <label>Tax (%)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="file" @change="onFileChange" class="form-control">
-                                            <label>Attachment SO</label>
+                                            <label>Attachment</label>
                                             <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
                                         </div>
                                     </div>
-                                    <div class="col-md-12">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <textarea v-model="form.description" class="form-control" placeholder="Deskripsi SO"></textarea>
-                                            <label>Deskripsi SO</label>
+                                            <label>Deskripsi</label>
                                         </div>
                                     </div>
                                 </div>
@@ -380,25 +383,25 @@
                                         <div class="col-md-2">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty">
-                                                <label>Jumlah SO</label>
+                                                <label>Qty</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="text" :value="formatRupiah(item.price)" class="form-control" placeholder="Harga" readonly>
-                                                <label>Harga SO</label>
+                                                <label>Harga Satuan</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
                                                 <input type="text" :value="formatRupiah(item.subtotal)" class="form-control" placeholder="Subtotal" readonly>
-                                                <label>Subtotal SO</label>
+                                                <label>Subtotal</label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                              <div class="form-floating form-floating-outline">
                                                 <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item">
-                                                <label>Deskripsi SO</label>
+                                                <label>Deskripsi</label>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
@@ -443,6 +446,7 @@ import { useSalesOrderStore } from '~/stores/sales-order'
 import { useCustomerStore } from '~/stores/customer'
 import { usePerusahaanStore } from '~/stores/perusahaan'
 import { useCabangStore } from '~/stores/cabang'
+import { useQuotationStore } from '~/stores/quotation'
 import { useProductStore } from '~/stores/product'
 import { useWarehouseStore } from '~/stores/warehouse'
 import { useStocksStore } from '~/stores/stocks'
@@ -474,6 +478,7 @@ const customerStore         = useCustomerStore()
 const perusahaanStore       = usePerusahaanStore()
 const warehouseStore        = useWarehouseStore()
 const cabangStore           = useCabangStore()
+const quotationStore        = useQuotationStore()
 const productStore          = useProductStore()
 const stockStore            = useStocksStore()
 const userStore             = useUserStore()
@@ -482,6 +487,7 @@ const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore       = usePermissionsStore()
 
 const { salesOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, customerProducts, stats } = storeToRefs(salesOrderStore)
+const { quotations } = storeToRefs(quotationStore)
 const { customers }   = storeToRefs(customerStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
 const { cabangs }     = storeToRefs(cabangStore)
@@ -571,19 +577,28 @@ onMounted(async () => {
         const [perusahaanData, cabangData, customerData] = await Promise.all([
             salesOrderStore.fetchPerusahaanData(),
             salesOrderStore.fetchCabangData(),
-            salesOrderStore.fetchCustomerData()
+            salesOrderStore.fetchCustomerData(),
         ]);
         
         // Assign data ke store yang sesuai
         perusahaanStore.perusahaans = perusahaanData;
-        cabangStore.cabangs = cabangData;
-        customerStore.customers = customerData;
+        cabangStore.cabangs         = cabangData;
+        customerStore.customers     = customerData;
+
     } catch (error) {
         console.error('Error loading data:', error);
         // Fallback ke method lama jika endpoint data baru gagal
         customerStore.fetchCustomers();
         perusahaanStore.fetchPerusahaans();
         cabangStore.fetchCabangs();
+    }
+    
+    // Load quotations secara terpisah
+    try {
+        await quotationStore.fetchQuotations();
+        console.log('✅ Quotations loaded:', quotations.value);
+    } catch (error) {
+        console.error('❌ Error loading quotations:', error);
     }
 
     const modalElement = document.getElementById('SalesOrderModal')
@@ -836,10 +851,6 @@ const clearDateFilters = () => {
     filters.value.startDate = null;
     filters.value.endDate = null;
     salesOrderStore.setFilters(filters.value);
-};
-
-const onDateChange = () => {
-    
 };
 
 // Fungsi export PDF khusus untuk Sales Order

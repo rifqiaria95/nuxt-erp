@@ -286,7 +286,7 @@
     if (quotationId) {
       try {
         await quotationStore.getQuotationDetails(quotationId);
-        setDetailTitle('Cetak Quotation', quotation.value.noQuotation)
+        setDetailTitle('Cetak Quotation - ' + quotation.value.noQuotation)
       } catch (e) {
         toast.fire('Error', e.message || 'Gagal memuat detail quotation.', 'error');
       }

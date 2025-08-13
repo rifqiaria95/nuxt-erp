@@ -35,6 +35,7 @@ export interface Product {
   categoryId: number
   image: string | File
   kondisi: string
+  berat: number
   createdAt: string
   updatedAt: string
   category?: Category
@@ -88,6 +89,7 @@ export const useProductStore = defineStore('product', {
       image: '',
       categoryId: undefined,
       kondisi: 'baru',
+      berat: 0,
     },
     isEditMode: false,
     showModal: false,
@@ -270,6 +272,7 @@ export const useProductStore = defineStore('product', {
                 image: '',
                 categoryId: undefined,
                 kondisi: 'baru',
+                berat: 0,
             };
         }
         this.showModal = true;

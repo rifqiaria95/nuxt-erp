@@ -104,7 +104,11 @@
                                         </Column>
                                         <Column field="sku" header="No. Product" :sortable="true"></Column>
                                         <Column field="name" header="Nama Product" :sortable="true"></Column>
-                                        <Column field="unit.name" header="Satuan" :sortable="true"></Column>
+                                        <Column field="berat" header="Berat" :sortable="true">
+                                            <template #body="slotProps">
+                                                {{ slotProps.data.berat ? slotProps.data.berat + ' ' + units.find(unit => unit.id === slotProps.data.unitId)?.name : '-' }}
+                                            </template>
+                                        </Column>
                                         <Column field="stockMin" header="Stok Minimum" :sortable="true">
                                             <template #body="slotProps">
                                                 {{ Math.round(slotProps.data.stockMin) }}
@@ -177,10 +181,10 @@
                                         type="text" 
                                         class="form-control" 
                                         v-model="form.sku" 
-                                        placeholder="Masukkan sku product"
+                                        placeholder="Masukkan part number"
                                         required
                                     >
-                                    <label>Kode Product</label>
+                                    <label>Part Number</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -189,10 +193,10 @@
                                         type="text" 
                                         class="form-control" 
                                         v-model="form.name" 
-                                        placeholder="Masukkan nama product"
+                                        placeholder="Masukkan nama barang"
                                         required
                                     >
-                                    <label>Nama Product</label>
+                                    <label>Nama Barang</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -201,16 +205,30 @@
                                     type="text" 
                                     class="form-control" 
                                     v-model="form.stockMin" 
-                                    placeholder="Masukkan stok minimum product"
+                                    placeholder="Masukkan stok minimum"
                                     @input="form.stockMin = $event.target.value.replace(/[^0-9]/g, '')"
                                     inputmode="numeric"
                                     pattern="[0-9]*"
                                     required
                                     >
-                                    <label>Stok Minimum Product</label>
+                                    <label>Stok Minimum</label>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    v-model="form.berat" 
+                                    placeholder="Masukkan berat"
+                                    @input="form.berat = $event.target.value.replace(/[^0-9]/g, '')"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    >
+                                    <label>Berat</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <div class="form-floating form-floating-outline">
                                     <v-select
                                         v-model="form.unitId"
@@ -228,10 +246,10 @@
                                     type="text" 
                                     class="form-control" 
                                     v-model="formattedPriceBuy" 
-                                    placeholder="Masukkan harga beli product"
+                                    placeholder="Masukkan harga beli"
                                     required
                                     >
-                                    <label>Harga Beli Product</label>
+                                    <label>Harga Beli</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -240,10 +258,10 @@
                                     type="text" 
                                     class="form-control" 
                                     v-model="formattedPriceSell" 
-                                    placeholder="Masukkan harga jual product"
+                                    placeholder="Masukkan harga jual"
                                     required
                                     >
-                                    <label>Harga Jual Product</label>
+                                    <label>Harga Jual</label>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -276,7 +294,7 @@
                                 <div class="form-check form-switch mt-3 d-flex align-items-center">
                                     <input class="form-check-input me-2" type="checkbox" v-model="form.isService" />
                                     <label class="form-check-label mb-0">
-                                        Service Product
+                                        Service
                                     </label>
                                 </div>
                             </div>
@@ -288,7 +306,7 @@
                                         @change="onImageChange"
                                         placeholder="Masukkan image product"
                                     >
-                                    <label>Gambar Product</label>
+                                    <label>Gambar</label>
                                 </div>
                             </div>
                         </div>

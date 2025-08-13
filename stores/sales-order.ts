@@ -10,7 +10,7 @@ import type { User } from './userManagement'
 import type { Perusahaan } from './perusahaan'
 import type { Cabang } from './cabang'
 import type { Product } from './product'
-
+import type { Quotation } from './quotation'
 
 interface SalesReturnInfo {
   id: string;
@@ -23,11 +23,11 @@ interface SalesReturnItemInfo {
 }
 
 interface Stats {
-  total: number | undefined
-  approved: number | undefined
-  rejected: number | undefined
-  partial: number | undefined
-  delivered: number | undefined
+  total               : number | undefined
+  approved            : number | undefined
+  rejected            : number | undefined
+  partial             : number | undefined
+  delivered           : number | undefined
   deliveredLast4Months: number | undefined
 }
 
@@ -57,6 +57,7 @@ export interface SalesOrder {
   customerId      : number
   perusahaanId    : number
   cabangId        : number
+  quotationId     : string
   date            : string
   dueDate         : string
   status          : string
@@ -79,6 +80,7 @@ export interface SalesOrder {
   customer?       : Customer
   perusahaan?     : Perusahaan
   cabang?         : Cabang
+  quotation?      : Quotation
   createdByUser?  : User
   approvedByUser? : User
   deliveredByUser?: User
@@ -153,6 +155,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         up             : '',
         customerId     : null,
         perusahaanId   : null,
+        quotationId    : null,
         cabangId       : null,
         date           : new Date().toISOString().split('T')[0],
         dueDate        : new Date().toISOString().split('T')[0],
@@ -387,6 +390,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
             delete dataToAppend.customer;
             delete dataToAppend.perusahaan;
             delete dataToAppend.cabang;
+            delete dataToAppend.quotation;
             delete dataToAppend.createdByUser;
             delete dataToAppend.approvedByUser;
             delete dataToAppend.deliveredByUser;
@@ -858,6 +862,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         up: '',
         customerId: null,
         perusahaanId: null,
+        quotationId: null,
         cabangId: null,
         date: new Date().toISOString().split('T')[0],
         dueDate: new Date().toISOString().split('T')[0],

@@ -159,8 +159,10 @@ export const useQuotationStore = defineStore('quotation', {
 
         const result = await response.json()
         
+        console.log('📊 Quotation API Response:', result);
         this.quotations = result.data
         this.totalRecords = result.meta.total
+        console.log('📋 Quotations in store:', this.quotations);
       } catch (e: any) {
         console.error('Gagal mengambil data quotation:', e)
         this.error = e
