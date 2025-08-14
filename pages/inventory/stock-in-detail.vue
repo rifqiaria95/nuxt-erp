@@ -67,12 +67,12 @@
                             <h5 class="card-title mb-0">Daftar Produk</h5>
                         </div>
                          <div class="card-datatable table-responsive py-3 px-3">
-                            <MyDataTable :data="stockIn.purchaseOrder?.purchaseOrderItems || []" :loading="loading">
+                            <MyDataTable :data="stockIn.stockInDetails || []" :loading="loading">
                                 <Column field="product.name" header="Produk" :sortable="true"></Column>
                                 <Column field="description" header="Deskripsi" :sortable="true"></Column>
-                                <Column header="Diterima / Dipesan" :sortable="false">
+                                <Column field="quantity" header="Quantity Stock In" :sortable="true">
                                     <template #body="slotProps">
-                                        {{ (slotProps.data.receivedQty !== null) ? String(slotProps.data.receivedQty).replace(/\.00$/, '') : 0 }} / {{ (slotProps.data.quantity !== null) ? String(slotProps.data.quantity).replace(/\.00$/, '') : 0 }}
+                                        {{ slotProps.data.quantity || 0 }}
                                     </template>
                                 </Column>
                             </MyDataTable>

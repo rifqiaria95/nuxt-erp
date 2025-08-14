@@ -107,65 +107,6 @@ export const useStockStore = defineStore('stock', {
           this.loading = false;
       }
     },
-
-    async saveStockIn() {
-      this.loading = true
-      try {
-        const { $api } = useNuxtApp()
-        const token = localStorage.getItem('token')
-        let response
-        let url
-  
-        const payload: any = {
-          noSi: this.form.noSi,
-          date: this.form.date,
-          warehouseId: this.form.warehouseId,
-          status: this.form.status,
-        }
-  
-        if (this.isEditMode) {
-          if (!this.form.id) {
-            throw new Error('ID Stock In tidak ditemukan untuk update.')
-          }
-          url = `${$api.stockIn()}/${this.form.id}`
-          response = await fetch(url, {
-            method: 'PUT',
-            body: JSON.stringify(payload),
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          })
-        }
-        else {
-          payload.status = 'draft'
-          url = $api.stockIn()
-          response = await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          })
-        }
-  
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: `Gagal ${this.isEditMode ? 'memperbarui' : 'membuat'} stock in` }))
-          throw errorData
-        }
-  
-        return await response.json()
-      }
-      catch (error) {
-        throw error
-      }
-      finally {
-        this.loading = false
-      }
-    },
     // Fungsi untuk mengambil data stock in
     async fetchStockIns() {
       try {
@@ -300,33 +241,6 @@ export const useStockStore = defineStore('stock', {
         this.stats = defaultStats;
         this.error = error;
       }
-    },
-    openModal(stockInData: StockIn | null = null) {
-        this.isEditMode = !!stockInData;
-        this.validationErrors = [];
-
-        if (stockInData) {
-            this.form = {
-                ...JSON.parse(JSON.stringify(stockInData)),
-                date: stockInData.date ? new Date(stockInData.date).toISOString().slice(0, 10) : '',
-                warehouseId: stockInData.warehouse ? stockInData.warehouse.id : null,
-            };
-        } else {
-            this.form = {
-              noSi: '',
-              date: '',
-              warehouseId: null,
-              status: '',
-            };
-        }
-        this.showModal = true;
-    },
-
-    closeModal() {
-        this.showModal = false;
-        this.isEditMode = false;
-        this.form = {};
-        this.validationErrors = [];
     },
 
     setPagination(event: any) {

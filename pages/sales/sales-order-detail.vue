@@ -486,7 +486,20 @@ const decreaseDeliveredQty = (item) => {
 
 // ✅ FUNCTION untuk update delivered quantity ke backend
 const updateDeliveredQty = async (item) => {
-    if (isReturned(item) || isDelivered.value) return
+    // Validasi: Cek apakah sales order sudah delivered
+    if (isDelivered.value) {
+        toast.warning({
+            title: 'Aksi Tidak Diizinkan',
+            message: `Sales Order sudah dalam status ${salesOrder.value?.status?.toUpperCase()} dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Sales Return.`,
+            icon: 'ri-alert-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
+        return
+    }
+
+    if (isReturned(item)) return
     
     // Pastikan deliveredQty memiliki nilai default dan bulatkan ke bawah
     if (item.deliveredQty === null || item.deliveredQty === undefined || item.deliveredQty === '') {
@@ -545,7 +558,7 @@ const checkAllItemsStatus = () => {
     if (allItemsDone && salesOrder.value.status !== 'delivered') {
         toast.success({
             title: 'Semua Item Selesai!',
-            message: 'Semua item telah diterima sepenuhnya. Status berubah menjadi Done.',
+            message: 'Semua item telah dikirim sepenuhnya. Status berubah menjadi Delivered.',
             color: 'green'
         })
     }
@@ -662,40 +675,72 @@ const totalPendingQuantity = computed(() => {
 });
 
 const deliverAllItems = async () => {
-    if (loading.value) return;
+    if (isDelivered.value || totalPendingQuantity.value === 0) {
+        toast.warning({
+            title: 'Peringatan',
+            message: `Semua item sudah dikirim atau Sales Order sudah dalam status ${salesOrder.value?.status?.toUpperCase()}.`,
+            color: 'orange'
+        })
+        return
+    }
 
-    const confirm = await Swal.fire({
-        title: 'Confirm Deliver All',
-        text: `Are you sure you want to deliver all ${totalPendingQuantity.value} units of ${totalPendingItems.value} items? This action cannot be undone.`,
-        icon: 'warning',
+    // ✅ TAMPILKAN SWEETALERT CONFIRMATION
+    const result = await Swal.fire({
+        title: 'Konfirmasi Deliver All',
+        text: `Apakah anda yakin ingin mengirim semua barang? (${totalPendingQuantity.value} items akan dibuat Stock Out nya)`,
+        icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#28a745',
-        cancelButtonColor: '#dc3545',
-        confirmButtonText: 'Yes, Deliver All',
-        cancelButtonText: 'Cancel',
-    });
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Deliver All!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            confirmButton: 'btn btn-success me-3',
+            cancelButton: 'btn btn-secondary',
+            actions: 'swal-button-spacing'
+        },
+        buttonsStyling: false
+    })
 
-    if (confirm.isConfirmed) {
-        try {
-            loading.value = true;
-            await salesOrderStore.deliverAllItems(salesOrder.value.id);
-            toast.success({
-                title: 'Deliver All Successful',
-                message: `All ${totalPendingQuantity.value} units of ${totalPendingItems.value} items have been delivered.`,
-                color: 'green'
-            });
-            await refreshSalesOrderDetails();
-            checkAllItemsStatus();
-        } catch (error) {
-            console.error('Failed to deliver all items:', error);
-            toast.error({
-                title: 'Deliver All Failed',
-                message: `Failed to deliver all items. ${error.message || 'Silakan coba lagi.'}`,
-                color: 'red'
-            });
-        } finally {
-            loading.value = false;
-        }
+    if (!result.isConfirmed) {
+        return
+    }
+
+    try {
+        // ✅ CALL API untuk batch deliver all
+        await salesOrderStore.deliverAllItems(salesOrder.value.id)
+        
+        // ✅ REFRESH DATA
+        await refreshSalesOrderDetails()
+        
+        // ✅ TAMPILKAN SUCCESS MESSAGE
+        await Swal.fire({
+            title: 'Berhasil!',
+            text: `Semua barang telah dikirim. ${totalPendingQuantity.value} Stock Out telah dibuat.`,
+            icon: 'success',
+            confirmButtonColor: '#28a745',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'btn btn-success'
+            },
+            buttonsStyling: false
+        })
+        
+    } catch (error) {
+        console.error('Error delivering all items:', error)
+        
+        await Swal.fire({
+            title: 'Error!',
+            text: error.data?.message || error.message || 'Gagal mengirim semua barang',
+            icon: 'error',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'btn btn-danger'
+            },
+            buttonsStyling: false
+        })
     }
 };
 
@@ -829,5 +874,14 @@ onMounted(async () => {
     .qty-btn:disabled {
         opacity: 0.5 !important;
         cursor: not-allowed !important;
+    }
+    
+    /* ✅ SweetAlert button spacing */
+    :global(.swal-button-spacing) {
+        gap: 1rem !important;
+    }
+    
+    :global(.swal2-actions.swal-button-spacing .swal2-confirm) {
+        margin-right: 1rem !important;
     }
 </style>

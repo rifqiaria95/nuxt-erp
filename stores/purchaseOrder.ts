@@ -505,8 +505,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         try {
             const token        = localStorage.getItem('token');
 
-            console.log(`🔍 Updating Purchase Order Item ${itemId} with receivedQty: ${receivedQty}`);
-
             const resData = await apiFetch($api.purchaseOrderItemUpdateStatusPartial(itemId), {
                 method: 'PATCH',
                 headers: {
@@ -519,8 +517,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 },
                 credentials: 'include',
             });
-
-            console.log(`✅ Purchase Order Item updated successfully:`, resData);
 
             const updatedPurchaseOrderItem = resData.data.purchaseOrderItem;
             const updatedPurchaseOrder = resData.data.purchaseOrder;
@@ -565,8 +561,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
       try {
           const token = localStorage.getItem('token');
 
-          console.log(`🔍 Calling receiveAllItems for PO: ${purchaseOrderId}`);
-
           const response = await fetch($api.receiveAllPurchaseOrderItems(purchaseOrderId), {
               method: 'POST',
               headers: {
@@ -583,7 +577,6 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
           }
 
           const result = await response.json();
-          console.log(`✅ Receive All Items successful:`, result);
 
           toast.success({
             title: 'Success',

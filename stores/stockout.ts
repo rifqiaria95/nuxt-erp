@@ -97,65 +97,6 @@ export const useStockOutStore = defineStore('stockOut', {
           this.loading = false;
       }
     },
-
-    async saveStockOut() {
-      this.loading = true
-      try {
-        const { $api } = useNuxtApp()
-        const token = localStorage.getItem('token')
-        let response
-        let url
-  
-        const payload: any = {
-          noSo: this.form.noSo,
-          date: this.form.date,
-          warehouseId: this.form.warehouseId,
-          status: this.form.status,
-        }
-  
-        if (this.isEditMode) {
-          if (!this.form.id) {
-            throw new Error('ID Stock Out tidak ditemukan untuk update.')
-          }
-          url = `${$api.stockOut()}/${this.form.id}`
-          response = await fetch(url, {
-            method: 'PUT',
-            body: JSON.stringify(payload),
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          })
-        }
-        else {
-          payload.status = 'draft'
-          url = $api.stockOut()
-          response = await fetch(url, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          })
-        }
-  
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: `Gagal ${this.isEditMode ? 'memperbarui' : 'membuat'} stock out` }))
-          throw errorData
-        }
-  
-        return await response.json()
-      }
-      catch (error) {
-        throw error
-      }
-      finally {
-        this.loading = false
-      }
-    },
     // Fungsi untuk mengambil data stock in
     async fetchStockOuts() {
       try {
@@ -290,31 +231,6 @@ export const useStockOutStore = defineStore('stockOut', {
         this.stats = defaultStats;
         this.error = error;
       }
-    },
-    openModal(stockOutData: StockOut | null = null) {
-        this.isEditMode = !!stockOutData;
-        this.validationErrors = [];
-
-        if (stockOutData) {
-            this.form = {
-                ...JSON.parse(JSON.stringify(stockOutData)),
-                date: stockOutData.date ? new Date(stockOutData.date).toISOString().slice(0, 10) : '',
-            };
-        } else {
-            this.form = {
-              noSo: '',
-              date: '',
-              status: '',
-            };
-        }
-        this.showModal = true;
-    },
-
-    closeModal() {
-        this.showModal = false;
-        this.isEditMode = false;
-        this.form = {};
-        this.validationErrors = [];
     },
 
     setPagination(event: any) {

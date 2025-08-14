@@ -12,7 +12,7 @@
                 <div v-if="isReceived" class="alert alert-success d-flex align-items-center mb-4" role="alert">
                     <i class="ri-check-circle-line ri-22px me-2"></i>
                     <div>
-                        <strong>Status: RECEIVED</strong> - Purchase Order ini sudah selesai dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Purchase Return.
+                        <strong>Status: {{ purchaseOrder.status?.toUpperCase() }}</strong> - Purchase Order ini sudah selesai dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Purchase Return.
                     </div>
                 </div>
                 
@@ -463,16 +463,6 @@ const isIncrementDisabled = (item) => {
     const maxQuantity = Math.floor(Number(item.quantity) || 0)
     const disabled = isReceived.value || currentReceived >= maxQuantity
     
-    console.log(`🔍 DEBUG isIncrementDisabled for ${item.product?.name}:`, {
-        receivedQty: item.receivedQty,
-        quantity: item.quantity,
-        currentReceived,
-        maxQuantity,
-        isReceived: isReceived.value,
-        disabled,
-        comparison: `${currentReceived} >= ${maxQuantity} = ${currentReceived >= maxQuantity}`
-    })
-    
     return disabled
 }
 
@@ -481,7 +471,7 @@ const receiveAllItems = async () => {
     if (isReceived.value || isAllItemsReceived.value) {
         toast.warning({
             title: 'Peringatan',
-            message: 'Semua item sudah diterima atau Purchase Order sudah dalam status RECEIVED.',
+            message: `Semua item sudah diterima atau Purchase Order sudah dalam status ${purchaseOrder.value?.status?.toUpperCase()}.`,
             color: 'orange'
         })
         return
@@ -499,8 +489,9 @@ const receiveAllItems = async () => {
         cancelButtonText: 'Batal',
         reverseButtons: true,
         customClass: {
-            confirmButton: 'btn btn-success me-5',
-            cancelButton: 'btn btn-secondary'
+            confirmButton: 'btn btn-success me-3',
+            cancelButton: 'btn btn-secondary',
+            actions: 'swal-button-spacing'
         },
         buttonsStyling: false
     })
@@ -553,15 +544,7 @@ const increaseReceivedQty = (item) => {
     const currentQty = Math.floor(Number(item.receivedQty) || 0)
     const maxQty = Math.floor(Number(item.quantity) || 0)
     
-    console.log(`🔍 DEBUG increaseReceivedQty:`, {
-        productName: item.product?.name,
-        receivedQty: item.receivedQty,
-        quantity: item.quantity,
-        currentQty,
-        maxQty,
-        canIncrease: currentQty < maxQty,
-        isReceived: isReceived.value
-    })
+    
     
     if (currentQty < maxQty) {
         item.receivedQty = currentQty + 1
@@ -583,11 +566,11 @@ const decreaseReceivedQty = (item) => {
 
 // ✅ FUNCTION untuk update received quantity ke backend
 const updateReceivedQty = async (item) => {
-    // Validasi: Cek apakah purchase order sudah received
+    // Validasi: Cek apakah purchase order sudah received/delivered
     if (isReceived.value) {
         toast.warning({
             title: 'Aksi Tidak Diizinkan',
-            message: 'Purchase Order sudah dalam status RECEIVED dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Purchase Return.',
+            message: `Purchase Order sudah dalam status ${purchaseOrder.value?.status?.toUpperCase()} dan tidak dapat diubah lagi. Jika ada perubahan yang diperlukan, silakan buat Purchase Return.`,
             icon: 'ri-alert-line',
             timeout: 3000,
             position: 'topRight',
@@ -676,7 +659,7 @@ const checkAllItemsStatus = () => {
     if (allItemsDone && purchaseOrder.value.status !== 'received') {
         toast.success({
             title: 'Semua Item Selesai!',
-            message: 'Semua item telah diterima sepenuhnya. Status berubah menjadi Done.',
+            message: 'Semua item telah diterima sepenuhnya. Status berubah menjadi Received.',
             color: 'green'
         })
     }
@@ -693,23 +676,6 @@ const totalBeforeTax = computed(() => {
 
 onMounted(async () => {
     await refreshPurchaseOrderDetails()
-    
-    // ✅ DEBUG: Log struktur data setelah load
-    nextTick(() => {
-        if (purchaseOrder.value && purchaseOrder.value.purchaseOrderItems) {
-            console.log(`🔍 DEBUG: Purchase Order Items structure:`)
-            purchaseOrder.value.purchaseOrderItems.forEach((item, index) => {
-                console.log(`Item ${index}:`, {
-                    productName: item.product?.name,
-                    quantity: item.quantity,
-                    quantityType: typeof item.quantity,
-                    receivedQty: item.receivedQty,
-                    receivedQtyType: typeof item.receivedQty,
-                    rawItem: item
-                })
-            })
-        }
-    })
 })
 </script>
 
@@ -769,5 +735,14 @@ onMounted(async () => {
     .qty-btn:disabled {
         opacity: 0.5 !important;
         cursor: not-allowed !important;
+    }
+    
+    /* ✅ SweetAlert button spacing */
+    :global(.swal-button-spacing) {
+        gap: 1rem !important;
+    }
+    
+    :global(.swal2-actions.swal-button-spacing .swal2-confirm) {
+        margin-right: 1rem !important;
     }
 </style>

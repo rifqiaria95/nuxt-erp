@@ -103,28 +103,7 @@
                                     </template>
                                 </Column>
                                 <Column field="warehouse.name" header="Gudang" :sortable="true"></Column>
-                                <Column header="Produk Dikeluarkan" style="min-width:10rem">
-                                    <template #body="slotProps">
-                                        <div v-if="slotProps.data.salesOrder && slotProps.data.salesOrder.salesOrderItems && slotProps.data.salesOrder.salesOrderItems.length">
-                                            <ul class="list-unstyled mb-0">
-                                                <li v-for="item in slotProps.data.salesOrder.salesOrderItems" :key="item.id">
-                                                    <span class="fw-bold">{{ item.product?.name || 'N/A' }}:</span>
-                                                    {{
-                                                        (item.deliveredQty !== undefined && item.deliveredQty !== null)
-                                                        ? String(item.deliveredQty).replace(/\.00$/, '')
-                                                        : 0
-                                                    }} / {{
-                                                        (item.quantity !== undefined && item.quantity !== null)
-                                                        ? String(item.quantity).replace(/\.00$/, '')
-                                                        : 0
-                                                    }}
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <span v-else>-</span>
-                                    </template>
-                                </Column>
-                                <Column field="salesOrder.deliveredByUser.fullName" header="Pengirim" :sortable="true"></Column>
+                                <Column field="postedByUser.fullName" header="Pengirim" :sortable="true"></Column>
                                 <Column header="Actions" :exportable="false" style="min-width:8rem">
                                     <template #body="slotProps">
                                         <div class="d-inline-block">
@@ -139,11 +118,6 @@
                                                 <li v-if="userHasRole('superadmin') || (userHasPermission('view_stock_out') && slotProps.data.status == 'posted')">
                                                     <a class="dropdown-item" href="javascript:void(0)" @click="viewStockOutDetails(slotProps.data.id)">
                                                         <i class="ri-eye-line me-2"></i> Lihat Detail
-                                                    </a>
-                                                </li>
-                                                <li v-if="userHasRole('superadmin') || (userHasPermission('edit_stock_out') && slotProps.data.status == 'draft')">
-                                                    <a class="dropdown-item" href="javascript:void(0)" @click="stockOutStore.openModal(slotProps.data)">
-                                                        <i class="ri-edit-box-line me-2"></i> Edit
                                                     </a>
                                                 </li>
                                                 <li v-if="userHasRole('superadmin') || (userHasPermission('delete_stock_out') && slotProps.data.status == 'Received')">
@@ -162,84 +136,6 @@
                 </div>
             </div>
             <!--/ stock out cards -->
-
-            <!-- Placeholder untuk Stock OutModal component -->
-            <Modal 
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
-                :title="modalTitle" 
-                :description="modalDescription"
-                :selectedStockOut="selectedStockOut"
-            >
-                <template #default>
-                    <form @submit.prevent="handleSaveStockOut">
-                        <div class="row g-6">
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="name" 
-                                        v-model="form.noSo" 
-                                        placeholder="Masukkan no SO"
-                                        required
-                                    >
-                                    <label for="name">No SO</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="date" 
-                                        class="form-control" 
-                                        id="date" 
-                                        v-model="form.date" 
-                                        placeholder="Masukkan tanggal"
-                                        required
-                                    >
-                                    <label for="name">Tanggal</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <v-select
-                                        v-model="form.warehouseId"
-                                        :options="warehouses"
-                                        label="name"
-                                        :reduce="warehouse => warehouse.id"
-                                        placeholder="-- Pilih Gudang --"
-                                        class="warehouse-select"
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <v-select
-                                        v-model="form.status"
-                                        :options="status"
-                                        label="label"
-                                        :reduce="status => status.value"
-                                        placeholder="-- Pilih Status --"
-                                        class="status-select"
-                                    />
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary me-2"
-                                    @click="handleSaveStockOut"
-                                >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="stockOutStore.closeModal()">
-                                    Batal
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </template>
-            </Modal>
         </div>
          <!-- / Content -->
  
@@ -253,13 +149,10 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '~/stores/user'
 import { useStockOutStore } from '~/stores/stockout'
 import { useWarehouseStore } from '~/stores/warehouse'
-import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
-import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
-import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissions } from '~/composables/usePermissions'
@@ -268,6 +161,7 @@ import { useDynamicTitle } from '~/composables/useDynamicTitle'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const toast = useToast()
 
 const { $api } = useNuxtApp()
 
@@ -276,7 +170,7 @@ const userStore                 = useUserStore()
 const permissionStore           = usePermissionsStore()
 const stockOutStore             = useStockOutStore()
 const warehouseStore            = useWarehouseStore()
-const { stockOuts, totalRecords, stats, params, form, isEditMode, showModal, validationErrors } = storeToRefs(stockOutStore)
+const { stockOuts, totalRecords, stats, params, form, validationErrors } = storeToRefs(stockOutStore)
 const { warehouse: warehouses } = storeToRefs(warehouseStore)
 const selectedStockOut          = ref(null);
 const loading                   = ref(false);
@@ -285,36 +179,7 @@ const router                    = useRouter()
 
 const { userHasPermission, userHasRole } = usePermissions();
 
-const userisSuperAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
-});
-
-const userisAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'admin') ?? false;
-});
-
-const status       = ref([
-    { label: 'Draft', value: 'draft' },
-    { label: 'Posted', value: 'posted' },
-]);
-
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
-
-const modalTitle = computed(() => isEditMode.value ? 'Edit Stock Out' : 'Tambah Stock Out');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data stock out di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan stock out baru.');
-
-// Fungsi untuk menangani event close dari modal
-watch(showModal, (newValue) => {
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        if (newValue) {
-            modalInstance.show();
-        } else {
-            modalInstance.hide();
-        }
-    }
-});
 
 let searchDebounceTimer = null;
 watch(globalFilterValue, (newValue) => {
@@ -333,43 +198,15 @@ onBeforeUnmount(() => {
     }
 });
 
-const handleSaveStockOut = async () => {
-    if (!form.value.noSo) {
-        toast.fire('Validasi', 'No SO wajib diisi.', 'warning');
-        return;
-    }
-
-    try {
-        await stockOutStore.saveStockOut();
-        await stockOutStore.fetchStockOutsPaginated();
-        stockOutStore.closeModal();
-        toast.fire(
-            'Berhasil!',
-            `Stock Out berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`,
-            'success'
-        );
-    } catch (error) {
-        const errorData = error;
-        if (errorData.errors) {
-            stockOutStore.validationErrors = Array.isArray(errorData.errors)
-                ? errorData.errors
-                : Object.values(errorData.errors).flat();
-            toast.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
-        } else {
-            toast.fire('Gagal', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock out`, 'error');
-        }
-    }
-};
-
 const postStockOut = async (id) => {
     try {
         await stockOutStore.postStockOut(id);
         await stockOutStore.fetchStockOutsPaginated();
-        toast.fire(
-            'Berhasil!',
-            `Stock Out berhasil diposting.`,
-            'success'
-        );
+        toast.success({
+            title: 'Berhasil!',
+            message: `Stock Out berhasil diposting.`,
+            color: 'green'
+        });
     } catch (error) {
         let errorMessage = 'Gagal memposting stock out';
         if (error instanceof Error) {
@@ -385,14 +222,22 @@ const postStockOut = async (id) => {
                  stockOutStore.validationErrors = Array.isArray(parsedError.errors)
                     ? parsedError.errors
                     : Object.values(parsedError.errors).flat();
-                return toast.fire('Gagal', 'Terdapat kesalahan validasi data.', 'error');
+                return toast.error({
+                    title: 'Gagal', 
+                    message: 'Terdapat kesalahan validasi data.', 
+                    color: 'red'
+                });
             }
              errorMessage = parsedError.message || errorMessage;
         } catch (e) {
             // Biarkan errorMessage seperti apa adanya jika bukan JSON
         }
         
-        toast.fire('Error', errorMessage, 'error');
+        toast.error({
+            title: 'Error',
+            message: errorMessage,
+            color: 'red'
+        });
     }
 };
 
@@ -402,7 +247,11 @@ const loadLazyData = async () => {
         await stockOutStore.fetchStockOutsPaginated();
     } catch (error) {
         const error_message = error.message;
-        toast.fire('Error', `Tidak dapat memuat data stock out: ${error_message}`, 'error');
+        toast.error({
+            title: 'Error',
+            message: `Tidak dapat memuat data stock out: ${error_message}`,
+            color: 'red'
+        });
     }
 };
 
@@ -446,17 +295,17 @@ const deleteStockOut = async (id) => {
         try {
             await stockOutStore.deleteStockOut(id);
             loadLazyData(); // Muat ulang data
-            toast.fire({
+            toast.success({
                 title: 'Berhasil!',
-                text: 'Stock Out berhasil dihapus.',
-                icon: 'success'
+                message: 'Stock Out berhasil dihapus.',
+                color: 'green'
             });
 
         } catch (error) {
-            toast.fire({
+            toast.error({
                 title: 'Error',
-                text: error.message,
-                icon: 'error'
+                message: error.message,
+                color: 'red'
             });
         }
     }

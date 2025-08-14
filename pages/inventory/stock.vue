@@ -118,13 +118,13 @@
                                         {{ Math.floor(slotProps.data.quantity) }}
                                     </template>
                                 </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                <Column header="Actions" :exportable="false" style="min-width:8rem" v-if="userHasRole('superadmin')">
                                     <template #body="slotProps">
                                         <div class="d-inline-block">
                                             <a href="javascript:;" class="btn btn-sm btn-text-secondary rounded-pill btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-fill"></i>
                                             </a>
                                             <ul class="dropdown-menu">
-                                                <li v-if="userHasRole('superadmin') || userHasPermission('delete_stock')">
+                                                <li>
                                                     <a class="dropdown-item text-danger" href="javascript:void(0)" @click="deleteStockIn(slotProps.data.id)">
                                                         <i class="ri-delete-bin-7-line me-2"></i> Hapus
                                                     </a>

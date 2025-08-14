@@ -951,8 +951,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
       try {
           const token = localStorage.getItem('token');
 
-          console.log(`🔍 Calling deliverAllItems for SO: ${salesOrderId}`);
-
           const response = await fetch($api.deliverAllSalesOrderItems(salesOrderId), {
               method: 'POST',
               headers: {
@@ -969,7 +967,6 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           }
 
           const result = await response.json();
-          console.log(`✅ Deliver All Items successful:`, result);
 
           const toast = useToast();
           toast.success({

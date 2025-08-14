@@ -613,7 +613,6 @@ onMounted(async () => {
     // Load quotations secara terpisah
     try {
         await quotationStore.fetchQuotations();
-        console.log('✅ Quotations loaded:', quotations.value);
     } catch (error) {
         console.error('❌ Error loading quotations:', error);
     }

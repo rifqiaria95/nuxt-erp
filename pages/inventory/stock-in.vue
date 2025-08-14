@@ -244,13 +244,10 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '~/stores/user'
 import { useStockStore } from '~/stores/stockin'
 import { useWarehouseStore } from '~/stores/warehouse'
-import Modal from '~/components/modal/Modal.vue'
 import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
-import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
-import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissions } from '~/composables/usePermissions'
@@ -267,7 +264,7 @@ const userStore                 = useUserStore()
 const permissionStore           = usePermissionsStore()
 const stockInStore              = useStockStore()
 const warehouseStore            = useWarehouseStore()
-const { stockIns, totalRecords, stats, params, form, isEditMode, showModal, validationErrors } = storeToRefs(stockInStore)
+const { stockIns, totalRecords, stats, params, form, validationErrors } = storeToRefs(stockInStore)
 const { warehouse: warehouses } = storeToRefs(warehouseStore)
 const selectedStockIn           = ref(null);
 const loading                   = ref(false);
@@ -276,36 +273,12 @@ const router                    = useRouter()
 
 const { userHasPermission, userHasRole } = usePermissions();
 
-const userisSuperAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'superadmin') ?? false;
-});
-
-const userisAdmin = computed(() => {
-    return userStore.user?.roles?.some(role => role.name === 'admin') ?? false;
-});
-
 const status       = ref([
     { label: 'Draft', value: 'draft' },
     { label: 'Posted', value: 'posted' },
 ]);
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
-
-const modalTitle = computed(() => isEditMode.value ? 'Edit Stock In' : 'Tambah Stock In');
-const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data stock in di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan stock in baru.');
-
-// Fungsi untuk menangani event close dari modal
-watch(showModal, (newValue) => {
-    const modalEl = document.getElementById('Modal');
-    if (modalEl && window.bootstrap) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        if (newValue) {
-            modalInstance.show();
-        } else {
-            modalInstance.hide();
-        }
-    }
-});
 
 let searchDebounceTimer = null;
 watch(globalFilterValue, (newValue) => {
@@ -323,30 +296,6 @@ onBeforeUnmount(() => {
         clearTimeout(searchDebounceTimer);
     }
 });
-
-const handleSaveStockIn = async () => {
-    if (!form.value.noSi) {
-        toast('warning', 'No SI wajib diisi.');
-        return;
-    }
-
-    try {
-        await stockInStore.saveStockIn();
-        await stockInStore.fetchStockInsPaginated();
-        stockInStore.closeModal();
-        toast('success', `Stock In berhasil ${isEditMode.value ? 'diperbarui' : 'dibuat'}.`);
-    } catch (error) {
-        const errorData = error;
-        if (errorData.errors) {
-            stockInStore.validationErrors = Array.isArray(errorData.errors)
-                ? errorData.errors
-                : Object.values(errorData.errors).flat();
-            toast('error', 'Terdapat kesalahan validasi data.');
-        } else {
-            toast('error', errorData.message || `Gagal ${isEditMode.value ? 'memperbarui' : 'membuat'} stock in`);
-        }
-    }
-};
 
 const postStockIn = async (id) => {
     try {

@@ -64,18 +64,21 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title mb-0">Daftar Produk</h5>
+                            <h5 class="card-title mb-0">Produk yang Dikirim</h5>
+                            <p class="text-muted mb-0" style="font-size: 0.875rem;">
+                                Menampilkan hanya produk yang terkait dengan Stock Out ini
+                            </p>
                         </div>
                          <div class="card-datatable table-responsive py-3 px-3">
-                            <MyDataTable :data="selectedStockOut.salesOrder?.salesOrderItems || []" :loading="loading">
+                            <MyDataTable :data="selectedStockOut.stockOutDetails || []" :loading="loading">
                                 <Column field="product.name" header="Produk" :sortable="true"></Column>
                                 <Column field="description" header="Deskripsi" :sortable="true"></Column>
-                                <Column header="Dikirim / Dipesan" :sortable="false">
+                                <Column field="quantity" header="Quantity Stock Out" :sortable="true">
                                     <template #body="slotProps">
-                                        {{ (slotProps.data.deliveredQty !== null) ? String(slotProps.data.deliveredQty).replace(/\.00$/, '') : 0 }} / {{ (slotProps.data.quantity !== null) ? String(slotProps.data.quantity).replace(/\.00$/, '') : 0 }}
+                                        {{ slotProps.data.quantity || 0 }}
                                     </template>
                                 </Column>
-                                <Column field="unit.name" header="Satuan" :sortable="true"></Column>
+                                <Column field="product.unit.name" header="Satuan" :sortable="true"></Column>
                             </MyDataTable>
                         </div>
                     </div>
@@ -110,7 +113,7 @@ onMounted(async () => {
   if (stockOutId) {
     try {
       await stockOutStore.fetchStockOutById(stockOutId);
-      setDetailTitle('Stock Out', stockOut.value.noSo)
+      setDetailTitle('Stock Out', selectedStockOut.value?.noSo || 'Detail')
     } catch (e) {
       Swal.fire('Error', e.message || 'Gagal memuat detail stock out.', 'error');
     }
