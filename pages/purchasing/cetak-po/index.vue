@@ -10,7 +10,12 @@
          <div v-if="purchaseOrder.perusahaan" class="w-60">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
-              <img src="~/public/img/branding/andara.png" alt="logo" width="200">
+              <img 
+                  :src="getCompanyLogo(purchaseOrder.perusahaan.logoPerusahaan)" 
+                  alt="Logo Perusahaan" 
+                  style="width: 200px; object-fit: contain;" 
+                  @error="(e) => handleImageError(e, '/img/default-company-logo.png')"
+              />
             </span>
           </div>
           <h5 class="mb-2 text-primary fw-bold">{{ purchaseOrder.perusahaan.nmPerusahaan }}</h5>
@@ -212,9 +217,11 @@
   import { storeToRefs } from 'pinia';
   import { useRoute } from 'vue-router';
   import { useDynamicTitle } from '~/composables/useDynamicTitle'
-
+  import { useImageUrl } from '~/composables/useImageUrl'
+  
   // Composables
   const { setDetailTitle } = useDynamicTitle()
+  const { getCompanyLogo, handleImageError } = useImageUrl()
 
   const config             = useRuntimeConfig();
   const purchaseOrderStore = usePurchaseOrderStore();

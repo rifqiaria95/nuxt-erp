@@ -10,7 +10,7 @@
         <div v-if="stockTransfer.perusahaan">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
-              <img src="~/public/img/branding/andara.png" alt="logo" width="200">
+              <img src="{{ stockTransfer.perusahaan.logoPerusahaan }}" alt="logo" width="200">
             </span>
           </div>
           <p class="mb-1">{{ stockTransfer.perusahaan.alamatPerusahaan }}</p>

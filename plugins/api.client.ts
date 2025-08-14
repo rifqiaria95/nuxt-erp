@@ -90,6 +90,7 @@ export default defineNuxtPlugin(() => {
 
     // Sales Order Item
     salesOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/sales-order-item/updateStatusPartial/${id}`,
+    deliverAllSalesOrderItems: (id: number | string) => `${apiBase}/sales-order/deliverAllItems/${id}`,
 
     // Sales Return
     salesReturn          : () => `${apiBase}/sales-return`,

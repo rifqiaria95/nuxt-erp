@@ -77,6 +77,25 @@
                                         }}
                                     </template>
                                 </Column>
+                                <Column field="image" header="Gambar" :sortable="true">
+                                    <template #body="slotProps">
+                                        <div v-if="slotProps.data.product.image">
+                                            <img 
+                                                :src="getProductImage(slotProps.data.product.image)" 
+                                                alt="Gambar Produk" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;" 
+                                                @error="(e) => handleImageError(e, '/img/default-product-image.png')"
+                                            />
+                                        </div>
+                                        <div v-else>
+                                            <img 
+                                                src="/img/default-product-image.png" 
+                                                alt="Default Image" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;"
+                                            />
+                                        </div>
+                                    </template>
+                                </Column>
                                 <Column field="product.sku" header="Part Number" :sortable="true">
                                     <template #body="slotProps">
                                         {{ slotProps.data.product.sku }}
@@ -138,9 +157,11 @@ import MyDataTable from '~/components/table/MyDataTable.vue'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getProductImage, handleImageError } = useImageUrl()
 
 const { $api } = useNuxtApp()
 

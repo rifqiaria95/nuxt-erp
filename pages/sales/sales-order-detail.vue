@@ -83,6 +83,26 @@
                             </div>
                         </div>
                         <div class="table-responsive border rounded-4 border-bottom-0">
+                            <!-- ✅ TOMBOL DELIVER ALL -->
+                            <div v-if="showDeliverAllButton" class="p-3 bg-light border-bottom">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Deliver All Items</h6>
+                                        <small class="text-muted">
+                                            Total pending items: {{ totalPendingItems }} 
+                                            ({{ totalPendingQuantity }} units)
+                                        </small>
+                                    </div>
+                                    <button 
+                                        @click="deliverAllItems"
+                                        class="btn btn-success btn-sm"
+                                        :disabled="loading"
+                                    >
+                                        <i class="ri-truck-line me-2"></i>
+                                        Deliver All
+                                    </button>
+                                </div>
+                            </div>
                             <table class="table m-0">
                             <thead>
                                 <tr>
@@ -612,6 +632,72 @@ const totalBeforeTax = computed(() => {
     }
     return 0
 })
+
+const showDeliverAllButton = computed(() => {
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems) return false;
+    
+    // Hanya tampilkan jika status approved dan ada pending items
+    if (salesOrder.value.status == 'draft') return false;
+    
+    return salesOrder.value.salesOrderItems.some(item => {
+        if (isReturned(item)) return false; // Exclude returned items
+        return Math.floor(Number(item.deliveredQty) || 0) < Math.floor(Number(item.quantity) || 0);
+    });
+});
+
+const totalPendingItems = computed(() => {
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems) return 0;
+    return salesOrder.value.salesOrderItems.filter(item => {
+        if (isReturned(item)) return false; // Exclude returned items
+        return Math.floor(Number(item.deliveredQty) || 0) < Math.floor(Number(item.quantity) || 0);
+    }).length;
+});
+
+const totalPendingQuantity = computed(() => {
+    if (!salesOrder.value || !salesOrder.value.salesOrderItems) return 0;
+    return salesOrder.value.salesOrderItems.filter(item => {
+        if (isReturned(item)) return false; // Exclude returned items
+        return Math.floor(Number(item.deliveredQty) || 0) < Math.floor(Number(item.quantity) || 0);
+    }).reduce((sum, item) => sum + (Math.floor(Number(item.quantity) || 0) - Math.floor(Number(item.deliveredQty) || 0)), 0);
+});
+
+const deliverAllItems = async () => {
+    if (loading.value) return;
+
+    const confirm = await Swal.fire({
+        title: 'Confirm Deliver All',
+        text: `Are you sure you want to deliver all ${totalPendingQuantity.value} units of ${totalPendingItems.value} items? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Yes, Deliver All',
+        cancelButtonText: 'Cancel',
+    });
+
+    if (confirm.isConfirmed) {
+        try {
+            loading.value = true;
+            await salesOrderStore.deliverAllItems(salesOrder.value.id);
+            toast.success({
+                title: 'Deliver All Successful',
+                message: `All ${totalPendingQuantity.value} units of ${totalPendingItems.value} items have been delivered.`,
+                color: 'green'
+            });
+            await refreshSalesOrderDetails();
+            checkAllItemsStatus();
+        } catch (error) {
+            console.error('Failed to deliver all items:', error);
+            toast.error({
+                title: 'Deliver All Failed',
+                message: `Failed to deliver all items. ${error.message || 'Silakan coba lagi.'}`,
+                color: 'red'
+            });
+        } finally {
+            loading.value = false;
+        }
+    }
+};
 
 onMounted(async () => {
     await refreshSalesOrderDetails()
