@@ -201,8 +201,21 @@
                                 <Column field="id" header="#" :sortable="true"></Column> 
                                 <Column field="logo" header="Logo" :sortable="false">
                                     <template #body="slotProps">
-                                        <img v-if="slotProps.data.logo_url" :src="slotProps.data.logo_url" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
-                                        <span v-else class="text-muted">No Logo</span>
+                                        <div v-if="slotProps.data.logo">
+                                            <img 
+                                                :src="getVendorLogo(slotProps.data.logo)" 
+                                                alt="Logo Vendor" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;" 
+                                                @error="(e) => handleImageError(e, '/img/default-vendor-logo.png')"
+                                            />
+                                        </div>
+                                        <div v-else>
+                                            <img 
+                                                src="/img/default-vendor-logo.png" 
+                                                alt="Default Logo" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;"
+                                            />
+                                        </div>
                                     </template>
                                 </Column>
                                 <Column field="name" header="Nama Vendor" :sortable="true"></Column>
@@ -239,9 +252,20 @@
                                         type="file" 
                                         class="form-control" 
                                         @change="onLogoChange"
+                                        accept="image/*"
                                     >
                                     <label>Logo Vendor</label>
-                                    <img v-if="logoPreview" :src="logoPreview" alt="Preview" class="mt-2" style="max-height: 100px;" />
+                                    
+                                    <div v-if="form.logoPreview" class="mt-2">
+                                        <img 
+                                            :src="form.logoPreview" 
+                                            alt="Logo Preview" 
+                                            class="logo-preview"
+                                            style="height: 60px; max-width: 120px; object-fit: contain; border: 2px solid #ddd; border-radius: 8px;"
+                                            @error="(e) => handleImageError(e, '/img/default-vendor-logo.png')"
+                                        />
+                                        <a :href="form.logoPreview" target="_blank" rel="noopener noreferrer" class="d-block mt-1">Lihat Logo</a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -334,9 +358,11 @@ import { usePermissions } from '~/composables/usePermissions'
 import { usePermissionsStore } from '~/stores/permissions'
 import { useUserStore } from '~/stores/user'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getVendorLogo, handleImageError } = useImageUrl()
 
 const { userHasPermission, userHasRole } = usePermissions();
 
@@ -347,7 +373,7 @@ const userStore = useUserStore()
 
 const myDataTableRef = ref(null)
 const globalFilterValue = ref('')
-const logoPreview = ref(null)
+
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 const modalTitle = computed(() => isEditMode.value ? 'Edit Vendor' : 'Tambah Vendor');
@@ -368,11 +394,6 @@ onMounted(() => {
 watch(showModal, (newValue) => {
     if (newValue) {
         modalInstance?.show()
-        if (isEditMode.value && form.value.logo_url) {
-            logoPreview.value = form.value.logo_url;
-        } else {
-            logoPreview.value = null;
-        }
     } else {
         modalInstance?.hide()
     }
@@ -398,11 +419,18 @@ const exportData = (format) => {
 function onLogoChange(e) {
   const file = e.target.files[0];
   if (file) {
-    form.value.logo = file;
-    logoPreview.value = URL.createObjectURL(file);
-  } else {
-    form.value.logo = null;
-    logoPreview.value = null;
+    vendorStore.handleLogoChange(file);
   }
 }
 </script>
+
+<style scoped>
+    .logo-preview {
+        transition: all 0.3s ease;
+    }
+
+    .logo-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { apiFetch } from '~/utils/apiFetch'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
+import { useImageUrl } from '~/composables/useImageUrl'
 import { useUserStore } from '~/stores/user'
 import type { Vendor } from './vendor'
 import type { User } from './userManagement'
@@ -664,6 +665,14 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
 
             this.form = formData;
 
+            // Set attachment preview jika ada
+            if (purchaseOrderData.attachment) {
+                const { getAttachmentUrl } = useImageUrl();
+                this.form.attachmentPreview = getAttachmentUrl(purchaseOrderData.attachment);
+            } else {
+                this.form.attachmentPreview = '';
+            }
+
             // Pastikan purchaseOrderItems ada
             if (!this.form.purchaseOrderItems || this.form.purchaseOrderItems.length === 0) {
                 this.form.purchaseOrderItems = [];
@@ -708,6 +717,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             taxPercent: 0, 
             description: '',
             attachment: null, 
+            attachmentPreview: '',
             status: 'draft',
             poType: 'internal',
             purchaseOrderItems: [],

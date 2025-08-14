@@ -98,16 +98,35 @@
                                 currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                                 >
                                 <Column field="id_pegawai" header="#" :sortable="true" style="width:5%"></Column> 
-                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:20%"></Column>
-                                <Column field="email" sortField="users.email" header="Email" :sortable="true" style="width:20%"></Column>
-                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:15%"></Column>
+                                <Column field="avatar" header="Avatar" :sortable="true" style="width:8%">
+                                    <template #body="slotProps">
+                                        <div v-if="slotProps.data.avatar">
+                                            <img 
+                                                :src="getUserAvatar(slotProps.data.avatar)" 
+                                                alt="Avatar Pegawai" 
+                                                style="height: 40px; width: 40px; object-fit: cover; border-radius: 50%;" 
+                                                @error="(e) => handleImageError(e, '/img/default-avatar.png')"
+                                            />
+                                        </div>
+                                        <div v-else>
+                                            <img 
+                                                src="/img/default-avatar.png" 
+                                                alt="Default Avatar" 
+                                                style="height: 40px; width: 40px; object-fit: cover; border-radius: 50%;"
+                                            />
+                                        </div>
+                                    </template>
+                                </Column>
+                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:17%"></Column>
+                                <Column field="email" sortField="users.email" header="Email" :sortable="true" style="width:17%"></Column>
+                                <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:12%"></Column>
                                 <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
                                         {{ slotProps.data.tgl_lahir_pegawai ? new Date(slotProps.data.tgl_lahir_pegawai).toLocaleDateString() : '-' }}
                                     </template>
                                 </Column>
-                                <Column field="alamat_pegawai" header="Alamat" :sortable="true" style="width:20%"></Column>
-                                <Column field="status_pegawai" header="Status" :sortable="true" style="width:10%">
+                                <Column field="alamat_pegawai" header="Alamat" :sortable="true" style="width:18%"></Column>
+                                <Column field="status_pegawai" header="Status" :sortable="true" style="width:8%">
                                     <template #body="slotProps">
                                         <span :class="getStatusBadge(slotProps.data.status_pegawai).class">
                                             {{ getStatusBadge(slotProps.data.status_pegawai).text }}
@@ -262,10 +281,17 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="file" @change="onAvatarChange" class="form-control" id="avatarFile" />
+                                            <input type="file" @change="onAvatarChange" class="form-control" id="avatarFile" accept="image/*" />
                                             <label for="avatarFile">Avatar</label>
                                             
                                             <div v-if="form.avatarPreview" class="mt-2">
+                                                <img 
+                                                    :src="form.avatarPreview" 
+                                                    alt="Avatar Preview" 
+                                                    class="avatar-preview"
+                                                    style="height: 60px; width: 60px; object-fit: cover; border-radius: 50%; border: 2px solid #ddd;"
+                                                    @error="(e) => handleImageError(e, '/img/default-avatar.png')"
+                                                />
                                                 <a :href="form.avatarPreview" target="_blank" rel="noopener noreferrer" class="d-block mt-1">Lihat Avatar</a>
                                             </div>
                                         </div>
@@ -481,14 +507,17 @@ import { useDepartemenStore } from '~/stores/departemen'
 import { useCabangStore } from '~/stores/cabang'
 import { useJabatanStore } from '~/stores/jabatan'
 import { usePermissionsStore } from '~/stores/permissions'
+import { useUserStore } from '~/stores/user'
 import { usePermissions } from '~/composables/usePermissions'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getUserAvatar, handleImageError } = useImageUrl()
 
 // Import komponen
 import CardBox from '~/components/cards/Cards.vue'
@@ -603,8 +632,7 @@ const filteredDepartemen = computed(() => {
 const onAvatarChange = (e) => {
   const file = e.target.files[0];
   if (file) {
-    form.value.avatar = file;
-    form.value.avatarPreview = URL.createObjectURL(file);
+    pegawaiStore.handleAvatarChange(file);
   }
 }
 
@@ -680,5 +708,14 @@ const getStatusBadge = (status) => {
     :deep(.select-status-pegawai .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
+    }
+
+    .avatar-preview {
+        transition: all 0.3s ease;
+    }
+
+    .avatar-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
  </style>

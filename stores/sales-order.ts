@@ -2,6 +2,7 @@ import { defineStore, storeToRefs } from 'pinia'
 import { apiFetch } from '~/utils/apiFetch'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
+import { useImageUrl } from '~/composables/useImageUrl'
 import { useUserStore } from '~/stores/user'
 import { useStocksStore } from '~/stores/stocks'
 import { useProductStore } from '~/stores/product'
@@ -813,6 +814,15 @@ export const useSalesOrderStore = defineStore('salesOrder', {
           });
 
           this.form = formData;
+          
+          // Set attachment preview jika ada
+          if (fullData.attachment) {
+              const { getAttachmentUrl } = useImageUrl();
+              this.form.attachmentPreview = getAttachmentUrl(fullData.attachment);
+          } else {
+              this.form.attachmentPreview = '';
+          }
+          
           // Selalu set source, baik untuk edit maupun create
           if (source) {
             this.form.source = source;
@@ -870,6 +880,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         taxPercent: 0,
         description: '',
         attachment: null,
+        attachmentPreview: '',
         status: 'draft',
         paymentMethod: null,
         source: source,

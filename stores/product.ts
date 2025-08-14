@@ -4,6 +4,7 @@ import Swal from 'sweetalert2'
 import type { Category } from './kategori'
 import type { Customer } from './customer'
 import type { Unit } from './unit'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 export interface Stock {
   id: string
@@ -260,6 +261,14 @@ export const useProductStore = defineStore('product', {
               ...product,
               stockMin: product.stockMin ? Math.round(product.stockMin) : 0,
             };
+            
+            // Set image preview jika ada
+            if (product.image) {
+                const { getProductImage } = useImageUrl();
+                this.form.imagePreview = getProductImage(product.image);
+            } else {
+                this.form.imagePreview = '';
+            }
         } else {
             this.form = {
                 name: '',
@@ -270,6 +279,7 @@ export const useProductStore = defineStore('product', {
                 priceSell: 0,
                 isService: false,
                 image: '',
+                imagePreview: '',
                 categoryId: undefined,
                 kondisi: 'baru',
                 berat: 0,
@@ -281,7 +291,20 @@ export const useProductStore = defineStore('product', {
     closeModal() {
         this.showModal = false;
         this.isEditMode = false;
-        this.form = {};
+        this.form = {
+            name: '',
+            sku: '',
+            unitId: undefined,
+            stockMin: 0,
+            priceBuy: 0,
+            priceSell: 0,
+            isService: false,
+            image: '',
+            imagePreview: '',
+            categoryId: undefined,
+            kondisi: 'baru',
+            berat: 0,
+        };
         this.validationErrors = [];
     },
 
@@ -311,7 +334,45 @@ export const useProductStore = defineStore('product', {
 
     handleImageChange(file: File) {
         if (file) {
+            // Validasi file tidak kosong
+            if (!file.size || file.size === 0) {
+                Swal.fire('Error', 'File gambar kosong atau tidak valid', 'error');
+                return;
+            }
+
+            // Validasi file adalah image
+            const fileType = file.type || '';
+            const fileExtension = file.name?.split('.').pop()?.toLowerCase() || '';
+
+            const allowedMimeTypes = [
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/x-png',
+                'image/gif',
+                'image/webp',
+                'image/svg+xml'
+            ];
+
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+            const isValidMimeType = allowedMimeTypes.includes(fileType);
+            const isValidExtension = allowedExtensions.includes(fileExtension);
+
+            if (!isValidMimeType && !isValidExtension) {
+                Swal.fire('Error', `File harus berupa gambar (JPEG, PNG, GIF, WebP). Detected: MIME=${fileType}, Ext=${fileExtension}`, 'error');
+                return;
+            }
+
+            // Validasi file size
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                Swal.fire('Error', 'Ukuran file terlalu besar (maksimal 5MB)', 'error');
+                return;
+            }
+
             this.form.image = file;
+            this.form.imagePreview = URL.createObjectURL(file);
         }
     }
   }

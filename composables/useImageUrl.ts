@@ -41,6 +41,83 @@ export const useImageUrl = () => {
   }
 
   /**
+   * Get image URL untuk company logo
+   */
+  const getCompanyLogo = (logoPath: string | null | undefined) => {
+    return getImageUrl(logoPath, '/img/default-company-logo.png')
+  }
+
+  /**
+   * Get image URL untuk vendor logo
+   */
+  const getVendorLogo = (logoPath: string | null | undefined) => {
+    return getImageUrl(logoPath, '/img/default-vendor-logo.png')
+  }
+
+  /**
+   * Get file URL untuk attachment (PDF, Excel, Image)
+   */
+  const getAttachmentUrl = (filePath: string | null | undefined) => {
+    return getImageUrl(filePath, '/img/default-file.png')
+  }
+
+  /**
+   * Get file icon berdasarkan extension
+   */
+  const getFileIcon = (fileName: string | null | undefined): string => {
+    if (!fileName) return 'ri-file-line'
+    
+    const extension = fileName.split('.').pop()?.toLowerCase() || ''
+    
+    switch (extension) {
+      case 'pdf':
+        return 'ri-file-pdf-line'
+      case 'xlsx':
+      case 'xls':
+        return 'ri-file-excel-line'
+      case 'docx':
+      case 'doc':
+        return 'ri-file-word-line'
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+      case 'svg':
+        return 'ri-image-line'
+      default:
+        return 'ri-file-line'
+    }
+  }
+
+  /**
+   * Check apakah file adalah image
+   */
+  const isImageFile = (fileName: string | null | undefined): boolean => {
+    if (!fileName) return false
+    const extension = fileName.split('.').pop()?.toLowerCase() || ''
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)
+  }
+
+  /**
+   * Check apakah file adalah PDF
+   */
+  const isPdfFile = (fileName: string | null | undefined): boolean => {
+    if (!fileName) return false
+    const extension = fileName.split('.').pop()?.toLowerCase() || ''
+    return extension === 'pdf'
+  }
+
+  /**
+   * Check apakah file adalah Excel
+   */
+  const isExcelFile = (fileName: string | null | undefined): boolean => {
+    if (!fileName) return false
+    const extension = fileName.split('.').pop()?.toLowerCase() || ''
+    return ['xlsx', 'xls'].includes(extension)
+  }
+
+  /**
    * Handle image error dengan fallback
    */
   const handleImageError = (event: Event, fallbackSrc: string = '/img/default-avatar.png') => {
@@ -70,13 +147,7 @@ export const useImageUrl = () => {
     }
   }
 
-  /**
-   * Check apakah file adalah image
-   */
-  const isImageFile = (url: string): boolean => {
-    const ext = getFileExtension(url)
-    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)
-  }
+
 
   /**
    * Test image URL accessibility
@@ -96,10 +167,16 @@ export const useImageUrl = () => {
     getCustomerLogo,
     getProductImage,
     getUserAvatar,
+    getCompanyLogo,
+    getVendorLogo,
+    getAttachmentUrl,
+    getFileIcon,
     handleImageError,
     isS3Url,
     getFileExtension,
     isImageFile,
+    isPdfFile,
+    isExcelFile,
     testImageUrl
   }
 }

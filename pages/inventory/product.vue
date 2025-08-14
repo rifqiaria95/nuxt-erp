@@ -95,10 +95,19 @@
                                         <Column field="image" header="Gambar" :sortable="true">
                                             <template #body="slotProps">
                                                 <div v-if="slotProps.data.image">
-                                                    <img :src="getLogoUrl(slotProps.data.image)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                                    <img 
+                                                        :src="getProductImage(slotProps.data.image)" 
+                                                        alt="Gambar Produk" 
+                                                        style="height: 40px; max-width: 80px; object-fit: contain;" 
+                                                        @error="(e) => handleImageError(e, '/img/default-product-image.png')"
+                                                    />
                                                 </div>
                                                 <div v-else>
-                                                    <span class="text-muted">Tidak ada image</span>
+                                                    <img 
+                                                        src="/img/default-product-image.png" 
+                                                        alt="Default Image" 
+                                                        style="height: 40px; max-width: 80px; object-fit: contain;"
+                                                    />
                                                 </div>
                                             </template>
                                         </Column>
@@ -304,9 +313,21 @@
                                         type="file" 
                                         class="form-control"
                                         @change="onImageChange"
+                                        accept="image/*"
                                         placeholder="Masukkan image product"
                                     >
                                     <label>Gambar</label>
+                                    
+                                    <div v-if="form.imagePreview" class="mt-2">
+                                        <img 
+                                            :src="form.imagePreview" 
+                                            alt="Image Preview" 
+                                            class="image-preview"
+                                            style="height: 60px; max-width: 120px; object-fit: contain; border: 2px solid #ddd; border-radius: 8px;"
+                                            @error="(e) => handleImageError(e, '/img/default-product-image.png')"
+                                        />
+                                        <a :href="form.imagePreview" target="_blank" rel="noopener noreferrer" class="d-block mt-1">Lihat Gambar</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -346,13 +367,14 @@ import { usePermissions } from '~/composables/usePermissions'
 import { usePermissionsStore } from '~/stores/permissions'
 import { useUserStore } from '~/stores/user'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getProductImage, handleImageError } = useImageUrl()
 
 const { userHasPermission, userHasRole } = usePermissions();
 
-const config   = useRuntimeConfig();
 const formatRupiah = useFormatRupiah()
 
 const myDataTableRef    = ref(null)
@@ -394,20 +416,7 @@ const kondisiOptions = [
     { label: 'Rusak', value: 'rusak' }, { label: 'Servis', value: 'servis' }
 ];
 
-const getLogoUrl = (imagePath) => {
-    if (!imagePath || typeof imagePath !== 'string') {
-        return null;
-    }
-    if (imagePath.startsWith('http')) {
-        return imagePath;
-    }
-    if (!config.public.apiBase) {
-        return imagePath;
-    }
-    const origin = new URL(config.public.apiBase).origin;
-    const imageUrl = `${origin}/${imagePath}`;
-    return imageUrl;
-};
+const config = useRuntimeConfig();
 
 
 let modalInstance = null
@@ -458,7 +467,7 @@ const exportData = (format) => {
 function onImageChange(e) {
   const file = e.target.files[0];
   if (file) {
-    productStore.handleImageChange(file)
+    productStore.handleImageChange(file);
   }
 }
 
@@ -481,5 +490,14 @@ const getStatusBadge = (status) => {
     :deep(.select-kondisi .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
+    }
+    
+    .image-preview {
+        transition: all 0.3s ease;
+    }
+
+    .image-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 </style>

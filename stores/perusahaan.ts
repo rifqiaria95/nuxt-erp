@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 export interface Perusahaan {
   id: number
@@ -55,6 +56,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
   }),
   actions: {
     async fetchPerusahaans() {
+      const toast = useToast();
       this.loading = true
       const { $api } = useNuxtApp()
       try {
@@ -75,12 +77,21 @@ export const usePerusahaanStore = defineStore('perusahaan', {
           },
           credentials: 'include'
         })
+        
+        if (!response.ok) throw new Error('Gagal mengambil data perusahaan')
+        
         const result = await response.json()
         this.perusahaans = result.data
         this.totalRecords = result.meta.total
-      } catch (error) {
+        console.log('Perusahaans loaded:', this.perusahaans.length, this.perusahaans);
+      } catch (error: any) {
         console.error('Gagal mengambil data perusahaan:', error)
-        Swal.fire('Error', 'Gagal memuat data perusahaan', 'error')
+        this.error = error.message;
+        toast.error({
+          title: 'Error',
+          message: `Tidak dapat memuat data perusahaan: ${error.message}`,
+          color: 'red'
+        });
       } finally {
         this.loading = false
       }
@@ -187,6 +198,15 @@ export const usePerusahaanStore = defineStore('perusahaan', {
         this.validationErrors = [];
         if (perusahaan) {
             this.form = { ...perusahaan };
+            
+            // Set logo preview jika ada
+            if (perusahaan.logoPerusahaan) {
+                const { getCompanyLogo } = useImageUrl();
+                this.form.logoPreview = getCompanyLogo(perusahaan.logoPerusahaan);
+            } else {
+                this.form.logoPreview = '';
+            }
+            this.form.logoPerusahaan = null; // Reset file input
         } else {
             this.form = {
                 kodePerusahaan: '',
@@ -196,6 +216,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
                 tlpPerusahaan: '',
                 emailPerusahaan: '',
                 logoPerusahaan: null,
+                logoPreview: '',
             };
         }
         this.showModal = true;
@@ -203,7 +224,16 @@ export const usePerusahaanStore = defineStore('perusahaan', {
     closeModal() {
         this.showModal = false;
         this.isEditMode = false;
-        this.form = {};
+        this.form = {
+            kodePerusahaan: '',
+            nmPerusahaan: '',
+            npwpPerusahaan: '',
+            alamatPerusahaan: '',
+            tlpPerusahaan: '',
+            emailPerusahaan: '',
+            logoPerusahaan: null,
+            logoPreview: '',
+        };
         this.validationErrors = [];
         this.selectedPerusahaan = null;
     },
@@ -222,8 +252,48 @@ export const usePerusahaanStore = defineStore('perusahaan', {
         this.params.first = 0;
         this.fetchPerusahaans();
     },
-    setLogo(file: File) {
-        this.form.logoPerusahaan = file;
+    handleLogoChange(file: File) {
+        if (file) {
+            // Validasi file tidak kosong
+            if (!file.size || file.size === 0) {
+                Swal.fire('Error', 'File logo kosong atau tidak valid', 'error');
+                return;
+            }
+
+            // Validasi file adalah image
+            const fileType = file.type || '';
+            const fileExtension = file.name?.split('.').pop()?.toLowerCase() || '';
+
+            const allowedMimeTypes = [
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/x-png',
+                'image/gif',
+                'image/webp',
+                'image/svg+xml'
+            ];
+
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+            const isValidMimeType = allowedMimeTypes.includes(fileType);
+            const isValidExtension = allowedExtensions.includes(fileExtension);
+
+            if (!isValidMimeType && !isValidExtension) {
+                Swal.fire('Error', `File harus berupa gambar (JPEG, PNG, GIF, WebP). Detected: MIME=${fileType}, Ext=${fileExtension}`, 'error');
+                return;
+            }
+
+            // Validasi file size
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                Swal.fire('Error', 'Ukuran file terlalu besar (maksimal 5MB)', 'error');
+                return;
+            }
+
+            this.form.logoPerusahaan = file;
+            this.form.logoPreview = URL.createObjectURL(file);
+        }
     }
   },
 })

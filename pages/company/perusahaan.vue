@@ -204,10 +204,19 @@
                                 <Column field="logoPerusahaan" header="Logo" :sortable="true">
                                     <template #body="slotProps">
                                         <div v-if="slotProps.data.logoPerusahaan">
-                                            <img :src="getLogoUrl(slotProps.data.logoPerusahaan)" alt="Logo" style="height: 40px; max-width: 80px; object-fit: contain;" />
+                                            <img 
+                                                :src="getCompanyLogo(slotProps.data.logoPerusahaan)" 
+                                                alt="Logo Perusahaan" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;" 
+                                                @error="(e) => handleImageError(e, '/img/default-company-logo.png')"
+                                            />
                                         </div>
                                         <div v-else>
-                                            <span class="text-muted">Tidak ada logo</span>
+                                            <img 
+                                                src="/img/default-company-logo.png" 
+                                                alt="Default Logo" 
+                                                style="height: 40px; max-width: 80px; object-fit: contain;"
+                                            />
                                         </div>
                                     </template>
                                 </Column>
@@ -263,9 +272,21 @@
                                         class="form-control" 
                                         id="logoPerusahaan" 
                                         @change="onLogoChange"
+                                        accept="image/*"
                                         placeholder="Masukkan logo perusahaan"
                                     >
                                     <label for="logoPerusahaan">Logo Perusahaan</label>
+                                    
+                                    <div v-if="form.logoPreview" class="mt-2">
+                                        <img 
+                                            :src="form.logoPreview" 
+                                            alt="Logo Preview" 
+                                            class="logo-preview"
+                                            style="height: 60px; max-width: 120px; object-fit: contain; border: 2px solid #ddd; border-radius: 8px;"
+                                            @error="(e) => handleImageError(e, '/img/default-company-logo.png')"
+                                        />
+                                        <a :href="form.logoPreview" target="_blank" rel="noopener noreferrer" class="d-block mt-1">Lihat Logo</a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -376,25 +397,13 @@ import Column from 'primevue/column'
 import { useDebounceFn } from '@vueuse/core'
 import { useUserStore } from '~/stores/user'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getCompanyLogo, handleImageError } = useImageUrl()
 
 const config = useRuntimeConfig();
-const getLogoUrl = (logoPath) => {
-    if (!logoPath || typeof logoPath !== 'string') {
-        return null;
-    }
-    if (logoPath.startsWith('http')) {
-        return logoPath;
-    }
-    if (!config.public.apiBase) {
-        return logoPath;
-    }
-    const origin = new URL(config.public.apiBase).origin;
-    const imageUrl = `${origin}/${logoPath}`;
-    return imageUrl;
-};
 
 const myDataTableRef = ref(null)
 const perusahaanStore = usePerusahaanStore()
@@ -449,7 +458,7 @@ const onSort = (event) => perusahaanStore.setSort(event);
 const onLogoChange = (e) => {
   const file = e.target.files[0];
   if (file) {
-    perusahaanStore.setLogo(file);
+    perusahaanStore.handleLogoChange(file);
   }
 }
 
@@ -460,3 +469,14 @@ const exportData = (format) => {
 };
 
 </script>
+
+<style scoped>
+    .logo-preview {
+        transition: all 0.3s ease;
+    }
+
+    .logo-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>

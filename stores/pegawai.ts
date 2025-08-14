@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
 import { useDepartemenStore } from '~/stores/departemen'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 export interface Pegawai {
     id: number
@@ -53,6 +53,7 @@ export const usePegawaiStore = defineStore('pegawai', {
     }),
     actions: {
         async fetchPegawais() {
+            const toast = useToast();
             this.loading = true
             const { $api } = useNuxtApp()
             try {
@@ -90,13 +91,18 @@ export const usePegawaiStore = defineStore('pegawai', {
             } catch (error: any) {
                 this.pegawais = [];
                 this.totalRecords = 0;
-                Swal.fire('Error', `Tidak dapat memuat data pegawai: ${error.message}`, 'error');
+                toast.error({
+                    title: 'Error',
+                    message: `Tidak dapat memuat data pegawai: ${error.message}`,
+                    color: 'red'
+                });
             } finally {
                 this.loading = false
             }
         },
 
         async fetchStats() {
+            const toast = useToast();
             const { $api } = useNuxtApp()
             const defaultStats = { total: undefined, pkwtt: undefined, pkwt: undefined, resign: undefined, outsource: undefined };
             try {
@@ -122,6 +128,7 @@ export const usePegawaiStore = defineStore('pegawai', {
         },
 
         async savePegawai() {
+            const toast = useToast();
             this.loading = true;
             this.validationErrors = [];
             const { $api } = useNuxtApp()
@@ -174,25 +181,45 @@ export const usePegawaiStore = defineStore('pegawai', {
                     this.closeModal();
                     await this.fetchPegawais();
                     await this.fetchStats();
-                    Swal.fire('Berhasil!', `Pegawai berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`, 'success');
+                    toast.success({
+                        title: 'Success',
+                        message: `Pegawai berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`,
+                        color: 'green'
+                    });
                 } else {
                     const errorData = await response.json();
-                    if (errorData.errors) {
-                        this.validationErrors = Object.values(errorData.errors).flat();
+                    if (response.status === 422) {
+                        if (errorData.errors && typeof errorData.errors === 'object') {
+                            this.validationErrors = Object.values(errorData.errors).flat();
+                        } else {
+                            this.validationErrors = [];
+                        }
+                        toast.error({
+                            title: 'Error',
+                            message: 'Gagal Validasi',
+                            color: 'red'
+                        });
                     } else {
-                        Swal.fire('Gagal', errorData.message || 'Operasi gagal', 'error');
+                        throw new Error(errorData.message || 'Gagal menyimpan data pegawai');
                     }
                 }
             } catch (error: any) {
-                Swal.fire('Error', error.message, 'error');
-                this.validationErrors = [error.message];
+                this.validationErrors = [];
+                toast.error({
+                    title: 'Error',
+                    message: error.message || 'Operasi gagal',
+                    color: 'red'
+                });
             } finally {
                 this.loading = false;
             }
         },
 
         async deletePegawai(id: number) {
+            const toast = useToast();
             const { $api } = useNuxtApp()
+            
+            const { default: Swal } = await import('sweetalert2');
             const result = await Swal.fire({
                 title: 'Anda yakin?',
                 text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -224,9 +251,17 @@ export const usePegawaiStore = defineStore('pegawai', {
 
                     await this.fetchPegawais();
                     await this.fetchStats();
-                    Swal.fire('Dihapus!', 'Pegawai berhasil dihapus.', 'success');
+                    toast.success({
+                        title: 'Success',
+                        message: 'Pegawai berhasil dihapus.',
+                        color: 'green'
+                    });
                 } catch (error: any) {
-                    Swal.fire('Error', error.message, 'error');
+                    toast.error({
+                        title: 'Error',
+                        message: error.message || 'Gagal menghapus pegawai',
+                        color: 'red'
+                    });
                 }
             }
         },
@@ -272,10 +307,8 @@ export const usePegawaiStore = defineStore('pegawai', {
                 }
 
                 if (pegawaiData.avatar) {
-                    const config = useRuntimeConfig();
-                    const BASE_URL = config.public.apiBase ? config.public.apiBase.replace('/api', '/') : 'http://localhost:3333/';
-                    const avatarPathClean = pegawaiData.avatar.startsWith('/') ? pegawaiData.avatar.slice(1) : pegawaiData.avatar;
-                    this.form.avatarPreview = pegawaiData.avatar.startsWith('http') ? pegawaiData.avatar : BASE_URL + avatarPathClean;
+                    const { getUserAvatar } = useImageUrl();
+                    this.form.avatarPreview = getUserAvatar(pegawaiData.avatar);
                 } else {
                     this.form.avatarPreview = '';
                 }
@@ -325,6 +358,62 @@ export const usePegawaiStore = defineStore('pegawai', {
             this.params.search = value;
             this.params.first = 0;
             this.fetchPegawais();
+        },
+
+        handleAvatarChange(file: File) {
+            const toast = useToast();
+            if (file) {
+                if (!file.size || file.size === 0) {
+                    toast.error({
+                        title: 'Error',
+                        message: 'File avatar kosong atau tidak valid',
+                        color: 'red'
+                    });
+                    return;
+                }
+
+                // Validasi file adalah image
+                const fileType = file.type || '';
+                const fileExtension = file.name?.split('.').pop()?.toLowerCase() || '';
+
+                const allowedMimeTypes = [
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/png',
+                    'image/x-png',
+                    'image/gif',
+                    'image/webp',
+                    'image/svg+xml'
+                ];
+
+                const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+                const isValidMimeType = allowedMimeTypes.includes(fileType);
+                const isValidExtension = allowedExtensions.includes(fileExtension);
+
+                if (!isValidMimeType && !isValidExtension) {
+                    toast.error({
+                        title: 'Error',
+                        message: `File harus berupa gambar (JPEG, PNG, GIF, WebP). Detected: MIME=${fileType}, Ext=${fileExtension}`,
+                        color: 'red'
+                    });
+                    return;
+                }
+
+                // Validasi file size
+                const maxSize = 5 * 1024 * 1024; // 5MB
+                if (file.size > maxSize) {
+                    toast.error({
+                        title: 'Error',
+                        message: 'Ukuran file terlalu besar (maksimal 5MB)',
+                        color: 'red'
+                    });
+                    return;
+                }
+
+                this.form.avatar = file;
+                this.form.avatarPreview = URL.createObjectURL(file);
+            }
         }
     },
 })

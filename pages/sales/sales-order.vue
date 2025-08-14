@@ -188,12 +188,22 @@
                                     </Column>
                                     <Column field="perusahaan.nmPerusahaan" header="Perusahaan" :sortable="true"></Column>
                                     <Column field="cabang.nmCabang" header="Cabang" :sortable="true"></Column>
-                                    <Column field="attachment" header="Nama File" :sortable="true">
+                                    <Column field="attachment" header="Attachment" :sortable="true">
                                         <template #body="slotProps">
                                             <div v-if="slotProps.data.attachment">
-                                                <a :href="getAttachmentUrl(slotProps.data.attachment)" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #007bff;">
-                                                    {{ slotProps.data.attachment.split('/').pop() }}
-                                                </a>
+                                                <div class="d-flex align-items-center">
+                                                    <a 
+                                                        :href="getAttachmentUrl(slotProps.data.attachment)" 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer" 
+                                                        download
+                                                        class="badge rounded-pill bg-label-primary"
+                                                        style="text-decoration: none;"
+                                                    >
+                                                        <i class="ri-file-line me-2"></i>
+                                                        Download File
+                                                    </a>
+                                                </div>
                                             </div>
                                             <div v-else>
                                                 <span class="text-muted">Tidak ada file</span>
@@ -341,9 +351,28 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="file" @change="onFileChange" class="form-control">
-                                            <label>Attachment</label>
-                                            <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
+                                            <input 
+                                                type="file" 
+                                                @change="onFileChange" 
+                                                class="form-control"
+                                                accept=".pdf,.xlsx,.xls,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                                            >
+                                            <label>Attachment (PDF, Excel, Image)</label>
+                                            
+                                            <div v-if="form.attachmentPreview" class="mt-2">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i :class="getFileIcon(form.attachmentPreview)" style="font-size: 1.2rem; margin-right: 0.5rem;"></i>
+                                                    <a :href="form.attachmentPreview" target="_blank" rel="noopener noreferrer" class="d-block">Lihat Attachment</a>
+                                                </div>
+                                                <div v-if="isImageFile(form.attachmentPreview)" class="mt-2">
+                                                    <img 
+                                                        :src="form.attachmentPreview" 
+                                                        alt="Attachment Preview" 
+                                                        class="attachment-preview"
+                                                        style="height: 60px; max-width: 120px; object-fit: contain; border: 2px solid #ddd; border-radius: 8px;"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -449,9 +478,12 @@ import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
+import Swal from 'sweetalert2'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getAttachmentUrl, getFileIcon, isImageFile, isPdfFile, isExcelFile } = useImageUrl()
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -491,7 +523,6 @@ const filters = ref({
   search: '',
 });
 const globalFilterValue = ref('');
-const attachmentPreview = ref(null);
 
 // Table controls data
 const tableControls = ref({
@@ -526,12 +557,7 @@ const grandTotal = computed(() => {
   return totalAfterDiscount + taxAmount;
 });
 
-const getAttachmentUrl = (attachmentPath) => {
-    if (!attachmentPath || typeof attachmentPath !== 'string') return null;
-    if (attachmentPath.startsWith('http')) return attachmentPath;
-    const baseUrl = (config.public.apiBase || '').replace('/api', '');
-    return `${baseUrl}/${attachmentPath}`;
-};
+
 
 const paymentMethodOptions = [
     { label: 'Cash', value: 'cash' }, { label: 'Transfer', value: 'transfer' },
@@ -618,11 +644,11 @@ watch(showModal, (newValue) => {
         modalInstance?.show()
         if (isEditMode.value) {
             if (form.value.attachment_url) {
-                attachmentPreview.value = form.value.attachment_url
+                form.value.attachmentPreview = form.value.attachment_url
             } else if (form.value.attachment) {
-                attachmentPreview.value = getAttachmentUrl(form.value.attachment)
+                form.value.attachmentPreview = getAttachmentUrl(form.value.attachment)
             } else {
-                attachmentPreview.value = null
+                form.value.attachmentPreview = null
             }
             
             // Fetch stock for existing items
@@ -632,7 +658,7 @@ watch(showModal, (newValue) => {
                 });
             }
         } else {
-            attachmentPreview.value = null
+            form.value.attachmentPreview = null
         }
     } else {
         modalInstance?.hide()
@@ -774,16 +800,7 @@ const handleSubmit = () => {
     salesOrderStore.saveSalesOrder();
 };
 
-function onFileChange(e) {
-  const file = e.target.files[0];
-  if (file) {
-    form.value.attachment = file;
-    attachmentPreview.value = URL.createObjectURL(file);
-  } else {
-    form.value.attachment = null;
-    attachmentPreview.value = null;
-  }
-}
+
 
 const onProductChange = (index) => {
   const selectedProductId = form.value.salesOrderItems[index].productId;
@@ -873,6 +890,60 @@ const clearDateFilters = () => {
     filters.value.endDate = null;
     salesOrderStore.setFilters(filters.value);
 };
+
+function onFileChange(e) {
+  if (!form.value) return;
+  
+  const file = e.target.files[0];
+  if (file) {
+    // Validasi file tidak kosong
+    if (!file.size || file.size === 0) {
+      Swal.fire('Error', 'File attachment kosong atau tidak valid', 'error');
+      return;
+    }
+
+    // Validasi file type
+    const fileType = file.type || '';
+    const fileExtension = file.name?.split('.').pop()?.toLowerCase() || '';
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml'
+    ];
+
+    const allowedExtensions = ['pdf', 'xlsx', 'xls', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+    const isValidMimeType = allowedMimeTypes.includes(fileType);
+    const isValidExtension = allowedExtensions.includes(fileExtension);
+
+    if (!isValidMimeType && !isValidExtension) {
+      Swal.fire('Error', `File harus berupa PDF, Excel, atau gambar. Detected: MIME=${fileType}, Ext=${fileExtension}`, 'error');
+      return;
+    }
+
+    // Validasi file size (10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      Swal.fire('Error', 'Ukuran file terlalu besar (maksimal 10MB)', 'error');
+      return;
+    }
+
+    form.value.attachment = file;
+    form.value.attachmentPreview = URL.createObjectURL(file);
+  } else {
+    form.value.attachment = null;
+    form.value.attachmentPreview = null;
+  }
+}
 
 // Fungsi export PDF khusus untuk Sales Order
 const exportSalesOrderPDF = async (dataToExport) => {
@@ -1202,6 +1273,15 @@ const exportSalesOrderPDF = async (dataToExport) => {
 <style scoped>
     .v-select-style {
         min-height: 48px;
+    }
+    
+    .attachment-preview {
+        transition: all 0.3s ease;
+    }
+
+    .attachment-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
     :deep(.v-select-style .vs__dropdown-toggle),

@@ -72,13 +72,13 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <v-select v-model="filters.vendorId" :options="vendors || []" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
+                                    <v-select v-model="filters.vendorId" :options="vendors || []" :get-option-label="v => v.name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <v-select v-model="filters.poType" :options="poTypeOptions" label="label" :reduce="option => option.value" placeholder="Pilih Tipe PO" class="v-select-style"/>
+                                    <v-select v-model="filters.poType" :options="poTypeOptions" :get-option-label="option => option.label" :reduce="option => option.value" placeholder="Pilih Tipe PO" class="v-select-style"/>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <v-select v-model="filters.status" :options="statusOptions" label="label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
+                                    <v-select v-model="filters.status" :options="statusOptions" :get-option-label="option => option.label" :reduce="option => option.value" placeholder="Pilih Status" class="v-select-style"/>
                                 </div>
                             </div>
                         </div>
@@ -168,11 +168,19 @@
                                             {{ slotProps.data.cabang?.nmCabang || '-' }}
                                         </template>
                                     </Column>
-                                    <Column field="attachment" header="Nama File" :sortable="true">
+                                    <Column field="attachment" header="Attachment" :sortable="true">
                                         <template #body="slotProps">
                                             <div v-if="slotProps.data.attachment">
-                                                <a :href="getAttachmentUrl(slotProps.data.attachment)" target="_blank" rel="noopener noreferrer" style="text-decoration: underline; color: #007bff;">
-                                                    {{ slotProps.data.attachment.split('/').pop() }}
+                                                <a 
+                                                    :href="getAttachmentUrl(slotProps.data.attachment)" 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    download
+                                                    class="badge rounded-pill bg-label-primary"
+                                                    style="text-decoration: none;"
+                                                >
+                                                    <i class="ri-file-line me-2"></i>
+                                                    Download File
                                                 </a>
                                             </div>
                                             <div v-else>
@@ -299,7 +307,16 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <v-select v-model="form.vendorId" :options="vendors || []" label="name" :reduce="v => v.id" placeholder="Pilih Vendor" class="v-select-style"/>
+                                        <v-select 
+                                            v-model="form.vendorId" 
+                                            :options="vendors || []" 
+                                            :get-option-label="v => v.name" 
+                                            :reduce="v => v.id" 
+                                            placeholder="Pilih Vendor" 
+                                            class="v-select-style"
+                                            :loading="vendorStore.loading"
+                                        />
+                                        <small class="text-muted">Vendor tersedia: {{ vendors?.length || 0 }}</small>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
@@ -323,23 +340,27 @@
                                         <v-select 
                                             v-model="form.perusahaanId" 
                                             :options="perusahaans || []" 
-                                            label="nmPerusahaan" 
+                                            :get-option-label="p => p.nmPerusahaan" 
                                             :reduce="p => p.id" 
                                             placeholder="Pilih Perusahaan" 
                                             class="v-select-style"
                                             :disabled="isExternalPO"
+                                            :loading="perusahaanStore.loading"
                                         />
+                                        <small class="text-muted">Perusahaan tersedia: {{ perusahaans?.length || 0 }}</small>
                                     </div>
                                     <div class="col-md-6">
                                         <v-select 
                                             v-model="form.cabangId" 
                                             :options="filteredCabangs" 
-                                            label="nmCabang" 
+                                            :get-option-label="c => c.nmCabang" 
                                             :reduce="c => c.id" 
                                             placeholder="Pilih Cabang" 
                                             class="v-select-style"
                                             :disabled="isExternalPO"
+                                            :loading="cabangStore.loading"
                                         />
+                                        <small class="text-muted">Cabang tersedia: {{ filteredCabangs?.length || 0 }}</small>
                                     </div>
 
                                     <div class="col-md-3">
@@ -356,9 +377,28 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
-                                            <input type="file" @change="onFileChange" class="form-control">
-                                            <label>Attachment</label>
-                                            <a v-if="attachmentPreview" :href="attachmentPreview" target="_blank" class="d-block mt-1">Lihat Attachment</a>
+                                            <input 
+                                                type="file" 
+                                                @change="onFileChange" 
+                                                class="form-control"
+                                                accept=".pdf,.xlsx,.xls,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                                            >
+                                            <label>Attachment (PDF, Excel, Image)</label>
+                                            
+                                            <div v-if="form.attachmentPreview" class="mt-2">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <i :class="getFileIcon(form.attachmentPreview)" style="font-size: 1.2rem; margin-right: 0.5rem;"></i>
+                                                    <a :href="form.attachmentPreview" target="_blank" rel="noopener noreferrer" class="d-block">Lihat Attachment</a>
+                                                </div>
+                                                <div v-if="isImageFile(form.attachmentPreview)" class="mt-2">
+                                                    <img 
+                                                        :src="form.attachmentPreview" 
+                                                        alt="Attachment Preview" 
+                                                        class="attachment-preview"
+                                                        style="height: 60px; max-width: 120px; object-fit: contain; border: 2px solid #ddd; border-radius: 8px;"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-12">
@@ -373,7 +413,17 @@
                                 <div v-for="(item, index) in form.purchaseOrderItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
                                         <div class="col-12">
-                                            <v-select v-model="item.warehouseId" :options="warehouses || []" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style"/>
+                                            <label class="form-label">Gudang</label>
+                                            <v-select 
+                                                v-model="item.warehouseId" 
+                                                :options="warehouses || []" 
+                                                :get-option-label="w => `${w.name} (${w.code})`" 
+                                                :reduce="w => w.id" 
+                                                placeholder="Pilih Gudang" 
+                                                class="v-select-style"
+                                                :loading="warehouseStore.loading"
+                                            />
+                                            <small class="text-muted">Gudang tersedia: {{ warehouses?.length || 0 }}</small>
                                         </div>
                                         <div class="col-md-4">
                                             <v-select 
@@ -384,8 +434,9 @@
                                                 placeholder="Pilih Produk" 
                                                 @update:modelValue="onProductChange(index)" 
                                                 class="v-select-style"
+                                                :loading="productStore.loading"
                                             />
-                                            <small class="text-muted">Selected: {{ item.productId }}</small>
+                                            <small class="text-muted">Produk tersedia: {{ products?.length || 0 }} | Selected: {{ item.productId }}</small>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-floating form-floating-outline">
@@ -463,9 +514,12 @@ import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import { useImageUrl } from '~/composables/useImageUrl'
+import Swal from 'sweetalert2'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const { getAttachmentUrl, getFileIcon, isImageFile, isPdfFile, isExcelFile } = useImageUrl()
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -492,9 +546,12 @@ const { products }    = storeToRefs(productStore)
 const { user }        = storeToRefs(userStore)
 const { permissions } = storeToRefs(permissionStore)
 
+
+
+
+
 // State
 const globalFilterValue = ref('');
-const attachmentPreview = ref(null);
 const tableControls = ref({
     rows: 10,
     search: '',
@@ -527,12 +584,7 @@ const grandTotal = computed(() => {
   return totalAfterDiscount + taxAmount;
 });
 
-const getAttachmentUrl = (attachmentPath) => {
-    if (!attachmentPath || typeof attachmentPath !== 'string') return null;
-    if (attachmentPath.startsWith('http')) return attachmentPath;
-    const baseUrl = (config.public.apiBase || '').replace('/api', '');
-    return `${baseUrl}/${attachmentPath}`;
-};
+
 
 const poTypeOptions = ref([
     { label: 'Internal', value: 'internal' },
@@ -550,34 +602,25 @@ const statusOptions = ref([
 
 let modalInstance = null;
 onMounted(async () => {
-    purchaseOrderStore.fetchPurchaseOrders();
-    vendorStore.fetchVendors();
-    perusahaanStore.fetchPerusahaans();
-    cabangStore.fetchCabangs();
-    productStore.fetchProducts();
-    warehouseStore.fetchWarehouses();
-    userStore.loadUser();
-    permissionStore.fetchPermissions();
-    setListTitle('Purchase Order', purchaseOrders.value.length)
     
-    // Gunakan endpoint data baru untuk load data
+    // Load data menggunakan method store yang standar
     try {
-        const [perusahaanData, cabangData, vendorData] = await Promise.all([
-            purchaseOrderStore.fetchPerusahaanData(),
-            purchaseOrderStore.fetchCabangData(),
-            purchaseOrderStore.fetchVendorData()
+        await Promise.all([
+            vendorStore.fetchVendors(),
+            perusahaanStore.fetchPerusahaans(),
+            productStore.fetchProducts(),
+            warehouseStore.fetchWarehouses(),
+            userStore.loadUser(),
+            permissionStore.fetchPermissions()
         ]);
         
-        // Assign data ke store yang sesuai
-        perusahaanStore.perusahaans = perusahaanData;
-        cabangStore.cabangs = cabangData;
-        vendorStore.vendors = vendorData;
+        // Load purchase orders after other data is ready
+        purchaseOrderStore.fetchPurchaseOrders();
+        setListTitle('Purchase Order', purchaseOrders.value.length)
+        
+        // Untuk cabang, kita akan load setelah perusahaan dipilih
     } catch (error) {
         console.error('Error loading data:', error);
-        // Fallback ke method lama jika endpoint data baru gagal
-        vendorStore.fetchVendors();
-        perusahaanStore.fetchPerusahaans();
-        cabangStore.fetchCabangs();
     }
     
     const modalElement = document.getElementById('PurchaseOrderModal')
@@ -603,11 +646,11 @@ watch(showModal, (newValue) => {
     if (newValue) {
         modalInstance?.show()
         if (isEditMode.value && form.value?.attachment_url) {
-            attachmentPreview.value = form.value.attachment_url
+            form.value.attachmentPreview = form.value.attachment_url
         } else if (isEditMode.value && form.value?.attachment) {
-            attachmentPreview.value = getAttachmentUrl(form.value.attachment)
+            form.value.attachmentPreview = getAttachmentUrl(form.value.attachment)
         } else {
-            attachmentPreview.value = null
+            form.value.attachmentPreview = null
         }
     } else {
         modalInstance?.hide()
@@ -616,6 +659,21 @@ watch(showModal, (newValue) => {
 
 watch(products, (newProducts) => {
     if (newProducts && newProducts.length > 0) {
+    }
+})
+
+watch(vendors, (newVendors) => {
+    if (newVendors && newVendors.length > 0) {
+    }
+})
+
+watch(perusahaans, (newPerusahaans) => {
+    if (newPerusahaans && newPerusahaans.length > 0) {
+    }
+})
+
+watch(warehouses, (newWarehouses) => {
+    if (newWarehouses && newWarehouses.length > 0) {
     }
 })
 
@@ -630,17 +688,37 @@ watch(() => form.value?.purchaseOrderItems, (newItems) => {
     }
 }, { deep: true })
 
-watch(() => form.value?.perusahaanId, (newPerusahaanId) => {
+watch(() => form.value?.perusahaanId, async (newPerusahaanId) => {
     if (newPerusahaanId && form.value) {
         if(!isEditMode.value) {
             form.value.cabangId = null;
+        }
+        
+        // Load cabang berdasarkan perusahaan yang dipilih
+        try {
+            const { $api } = useNuxtApp();
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${$api.dataCabang()}?perusahaanId=${newPerusahaanId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                }
+            });
+            
+            if (response.ok) {
+                const cabangData = await response.json();
+                cabangStore.cabangs = cabangData;
+            }
+        } catch (error) {
+            console.error('Error loading cabang:', error);
         }
     }
 });
 
 const filteredCabangs = computed(() => {
     if (!form.value?.perusahaanId || !cabangs.value) return [];
-    return (cabangs.value || []).filter(c => c.perusahaanId === form.value.perusahaanId);
+    const filtered = (cabangs.value || []).filter(c => c.perusahaanId === form.value.perusahaanId);
+    return filtered;
 });
 
 const isExternalPO = computed(() => {
@@ -699,11 +777,47 @@ function onFileChange(e) {
   
   const file = e.target.files[0];
   if (file) {
+    if (!file.size || file.size === 0) {
+      Swal.fire('Error', 'File attachment kosong atau tidak valid', 'error');
+      return;
+    }
+
+    const fileType = file.type || '';
+    const fileExtension = file.name?.split('.').pop()?.toLowerCase() || '';
+
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml'
+    ];
+
+    const allowedExtensions = ['pdf', 'xlsx', 'xls', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+    const isValidMimeType = allowedMimeTypes.includes(fileType);
+    const isValidExtension = allowedExtensions.includes(fileExtension);
+
+    if (!isValidMimeType && !isValidExtension) {
+      Swal.fire('Error', `File harus berupa PDF, Excel, atau gambar. Detected: MIME=${fileType}, Ext=${fileExtension}`, 'error');
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      Swal.fire('Error', 'Ukuran file terlalu besar (maksimal 10MB)', 'error');
+      return;
+    }
+
     form.value.attachment = file;
-    attachmentPreview.value = URL.createObjectURL(file);
+    form.value.attachmentPreview = URL.createObjectURL(file);
   } else {
     form.value.attachment = null;
-    attachmentPreview.value = null;
+    form.value.attachmentPreview = null;
   }
 }
 
@@ -768,15 +882,12 @@ const getPoTypeBadge = (poType) => {
 const handlePoTypeChange = (selectedType) => {
     if (!form.value) return;
     
-    // Jika checkbox yang diklik sudah dipilih, tidak perlu mengubah apapun
     if (form.value.poType === selectedType) {
         return;
     }
     
-    // Set tipe PO ke yang dipilih
     form.value.poType = selectedType;
     
-    // Reset field yang tidak diperlukan berdasarkan tipe PO
     if (selectedType === 'internal') {
         // Reset external fields
         form.value.extNamaPerusahaan = '';
@@ -791,7 +902,17 @@ const handlePoTypeChange = (selectedType) => {
 
 <style scoped>
     .v-select-style {
-        min-height: 48px;
+        height: 48px !important;
+        border-radius: 7px;
+    }
+    
+    .attachment-preview {
+        transition: all 0.3s ease;
+    }
+
+    .attachment-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
 
     :deep(.v-select-style .vs__dropdown-toggle),

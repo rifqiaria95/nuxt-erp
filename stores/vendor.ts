@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
+import { useImageUrl } from '~/composables/useImageUrl'
 
 export interface Vendor {
   id     : number
@@ -58,7 +59,16 @@ export const useVendorStore = defineStore('vendor', {
       try {
         const token = localStorage.getItem('token');
 
+        const params = new URLSearchParams({
+            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
+            rows     : Math.floor(this.params.rows).toString(),
+            sortField: this.params.sortField || '',
+            sortOrder: (this.params.sortOrder || 1) > 0 ? 'asc' : 'desc',
+            search   : this.params.search || '',
+        });
+
         const url = new URL($api.vendor())
+        url.search = params.toString();
 
         const response = await fetch(url, {
           method: 'GET',
@@ -69,20 +79,16 @@ export const useVendorStore = defineStore('vendor', {
           },
           credentials: 'include'
         })
-        const params = new URLSearchParams({
-            page     : Math.floor((this.params.first / this.params.rows) + 1).toString(),
-            rows     : Math.floor(this.params.rows).toString(),
-            sortField: this.params.sortField || '',
-            sortOrder: (this.params.sortOrder || 1) > 0 ? 'asc' : 'desc',
-            search   : this.params.search || '',
-        });
+        
         if (!response.ok) throw new Error('Gagal mengambil data vendor')
 
         const result = await response.json()
         this.vendors = result.data
         this.totalRecords = result.meta.total
+        console.log('Vendors loaded:', this.vendors.length, this.vendors);
       } catch (e: any) {
         this.error = e.message
+        console.error('Error fetching vendors:', e);
         toast.error({
           title: 'Error',
           message: `Tidak dapat memuat data vendor: ${e.message}`,
@@ -225,9 +231,23 @@ export const useVendorStore = defineStore('vendor', {
         this.validationErrors = [];
         if (vendor) {
             this.form = { ...vendor, logo: null };
+            
+            // Set logo preview jika ada
+            if (vendor.logo) {
+                const { getVendorLogo } = useImageUrl();
+                this.form.logoPreview = getVendorLogo(vendor.logo);
+            } else {
+                this.form.logoPreview = '';
+            }
         } else {
             this.form = {
-                name: '', address: '', email: '', phone: '', npwp: '', logo: null
+                name: '', 
+                address: '', 
+                email: '', 
+                phone: '', 
+                npwp: '', 
+                logo: null,
+                logoPreview: '',
             };
         }
         this.showModal = true;
@@ -236,7 +256,15 @@ export const useVendorStore = defineStore('vendor', {
     closeModal() {
         this.showModal = false;
         this.isEditMode = false;
-        this.form = {};
+        this.form = {
+            name: '', 
+            address: '', 
+            email: '', 
+            phone: '', 
+            npwp: '', 
+            logo: null,
+            logoPreview: '',
+        };
         this.validationErrors = [];
     },
 
@@ -256,6 +284,50 @@ export const useVendorStore = defineStore('vendor', {
         this.params.search = value;
         this.params.first = 0;
         this.fetchVendors();
+    },
+
+    handleLogoChange(file: File) {
+        if (file) {
+            // Validasi file tidak kosong
+            if (!file.size || file.size === 0) {
+                Swal.fire('Error', 'File logo kosong atau tidak valid', 'error');
+                return;
+            }
+
+            // Validasi file adalah image
+            const fileType = file.type || '';
+            const fileExtension = file.name?.split('.').pop()?.toLowerCase() || '';
+
+            const allowedMimeTypes = [
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/x-png',
+                'image/gif',
+                'image/webp',
+                'image/svg+xml'
+            ];
+
+            const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+            const isValidMimeType = allowedMimeTypes.includes(fileType);
+            const isValidExtension = allowedExtensions.includes(fileExtension);
+
+            if (!isValidMimeType && !isValidExtension) {
+                Swal.fire('Error', `File harus berupa gambar (JPEG, PNG, GIF, WebP). Detected: MIME=${fileType}, Ext=${fileExtension}`, 'error');
+                return;
+            }
+
+            // Validasi file size
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                Swal.fire('Error', 'Ukuran file terlalu besar (maksimal 5MB)', 'error');
+                return;
+            }
+
+            this.form.logo = file;
+            this.form.logoPreview = URL.createObjectURL(file);
+        }
     },
   }
 })
