@@ -37,16 +37,6 @@
                 <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
                 <td class="text-start" style="font-size: 12px; white-space: pre-line;">{{ quotation.customer?.address || '-' }}</td>
               </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Email</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ quotation.customer?.email || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">No. Telp</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ quotation.customer?.phone || '-' }}</td>
-              </tr>
             </table>
           </div>
         </div>
@@ -64,7 +54,7 @@
       </div>
       <div class="table-responsive border border-bottom-0 mb-5">
         <table class="table m-0" style="font-size: 12px; width: 100%;">
-          <thead>
+          <thead style="background-color: #f4cccc;">
             <tr>
               <th>Sales Person</th>
               <th>PR Number</th>
@@ -92,7 +82,7 @@
       </div>
       <div class="table-responsive border border-bottom-0 rounded">
         <table class="table m-0" style="font-size: 12px;">
-          <thead>
+          <thead style="background-color: #f4cccc;">
             <tr>
               <th>No</th>
               <th>Part Number</th>
@@ -123,9 +113,9 @@
                 <td>{{ item.description || '-' }}</td>
                 <td>{{ Number(item.quantity) }}</td>
                 <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
-              <td>{{ formatRupiah(item.price || 0) }}</td>
-              <td>{{ formatRupiah(item.subtotal || 0) }}</td>
-            </tr>
+                <td>{{ formatRupiah(item.price || 0) }}</td>
+                <td>{{ formatRupiah(item.subtotal || 0) }}</td>
+              </tr>
             </template>
             <!-- ✅ MESSAGE jika tidak ada items sama sekali -->
             <tr v-if="(!quotation.quotationItems || quotation.quotationItems.length === 0) && 

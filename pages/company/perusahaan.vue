@@ -256,11 +256,9 @@
             <!-- Placeholder untuk MenuModal component -->
             <Modal 
                 id="PerusahaanModal"
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :selectedPerusahaan="selectedPerusahaan"
+                :validationErrorsFromParent="validationErrors"
             >
                 <template #default>
                     <form @submit.prevent="perusahaanStore.savePerusahaan()">
@@ -306,13 +304,16 @@
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
-                                        class="form-control" 
+                                        :class="['form-control', { 'is-invalid': hasFieldError('nmPerusahaan') }]"
                                         id="nmPerusahaan" 
                                         v-model="form.nmPerusahaan" 
                                         placeholder="Masukkan nama perusahaan"
                                         required
                                     >
                                     <label for="nmPerusahaan">Nama Perusahaan</label>
+                                    <div v-if="hasFieldError('nmPerusahaan')" class="invalid-feedback">
+                                        {{ getFieldError('nmPerusahaan') }}
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -332,13 +333,16 @@
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                     type="text" 
-                                    class="form-control" 
+                                    :class="['form-control', { 'is-invalid': hasFieldError('emailPerusahaan') }]"
                                     id="emailPerusahaan" 
                                     v-model="form.emailPerusahaan" 
                                     placeholder="Masukkan email perusahaan"
                                     required
                                     >
                                     <label for="emailPerusahaan">Email Perusahaan</label>
+                                    <div v-if="hasFieldError('emailPerusahaan')" class="invalid-feedback">
+                                        {{ getFieldError('emailPerusahaan') }}
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -468,6 +472,25 @@ const exportData = (format) => {
     }
 };
 
+// Helper function to check if field has validation error
+const hasFieldError = (fieldName) => {
+    if (!validationErrors.value || !Array.isArray(validationErrors.value)) return false;
+    return validationErrors.value.some(error => {
+        if (typeof error === 'string') return false;
+        return error.field === fieldName || error.rule === fieldName;
+    });
+};
+
+// Helper function to get field error message
+const getFieldError = (fieldName) => {
+    if (!validationErrors.value || !Array.isArray(validationErrors.value)) return '';
+    const error = validationErrors.value.find(error => {
+        if (typeof error === 'string') return false;
+        return error.field === fieldName || error.rule === fieldName;
+    });
+    return error ? error.message : '';
+};
+
 </script>
 
 <style scoped>
@@ -478,5 +501,19 @@ const exportData = (format) => {
     .logo-preview:hover {
         transform: scale(1.05);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Error styling for form validation */
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
     }
 </style>

@@ -70,6 +70,7 @@ export default defineNuxtPlugin(() => {
 
     // Purchase Order Item
     purchaseOrderItemUpdateStatusPartial: (id: number | string) => `${apiBase}/purchase-order-item/updateStatusPartial/${id}`,
+    receiveAllPurchaseOrderItems: (id: number | string) => `${apiBase}/purchase-order/receiveAllItems/${id}`,
 
     // Sales Order
     salesOrder             : () => `${apiBase}/sales-order`,

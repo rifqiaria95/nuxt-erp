@@ -151,11 +151,19 @@ export const useCustomerStore = defineStore('customer', {
           credentials: 'include',
         })
 
-        const result = await response.json();
+        // Handle response parsing dengan error catching
+        let result;
+        try {
+            result = await response.json();
+        } catch (parseError) {
+            console.error('Failed to parse response as JSON:', parseError);
+            throw new Error('Server response tidak valid');
+        }
 
         if (!response.ok) {
-            if (result.errors) {
+            if (response.status === 422 && result.errors) {
                 this.validationErrors = Object.values(result.errors).flat();
+                return; // Stop execution - jangan throw error agar validation error muncul di modal
             }
             throw new Error(result.message || 'Gagal menyimpan data pelanggan');
         }
@@ -165,7 +173,10 @@ export const useCustomerStore = defineStore('customer', {
         Swal.fire('Berhasil!', `Pelanggan berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
 
       } catch (error: any) {
-        Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+        // Jangan tampilkan Swal jika ada validation errors (sudah ditampilkan di modal)
+        if (this.validationErrors.length === 0) {
+            Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+        }
       } finally {
         this.loading = false
       }

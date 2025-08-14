@@ -505,6 +505,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         try {
             const token        = localStorage.getItem('token');
 
+            console.log(`🔍 Updating Purchase Order Item ${itemId} with receivedQty: ${receivedQty}`);
+
             const resData = await apiFetch($api.purchaseOrderItemUpdateStatusPartial(itemId), {
                 method: 'PATCH',
                 headers: {
@@ -517,6 +519,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 },
                 credentials: 'include',
             });
+
+            console.log(`✅ Purchase Order Item updated successfully:`, resData);
 
             const updatedPurchaseOrderItem = resData.data.purchaseOrderItem;
             const updatedPurchaseOrder = resData.data.purchaseOrder;
@@ -531,6 +535,12 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                     this.purchaseOrder.status = updatedPurchaseOrder.status;
                 }
             }
+
+            toast.success({
+              title: 'Success',
+              message: 'Status item Purchase Order berhasil diperbarui dan Stock In telah dibuat.',
+              color: 'green'
+            });
             
         } catch (error: any) {
             console.error('Gagal memperbarui status item PO atau PO:', error);
@@ -544,6 +554,56 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         } finally {
             this.loading = false;
         }
+    },
+
+    async receiveAllItems(purchaseOrderId: string) {
+      const toast = useToast();
+      this.loading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+      
+      try {
+          const token = localStorage.getItem('token');
+
+          console.log(`🔍 Calling receiveAllItems for PO: ${purchaseOrderId}`);
+
+          const response = await fetch($api.receiveAllPurchaseOrderItems(purchaseOrderId), {
+              method: 'POST',
+              headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type' : 'application/json',
+                  'Accept'       : 'application/json',
+              },
+              credentials: 'include',
+          });
+
+          if (!response.ok) {
+              const errorData = await response.json().catch(() => ({ message: 'Gagal menerima semua item purchase order' }));
+              throw new Error(errorData.message || 'Gagal menerima semua item purchase order');
+          }
+
+          const result = await response.json();
+          console.log(`✅ Receive All Items successful:`, result);
+
+          toast.success({
+            title: 'Success',
+            message: `Berhasil menerima semua item. ${result.data?.totalStockInsCreated || 0} Stock In telah dibuat.`,
+            color: 'green'
+          });
+
+          return result;
+      } catch (error: any) {
+          console.error('Error receiving all items:', error);
+          this.error = error;
+          toast.error({
+            title: 'Error',
+            message: error.message || 'Gagal menerima semua item purchase order.',
+            color: 'red'
+          });
+          throw error;
+      } finally {
+          this.loading = false;
+      }
     },
 
     // Fungsi untuk mengambil data perusahaan menggunakan endpoint data

@@ -51,7 +51,7 @@ const validationErrors = ref([]);
 // Watch for changes in the prop and update the local ref
 watch(() => props.validationErrorsFromParent, (newVal) => {
   validationErrors.value = newVal;
-});
+}, { immediate: true });
 </script>
 
 <style scoped>

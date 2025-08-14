@@ -2,9 +2,13 @@
     <div class="content-wrapper">
         <!-- Content -->
         <div class="container-xxl flex-grow-1 container-p-y">
-            <div v-if="loading" class="text-center">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
+            <div v-if="loading" class="text-center py-5">
+                <div class="d-flex flex-column align-items-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h6 class="text-muted">Memuat detail Sales Order...</h6>
+                    <small class="text-muted">Mohon tunggu sebentar</small>
                 </div>
             </div>
             <template v-else-if="salesOrder">
@@ -32,16 +36,16 @@
                                     </span>
                                 </span>
                                 </div>
-                                <p class="mb-1">{{ salesOrder.perusahaan.alamatPerusahaan }}</p>
-                                <p class="mb-1">{{ salesOrder.perusahaan.kodePerusahaan }}</p>
-                                <p class="mb-0">{{ salesOrder.perusahaan.npwpPerusahaan }}</p>
+                                <p class="mb-1">{{ salesOrder.perusahaan?.alamatPerusahaan || '-' }}</p>
+                                <p class="mb-1">{{ salesOrder.perusahaan?.kodePerusahaan || '-' }}</p>
+                                <p class="mb-0">{{ salesOrder.perusahaan?.npwpPerusahaan || '-' }}</p>
                             </div>
                             <div>
                                 <div class="d-flex align-items-center gap-3 mb-6">
-                                    <h6 class="mb-0">Sales Number : {{ salesOrder.noSo }}</h6>
+                                    <h6 class="mb-0">Sales Number : {{ salesOrder.noSo || '-' }}</h6>
                                     <!-- ✅ STATUS BADGE -->
-                                    <span :class="getStatusBadgeClass(salesOrder.status)">
-                                        {{ getStatusText(salesOrder.status) }}
+                                    <span :class="getStatusBadgeClass(salesOrder.status || 'draft')">
+                                        {{ getStatusText(salesOrder.status || 'draft') }}
                                     </span>
                                 </div>
                                 <div class="d-flex align-items-center gap-3 mb-6">
@@ -52,11 +56,11 @@
                                 </div>
                                 <div class="mb-1">
                                 <span>Date Issues: </span>
-                                <span>{{ new Date(salesOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
+                                <span>{{ salesOrder.date ? new Date(salesOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' }}</span>
                                 </div>
                                 <div>
                                 <span>Date Due: </span>
-                                <span>{{ new Date(salesOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
+                                <span>{{ salesOrder.dueDate ? new Date(salesOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' }}</span>
                                 </div>
                             </div>
                             </div>
@@ -65,16 +69,16 @@
                             <div class="d-flex justify-content-between flex-wrap gap-6">
                             <div>
                                 <h6>Invoice To:</h6>
-                                <p class="mb-1">{{ salesOrder.up }}</p>
-                                <p class="mb-1">{{ salesOrder.customer.name }}</p>
-                                <p class="mb-1">{{ salesOrder.customer.address }}</p>
-                                <p class="mb-1">{{ salesOrder.customer.phone }}</p>
-                                <p class="mb-0">{{ salesOrder.customer.email }}</p>
+                                <p class="mb-1">{{ salesOrder.up || '-' }}</p>
+                                <p class="mb-1">{{ salesOrder.customer?.name || '-' }}</p>
+                                <p class="mb-1">{{ salesOrder.customer?.address || '-' }}</p>
+                                <p class="mb-1">{{ salesOrder.customer?.phone || '-' }}</p>
+                                <p class="mb-0">{{ salesOrder.customer?.email || '-' }}</p>
                             </div>
                             <div>
                                 <h6>Bill To:</h6>
-                                <p class="mb-1">{{ salesOrder.perusahaan.nmPerusahaan }}</p>
-                                <p class="mb-1">{{ salesOrder.perusahaan.alamatPerusahaan }}</p>
+                                <p class="mb-1">{{ salesOrder.perusahaan?.nmPerusahaan || '-' }}</p>
+                                <p class="mb-1">{{ salesOrder.perusahaan?.alamatPerusahaan || '-' }}</p>
                             </div>
                             </div>
                         </div>
@@ -92,9 +96,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="item in salesOrder.salesOrderItems" :key="item.id" class="position-relative">
-                                    <td class="text-nowrap text-heading">{{ item.product.name }}</td>
-                                    <td class="text-nowrap">{{ item.description }}</td>
+                                <tr v-for="item in (salesOrder.salesOrderItems || [])" :key="item.id" class="position-relative">
+                                    <td class="text-nowrap text-heading">{{ item.product?.name || '-' }}</td>
+                                    <td class="text-nowrap">{{ item.description || '-' }}</td>
                                     <td>{{ formatRupiah(item.price) }}</td>
                                     <td>{{ item.quantity }}</td>
                                     <td>
@@ -170,7 +174,7 @@
                                 <td class="align-top px-0 py-6">
                                     <p class="mb-1">
                                     <span class="me-2 fw-medium text-heading">Created by:</span>
-                                    <span>{{ salesOrder.createdBy }}</span>
+                                    <span>{{ salesOrder.createdByUser?.fullName || salesOrder.createdBy || '-' }}</span>
                                     </p>
                                     <span>Thanks for your business</span>
                                 </td>
@@ -181,10 +185,10 @@
                                     <p class="mb-0 pt-2">Total:</p>
                                 </td>
                                 <td class="text-end px-0 py-6 w-px-100">
-                                    <p class="fw-medium mb-1">{{ salesOrder.discountPercent }}%</p>
+                                    <p class="fw-medium mb-1">{{ salesOrder.discountPercent || 0 }}%</p>
                                     <p class="fw-medium mb-1">{{ formatRupiah(totalBeforeTax) }}</p>
-                                    <p class="fw-medium mb-1 border-bottom pb-2">{{ salesOrder.taxPercent }}%</p>
-                                    <p class="fw-medium mb-0 pt-2">{{ formatRupiah(salesOrder.total) }}</p>
+                                    <p class="fw-medium mb-1 border-bottom pb-2">{{ salesOrder.taxPercent || 0 }}%</p>
+                                    <p class="fw-medium mb-0 pt-2">{{ formatRupiah(salesOrder.total || 0) }}</p>
                                 </td>
                                 </tr>
                             </tbody>
@@ -197,7 +201,7 @@
                                 <div class="col-12">
                                     <span class="fw-medium text-heading">Note: </span>
                                     <span
-                                    >{{ salesOrder.description }}</span
+                                    >{{ salesOrder.description || '-' }}</span
                                     >
                                 </div>
                             </div>
@@ -369,8 +373,13 @@
 
                 <!-- /Offcanvas -->
             </template>
-            <div v-else class="text-center">
-                <p>Sales Order not found.</p>
+            <div v-else class="text-center py-5">
+                <div class="alert alert-warning" role="alert">
+                    <i class="ri-error-warning-line me-2"></i>
+                    <strong>Sales Order tidak ditemukan</strong>
+                    <br>
+                    <small>Data Sales Order dengan ID tersebut tidak dapat ditemukan atau tidak tersedia. Anda akan dialihkan ke halaman daftar Sales Order.</small>
+                </div>
             </div>
         </div>
         <!-- / Content -->
@@ -554,35 +563,44 @@ const getStatusText = (status) => {
 async function refreshSalesOrderDetails() {
     const soIdToFetch = Array.isArray(soId) ? soId[0] : soId;
     
-    if (typeof soIdToFetch === 'string' && soIdToFetch.trim() !== '') {
-        loading.value = true
-        try {
-            await salesOrderStore.getSalesOrderDetails(soIdToFetch)
-        } catch (error) {
-            console.error("❌ Failed to refresh SO details:", error)
-            
-            // Show user-friendly error message
-            toast.error({
-                title: 'Gagal Memuat Data',
-                message: `Tidak dapat memuat detail Sales Order dengan ID: ${soIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
-                icon: 'ri-close-line',
-                timeout: 3000,
-                position: 'topRight',
-                layout: 2,
-            })
-        } finally {
-            loading.value = false
-        }
-    } else {
+    if (!soIdToFetch || (typeof soIdToFetch === 'string' && soIdToFetch.trim() === '')) {
         console.error('❌ Invalid soId:', soIdToFetch);
         toast.error({
             title: 'Parameter Tidak Valid',
             message: 'ID Sales Order tidak valid atau kosong.',
-            icon: 'ri-close-line',
-            timeout: 3000,
-            position: 'topRight',
-            layout: 2,
+            color: 'red'
         })
+        loading.value = false
+        return
+    }
+    
+    loading.value = true
+    try {
+        await salesOrderStore.getSalesOrderDetails(soIdToFetch)
+        
+        // Validasi apakah data berhasil dimuat
+        if (!salesOrder.value) {
+            throw new Error('Data Sales Order tidak ditemukan atau kosong')
+        }
+    } catch (error) {
+        console.error("❌ Failed to refresh SO details:", error)
+        
+        // Clear salesOrder state jika ada error
+        salesOrderStore.salesOrder = null
+        
+        // Show user-friendly error message
+        toast.error({
+            title: 'Gagal Memuat Data',
+            message: `Tidak dapat memuat detail Sales Order dengan ID: ${soIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
+            color: 'red'
+        })
+        
+        // Redirect ke halaman sales order list setelah 3 detik
+        setTimeout(() => {
+            router.push('/sales/sales-order')
+        }, 3000)
+    } finally {
+        loading.value = false
     }
 }
 
@@ -595,8 +613,15 @@ const totalBeforeTax = computed(() => {
     return 0
 })
 
-onMounted(refreshSalesOrderDetails)
-setDetailTitle('Sales Order - ' + salesOrder.value.noSo)
+onMounted(async () => {
+    await refreshSalesOrderDetails()
+    // Set title setelah data berhasil dimuat
+    if (salesOrder.value && salesOrder.value.noSo) {
+        setDetailTitle('Sales Order - ' + salesOrder.value.noSo)
+    } else {
+        setDetailTitle('Sales Order - Detail')
+    }
+})
 </script>
 
 <style scoped>

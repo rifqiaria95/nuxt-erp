@@ -71,6 +71,20 @@
                             </div>
                             </div>
                         </div>
+                        
+                        <!-- ✅ TOMBOL RECEIVE ALL -->
+                        <div class="d-flex justify-content-end mb-4">
+                            <button 
+                                type="button" 
+                                class="btn btn-success btn-sm"
+                                @click="receiveAllItems"
+                                :disabled="loading || isAllItemsReceived"
+                            >
+                                <i class="ri-check-double-line me-2"></i>
+                                Receive All ({{ totalPendingQuantity }} items)
+                            </button>
+                        </div>
+                        
                         <div class="table-responsive border rounded-4 border-bottom-0">
                             <table class="table m-0">
                             <thead>
@@ -96,7 +110,7 @@
                                                 class="btn btn-sm btn-outline-danger me-1 qty-btn" 
                                                 type="button"
                                                 @click="decreaseReceivedQty(item)"
-                                                :disabled="isReceived || (item.receivedQty || 0) <= 0"
+                                                :disabled="isReceived || Math.floor(Number(item.receivedQty) || 0) <= 0"
                                                 title="Kurangi quantity"
                                             >
                                                 <i class="ri-subtract-line"></i>
@@ -129,8 +143,8 @@
                                                 class="btn btn-sm btn-outline-success ms-1 qty-btn" 
                                                 type="button"
                                                 @click="increaseReceivedQty(item)"
-                                                :disabled="isReceived || (item.receivedQty || 0) >= item.quantity"
-                                                title="Tambah quantity"
+                                                :disabled="isIncrementDisabled(item)"
+                                                :title="`Tambah quantity - Current: ${Math.floor(Number(item.receivedQty) || 0)} / Max: ${Math.floor(Number(item.quantity) || 0)}`"
                                             >
                                                 <i class="ri-add-line"></i>
                                             </button>
@@ -360,11 +374,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, nextTick } from 'vue'
 import { usePurchaseOrderStore } from '~/stores/purchaseOrder'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
+import Swal from 'sweetalert2'
 
 // Composables
 const { setDetailTitle } = useDynamicTitle()
@@ -381,6 +396,22 @@ const poId = route.query.id
 // ✅ COMPUTED untuk check apakah Purchase Order sudah received
 const isReceived = computed(() => {
     return purchaseOrder.value?.status === 'received'
+})
+
+// ✅ COMPUTED untuk total pending quantity
+const totalPendingQuantity = computed(() => {
+    if (!purchaseOrder.value?.purchaseOrderItems) return 0
+    
+    return purchaseOrder.value.purchaseOrderItems.reduce((total, item) => {
+        const ordered = Math.floor(Number(item.quantity) || 0)
+        const received = Math.floor(Number(item.receivedQty) || 0)
+        return total + (ordered - received)
+    }, 0)
+})
+
+// ✅ COMPUTED untuk cek apakah semua item sudah diterima
+const isAllItemsReceived = computed(() => {
+    return totalPendingQuantity.value === 0
 })
 
 // ✅ ACTION METHODS
@@ -426,12 +457,111 @@ const getReceiveStatusBadge = (item) => {
     return { text: 'Error', class: 'badge bg-danger' }
 }
 
+// ✅ FUNCTION untuk debug disable status tombol
+const isIncrementDisabled = (item) => {
+    const currentReceived = Math.floor(Number(item.receivedQty) || 0)
+    const maxQuantity = Math.floor(Number(item.quantity) || 0)
+    const disabled = isReceived.value || currentReceived >= maxQuantity
+    
+    console.log(`🔍 DEBUG isIncrementDisabled for ${item.product?.name}:`, {
+        receivedQty: item.receivedQty,
+        quantity: item.quantity,
+        currentReceived,
+        maxQuantity,
+        isReceived: isReceived.value,
+        disabled,
+        comparison: `${currentReceived} >= ${maxQuantity} = ${currentReceived >= maxQuantity}`
+    })
+    
+    return disabled
+}
+
+// ✅ FUNCTION untuk receive all items sekaligus
+const receiveAllItems = async () => {
+    if (isReceived.value || isAllItemsReceived.value) {
+        toast.warning({
+            title: 'Peringatan',
+            message: 'Semua item sudah diterima atau Purchase Order sudah dalam status RECEIVED.',
+            color: 'orange'
+        })
+        return
+    }
+
+    // ✅ TAMPILKAN SWEETALERT CONFIRMATION
+    const result = await Swal.fire({
+        title: 'Konfirmasi Receive All',
+        text: `Apakah anda yakin ingin menerima semua barang? (${totalPendingQuantity.value} items akan dibuat Stock In nya)`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Receive All!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        customClass: {
+            confirmButton: 'btn btn-success me-5',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    })
+
+    if (!result.isConfirmed) {
+        return
+    }
+
+    try {
+        // ✅ CALL API untuk batch receive all
+        await purchaseOrderStore.receiveAllItems(purchaseOrder.value.id)
+        
+        // ✅ REFRESH DATA
+        await refreshPurchaseOrderDetails()
+        
+        // ✅ TAMPILKAN SUCCESS MESSAGE
+        await Swal.fire({
+            title: 'Berhasil!',
+            text: `Semua barang telah diterima. ${totalPendingQuantity.value} Stock In telah dibuat.`,
+            icon: 'success',
+            confirmButtonColor: '#28a745',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'btn btn-success'
+            },
+            buttonsStyling: false
+        })
+        
+    } catch (error) {
+        console.error('Error receiving all items:', error)
+        
+        await Swal.fire({
+            title: 'Error!',
+            text: error.data?.message || error.message || 'Gagal menerima semua barang',
+            icon: 'error',
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'btn btn-danger'
+            },
+            buttonsStyling: false
+        })
+    }
+}
+
 // ✅ FUNCTION untuk increase received quantity
 const increaseReceivedQty = (item) => {
     if (isReceived.value) return
     
     const currentQty = Math.floor(Number(item.receivedQty) || 0)
     const maxQty = Math.floor(Number(item.quantity) || 0)
+    
+    console.log(`🔍 DEBUG increaseReceivedQty:`, {
+        productName: item.product?.name,
+        receivedQty: item.receivedQty,
+        quantity: item.quantity,
+        currentQty,
+        maxQty,
+        canIncrease: currentQty < maxQty,
+        isReceived: isReceived.value
+    })
     
     if (currentQty < maxQty) {
         item.receivedQty = currentQty + 1
@@ -561,7 +691,26 @@ const totalBeforeTax = computed(() => {
     return 0
 })
 
-onMounted(refreshPurchaseOrderDetails)
+onMounted(async () => {
+    await refreshPurchaseOrderDetails()
+    
+    // ✅ DEBUG: Log struktur data setelah load
+    nextTick(() => {
+        if (purchaseOrder.value && purchaseOrder.value.purchaseOrderItems) {
+            console.log(`🔍 DEBUG: Purchase Order Items structure:`)
+            purchaseOrder.value.purchaseOrderItems.forEach((item, index) => {
+                console.log(`Item ${index}:`, {
+                    productName: item.product?.name,
+                    quantity: item.quantity,
+                    quantityType: typeof item.quantity,
+                    receivedQty: item.receivedQty,
+                    receivedQtyType: typeof item.receivedQty,
+                    rawItem: item
+                })
+            })
+        }
+    })
+})
 </script>
 
 <style scoped>

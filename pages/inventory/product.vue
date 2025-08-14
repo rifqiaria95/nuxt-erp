@@ -179,7 +179,7 @@
                 id="ProductModal"
                 :title="modalTitle" 
                 :description="modalDescription"
-                :validation-errors-from-parent="validationErrors"
+                :validationErrorsFromParent="validationErrors"
             >
                 <template #default>
                     <form @submit.prevent="productStore.saveProduct()">
@@ -188,24 +188,30 @@
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
-                                        class="form-control" 
+                                        :class="['form-control', { 'is-invalid': hasFieldError('sku') }]"
                                         v-model="form.sku" 
                                         placeholder="Masukkan part number"
                                         required
                                     >
                                     <label>Part Number</label>
+                                    <div v-if="hasFieldError('sku')" class="invalid-feedback">
+                                        {{ getFieldError('sku') }}
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="text" 
-                                        class="form-control" 
+                                        :class="['form-control', { 'is-invalid': hasFieldError('name') }]"
                                         v-model="form.name" 
                                         placeholder="Masukkan nama barang"
                                         required
                                     >
                                     <label>Nama Barang</label>
+                                    <div v-if="hasFieldError('name')" class="invalid-feedback">
+                                        {{ getFieldError('name') }}
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -482,6 +488,25 @@ const getStatusBadge = (status) => {
     }
 };
 
+// Helper function to check if field has validation error
+const hasFieldError = (fieldName) => {
+    if (!validationErrors.value || !Array.isArray(validationErrors.value)) return false;
+    return validationErrors.value.some(error => {
+        if (typeof error === 'string') return false;
+        return error.field === fieldName || error.rule === fieldName;
+    });
+};
+
+// Helper function to get field error message
+const getFieldError = (fieldName) => {
+    if (!validationErrors.value || !Array.isArray(validationErrors.value)) return '';
+    const error = validationErrors.value.find(error => {
+        if (typeof error === 'string') return false;
+        return error.field === fieldName || error.rule === fieldName;
+    });
+    return error ? error.message : '';
+};
+
 </script>
 
 <style scoped>
@@ -499,5 +524,19 @@ const getStatusBadge = (status) => {
     .image-preview:hover {
         transform: scale(1.05);
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Error styling for form validation */
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+
+    .invalid-feedback {
+        display: block;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 0.875rem;
+        color: #dc3545;
     }
 </style>

@@ -118,6 +118,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
 
             if (this.isEditMode && this.form.id) {
                 url = `${$api.perusahaan()}/${this.form.id}`;
+                formData.append('_method', 'PUT');
             }
 
             const response = await fetch(url, {
@@ -130,10 +131,19 @@ export const usePerusahaanStore = defineStore('perusahaan', {
                 credentials: 'include'
             });
 
+            // Handle response parsing dengan error catching
+            let errorData;
             if (!response.ok) {
-                const errorData = await response.json();
-                if (errorData.errors) {
+                try {
+                    errorData = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse error response as JSON:', parseError);
+                    throw new Error('Server response tidak valid');
+                }
+                
+                if (response.status === 422 && errorData.errors) {
                    this.validationErrors = Object.values(errorData.errors).flat();
+                   return; // Stop execution - jangan throw error agar validation error muncul di modal
                 }
                throw new Error(errorData.message || 'Gagal menyimpan data perusahaan');
            }
@@ -143,7 +153,10 @@ export const usePerusahaanStore = defineStore('perusahaan', {
             Swal.fire('Berhasil!', `Perusahaan berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
 
         } catch (error: any) {
-            Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+            // Jangan tampilkan Swal jika ada validation errors (sudah ditampilkan di modal)
+            if (this.validationErrors.length === 0) {
+                Swal.fire('Error', error.message || 'Operasi gagal', 'error');
+            }
         } finally {
             this.loading = false;
         }
