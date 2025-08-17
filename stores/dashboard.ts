@@ -15,7 +15,7 @@ export const useDashboardStore = defineStore('dashboard', {
       datasets: [
         {
           label: 'Confidence',
-          backgroundColor: '#42A5F5',
+          backgroundColor: '#696CFF',
           data: [] as number[],
         },
       ],
@@ -51,7 +51,21 @@ export const useDashboardStore = defineStore('dashboard', {
           x: {
             beginAtZero: true,
             max: 1,
+            ticks: {
+              callback: function(value: any, index: number): string[] {
+                const storeState = state
+                const label = storeState.chartData.labels[index] || ''
+                return label.split('\n')
+              }
+            }
           },
+          y: {
+            ticks: {
+              callback: function(value: any): string {
+                return (value * 100).toFixed(0) + '%'
+              }
+            }
+          }
         },
       }
     },
@@ -72,9 +86,11 @@ export const useDashboardStore = defineStore('dashboard', {
         })
 
         if (rules) {
-          const labels = rules.map(
-            (rule) => `${rule.antecedent.join(', ')} → ${rule.consequent.join(', ')}`
-          )
+          const labels = rules.map((rule) => {
+            const antecedent = rule.antecedent.join(', ')
+            const consequent = rule.consequent.join(', ')
+            return `${antecedent}\n→ ${consequent}`
+          })
           const confidences = rules.map((rule) => rule.confidence)
           this.supports = Array.isArray(rules) ? rules.map((rule) => rule.support) : null
 
@@ -83,7 +99,7 @@ export const useDashboardStore = defineStore('dashboard', {
             datasets: [
               {
                 label: 'Confidence',
-                backgroundColor: '#42A5F5',
+                backgroundColor: '#696CFF',
                 data: confidences,
               },
             ],

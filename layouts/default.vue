@@ -2,7 +2,7 @@
   <div class="layout-wrapper layout-content-navbar">
     <div class="layout-container">
       <Sidebar />
-      <div class="layout-overlay layout-menu-toggle"></div>
+      <div class="layout-overlay layout-menu-toggle" @click="closeSidebar"></div>
 
       <div class="layout-page">
         <Navbar />
@@ -31,6 +31,12 @@ const layoutStore = useLayoutStore();
 onMounted(() => {
     layoutStore.initializeLayout();
 });
+
+const closeSidebar = () => {
+    if (layoutStore.isSidebarExpanded) {
+        layoutStore.toggleSidebar();
+    }
+};
 
 // Import your components
 import Sidebar from '~/components/Sidebar.vue';

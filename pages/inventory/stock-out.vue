@@ -43,8 +43,12 @@
                                         <i class="ri-upload-2-line me-1"></i> Export
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">
+                                            <i class="ri-file-excel-line me-2"></i> CSV (dengan Detail Item)
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">
+                                            <i class="ri-file-pdf-line me-2"></i> PDF
+                                        </a></li>
                                     </ul>
                                 </div>
                                 <div class="input-group">
@@ -266,9 +270,150 @@ onMounted(() => {
 
 const exportData = (format) => {
     if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
+        exportStockOutWithDetails();
     } else if (format === 'pdf') {
         myDataTableRef.value.exportPDF();
+    }
+};
+
+// Fungsi export dengan detail item menggunakan CSV
+const exportStockOutWithDetails = async () => {
+    try {
+        loading.value = true;
+        
+        // Ambil data stock out dengan detail
+        const stockOutData = await stockOutStore.exportStockOutWithDetails();
+        if (stockOutData && stockOutData.length > 0) {
+            console.log('First Stock Out item:', stockOutData[0]);
+            console.log('First Stock Out item keys:', Object.keys(stockOutData[0]));
+            if (stockOutData[0].stockOutDetails) {
+                console.log('First Stock Out Details:', stockOutData[0].stockOutDetails);
+                if (stockOutData[0].stockOutDetails.length > 0) {
+                    console.log('First Stock Out Detail item:', stockOutData[0].stockOutDetails[0]);
+                }
+            }
+        }
+        
+        if (!stockOutData || stockOutData.length === 0) {
+            toast.warning('Tidak ada data untuk diexport');
+            return;
+        }
+
+        // Siapkan data untuk export dengan format yang lebih sederhana
+        const exportData = [];
+        
+        // Ambil nama perusahaan dari user store atau default
+        const userData = userStore.user;
+        console.log('User Data:', userData);
+        const nmPerusahaan = userData?.perusahaan?.name || userData?.cabang?.perusahaan?.name || userData?.perusahaan?.nmPerusahaan || userData?.cabang?.perusahaan?.nmPerusahaan || 'Perusahaan';
+        
+        // Tambahkan title
+        exportData.push([`Rekapitulasi data Stock Out ${nmPerusahaan}`]);
+        exportData.push([]); // Baris kosong
+        
+        // Tambahkan header utama
+        exportData.push(['No. Stock Out', 'Tanggal', 'Gudang', 'Status', 'No. SO', 'Pengirim', 'Produk', 'Deskripsi', 'Quantity']);
+        exportData.push(['-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10)]); // Garis pemisah header
+        
+        // Tambahkan data dengan detail item
+        stockOutData.forEach((stockOut) => {
+            if (stockOut.stockOutDetails && stockOut.stockOutDetails.length > 0) {
+                stockOut.stockOutDetails.forEach(detail => {
+                    exportData.push([
+                        stockOut.noSo || '-',
+                        stockOut.date ? new Date(stockOut.date).toLocaleDateString() : '-',
+                        stockOut.warehouse?.name || '-',
+                        stockOut.status || '-',
+                        stockOut.salesOrder?.noSo || '-',
+                        stockOut.salesOrder?.deliveredByUser?.fullName || stockOut.postedByUser?.fullName || '-',
+                        detail.product?.name || '-',
+                        detail.description || '-',
+                        detail.quantity || 0
+                    ]);
+                });
+            } else {
+                // Jika tidak ada detail item, tetap tampilkan header stock out
+                exportData.push([
+                    stockOut.noSo || '-',
+                    stockOut.date ? new Date(stockOut.date).toLocaleDateString() : '-',
+                    stockOut.warehouse?.name || '-',
+                    stockOut.status || '-',
+                    stockOut.salesOrder?.noSo || '-',
+                    stockOut.salesOrder?.deliveredByUser?.fullName || stockOut.postedByUser?.fullName || '-',
+                    '-',
+                    'Tidak ada detail item',
+                    '-'
+                ]);
+            }
+        });
+        
+        // Tambahkan informasi tambahan
+        exportData.push([]); // Baris kosong
+        exportData.push(['='.repeat(100)]); // Garis pemisah
+        exportData.push([`Total Data: ${stockOutData.length} Stock Out`]);
+        exportData.push([`Tanggal Export: ${new Date().toLocaleDateString('id-ID')}`]);
+        exportData.push([`Waktu Export: ${new Date().toLocaleTimeString('id-ID')}`]);
+        
+        // Buat file CSV dengan border dan styling
+        let csvContent = '';
+        
+        // Tambahkan BOM untuk UTF-8
+        csvContent += '\uFEFF';
+        
+        // Proses setiap baris dengan border
+        exportData.forEach((row, index) => {
+            if (index === 0) {
+                // Title - center align dengan border
+                csvContent += `"${row[0]}"\n`;
+            } else if (row.length === 0) {
+                // Baris kosong
+                csvContent += '\n';
+            } else if (index === 2) {
+                // Header - dengan border dan styling
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            } else if (index === 3) {
+                // Garis pemisah header
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            } else if (row.length === 1) {
+                // Informasi tambahan atau garis pemisah (single cell)
+                if (row[0].includes('=')) {
+                    // Garis pemisah
+                    csvContent += `"${row[0]}"\n`;
+                } else {
+                    // Informasi tambahan
+                    csvContent += `"${row[0]}"\n`;
+                }
+            } else {
+                // Data rows - dengan border
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            }
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `stock-out-report-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        toast.success({
+            title: 'Success',
+            message: 'Export CSV dengan detail item berhasil!',
+            color: 'green'
+        });
+        
+    } catch (error) {
+        console.error('Error exporting to CSV:', error);
+        toast.error({
+            title: 'Error',
+            message: 'Gagal export CSV: ' + (error.message || 'Unknown error'),
+            color: 'red'
+        });
+    } finally {
+        loading.value = false;
     }
 };
 

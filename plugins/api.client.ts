@@ -75,6 +75,8 @@ export default defineNuxtPlugin(() => {
     // Sales Order
     salesOrder             : () => `${apiBase}/sales-order`,
     countSalesOrderByStatus: () => `${apiBase}/sales-order/countByStatus`,
+    salesOrderStatistics   : () => `${apiBase}/sales-order/statistics`,
+    salesOrderSalesByCustomer: () => `${apiBase}/sales-order/salesByCustomer`,
     approveSalesOrder      : (id: number | string) => `${apiBase}/sales-order/approveSalesOrder/${id}`,
     rejectSalesOrder       : (id: number | string) => `${apiBase}/sales-order/rejectSalesOrder/${id}`,
     salesOrderUpdate       : (id: number | string) => `${apiBase}/sales-order/update/${id}`,
@@ -108,13 +110,15 @@ export default defineNuxtPlugin(() => {
 
     // Stock In & Stock Out
     stockIn                : () => `${apiBase}/stock-in`,
+    stockInExport          : () => `${apiBase}/stock-in/export`,
+    stockOut               : () => `${apiBase}/stock-out`,
+    stockOutExport         : () => `${apiBase}/stock-out/export`,
     stock                  : () => `${apiBase}/stock`,
     validateStockBatch     : () => `${apiBase}/stock/validate-batch`,
     getTotalStock          : () => `${apiBase}/stock/getTotalStock`,
     getStockInDetails      : (id: number | string) => `${apiBase}/stock-in/getStockInDetails/${id}`,
     postStockIn            : (id: number | string) => `${apiBase}/stock-in/postStockIn/${id}`,
     countStockIn           : () => `${apiBase}/stock-in/getTotalStockIn`,
-    stockOut               : () => `${apiBase}/stock-out`,
     getStockOutDetails     : (id: number | string) => `${apiBase}/stock-out/getStockOutDetails/${id}`,
     postStockOut           : (id: number | string) => `${apiBase}/stock-out/postStockOut/${id}`,
     countStockOut          : () => `${apiBase}/stock-out/getTotalStockOut`,
@@ -159,6 +163,12 @@ export default defineNuxtPlugin(() => {
     dataProduct: () => `${apiBase}/data/product`,
     dataCustomer: () => `${apiBase}/data/customer`,
     dataVendor: () => `${apiBase}/data/vendor`,
+
+    // User Sessions
+    userSessionsActiveUsers: () => `${apiBase}/user-sessions/active-users`,
+    userSessionsUserSessions: (id: number | string) => `${apiBase}/user-sessions/user/${id}/sessions`,
+    userSessionsForceLogout: (sessionId: string) => `${apiBase}/user-sessions/force-logout/${sessionId}`,
+    userSessionsCleanupExpired: () => `${apiBase}/user-sessions/cleanup-expired`,
   };
 
   // Inject ke context Nuxt

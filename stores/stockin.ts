@@ -1,9 +1,4 @@
 import { defineStore } from 'pinia'
-import type { PurchaseOrder } from './purchaseOrder'
-import type { Warehouse } from './warehouse'
-import type { User } from './userManagement' // Dihapus karena 'User' tidak diekspor dari './user'
-import type { SalesOrder } from './sales-order'
-import type { Product } from './product'
 import type { StockIn, StockOut, Stock, StockInDetail, StockOutDetail, StockTransfer } from './stocks'
 
 interface Stats {
@@ -30,6 +25,7 @@ interface StockState {
     sortOrder: number | null
     draw: number
     search: string
+    id: string
   }
   form: any
   isEditMode: boolean
@@ -60,6 +56,7 @@ export const useStockStore = defineStore('stock', {
         sortOrder: null,
         draw: 1,
         search: '',
+        id: '',
     },
     form: {},
     isEditMode: false,
@@ -302,6 +299,34 @@ export const useStockStore = defineStore('stock', {
     resetStockIn() {
       this.selectedStockIn = null;
       this.error = null;
+    },
+
+    // Method untuk export data dengan detail
+    async exportStockInWithDetails() {
+      try {
+        const { $api } = useNuxtApp();
+        const token = localStorage.getItem('token');
+        
+        // Ambil semua data stock in dengan detail untuk export
+        const response = await fetch(`${$api.stockInExport()}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Gagal export data stock in' }));
+            throw new Error(errorData.message || 'Gagal export data stock in');
+        }
+
+        const result = await response.json();
+        
+        return result.data || [];
+      } catch (error) {
+          throw error;
+      }
     },
   }
 })

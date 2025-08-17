@@ -43,8 +43,12 @@
                                         <i class="ri-upload-2-line me-1"></i> Export
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">
+                                            <i class="ri-file-excel-line me-2"></i> CSV (dengan Detail Item)
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">
+                                            <i class="ri-file-pdf-line me-2"></i> PDF
+                                        </a></li>
                                     </ul>
                                 </div>
                                 <div class="input-group">
@@ -153,84 +157,6 @@
                 </div>
             </div>
             <!--/ stock in cards -->
-
-            <!-- Placeholder untuk Stock InModal component -->
-            <Modal 
-                :isEditMode="isEditMode"
-                :validationErrorsFromParent="validationErrors"
-                :title="modalTitle" 
-                :description="modalDescription"
-                :selectedStockIn="selectedStockIn"
-            >
-                <template #default>
-                    <form @submit.prevent="handleSaveStockIn">
-                        <div class="row g-6">
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="text" 
-                                        class="form-control" 
-                                        id="name" 
-                                        v-model="form.noSi" 
-                                        placeholder="Masukkan no SI"
-                                        required
-                                    >
-                                    <label for="name">No SI</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <input 
-                                        type="date" 
-                                        class="form-control" 
-                                        id="date" 
-                                        v-model="form.date" 
-                                        placeholder="Masukkan tanggal"
-                                        required
-                                    >
-                                    <label for="name">Tanggal</label>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <v-select
-                                        v-model="form.warehouseId"
-                                        :options="warehouses"
-                                        label="name"
-                                        :reduce="warehouse => warehouse.id"
-                                        placeholder="-- Pilih Gudang --"
-                                        class="warehouse-select"
-                                    />
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating form-floating-outline">
-                                    <v-select
-                                        v-model="form.status"
-                                        :options="status"
-                                        label="label"
-                                        :reduce="status => status.value"
-                                        placeholder="-- Pilih Status --"
-                                        class="status-select"
-                                    />
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary me-2"
-                                    @click="handleSaveStockIn"
-                                >
-                                    {{ isEditMode ? 'Update' : 'Simpan' }}
-                                </button>
-                                <button type="button" class="btn btn-secondary" @click="stockInStore.closeModal()">
-                                    Batal
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </template>
-            </Modal>
         </div>
          <!-- / Content -->
  
@@ -254,8 +180,10 @@ import { usePermissions } from '~/composables/usePermissions'
 import { usePermissionsStore } from '~/stores/permissions'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
 
+
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
+const toast = useToast()
 
 const { $api } = useNuxtApp()
 
@@ -264,9 +192,8 @@ const userStore                 = useUserStore()
 const permissionStore           = usePermissionsStore()
 const stockInStore              = useStockStore()
 const warehouseStore            = useWarehouseStore()
-const { stockIns, totalRecords, stats, params, form, validationErrors } = storeToRefs(stockInStore)
+const { stockIns, totalRecords, stats, params } = storeToRefs(stockInStore)
 const { warehouse: warehouses } = storeToRefs(warehouseStore)
-const selectedStockIn           = ref(null);
 const loading                   = ref(false);
 const globalFilterValue         = ref('');
 const router                    = useRouter()
@@ -301,7 +228,7 @@ const postStockIn = async (id) => {
     try {
         await stockInStore.postStockIn(id);
         await stockInStore.fetchStockInsPaginated();
-        toast('success', `Stock In berhasil diposting.`);
+        toast.success(`Stock In berhasil diposting.`);
     } catch (error) {
         let errorMessage = 'Gagal memposting stock in';
         if (error instanceof Error) {
@@ -317,14 +244,14 @@ const postStockIn = async (id) => {
                  stockInStore.validationErrors = Array.isArray(parsedError.errors)
                     ? parsedError.errors
                     : Object.values(parsedError.errors).flat();
-                return toast('error', 'Terdapat kesalahan validasi data.');
+                return toast.error('Terdapat kesalahan validasi data.');
             }
              errorMessage = parsedError.message || errorMessage;
         } catch (e) {
             // Biarkan errorMessage seperti apa adanya jika bukan JSON
         }
         
-        toast('error', errorMessage);
+        toast.error(errorMessage);
     }
 };
 
@@ -334,7 +261,7 @@ const loadLazyData = async () => {
         await stockInStore.fetchStockInsPaginated();
     } catch (error) {
         const error_message = error.message;
-        toast('error', `Tidak dapat memuat data stock in: ${error_message}`);
+        toast.error(`Tidak dapat memuat data stock in: ${error_message}`);
     }
 };
 
@@ -349,9 +276,152 @@ onMounted(() => {
 
 const exportData = (format) => {
     if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
+        exportStockInWithDetails();
     } else if (format === 'pdf') {
         myDataTableRef.value.exportPDF();
+    }
+};
+
+// Fungsi export dengan detail item menggunakan CSV
+const exportStockInWithDetails = async () => {
+    try {
+        loading.value = true;
+        
+        // Ambil data stock in dengan detail
+        const stockInData = await stockInStore.exportStockInWithDetails();
+        if (stockInData && stockInData.length > 0) {
+            console.log('First Stock In item:', stockInData[0]);
+            console.log('First Stock In item keys:', Object.keys(stockInData[0]));
+            if (stockInData[0].stockInDetails) {
+                console.log('First Stock In Details:', stockInData[0].stockInDetails);
+                if (stockInData[0].stockInDetails.length > 0) {
+                    console.log('First Stock In Detail item:', stockInData[0].stockInDetails[0]);
+                }
+            }
+        }
+        
+        if (!stockInData || stockInData.length === 0) {
+            toast.warning('Tidak ada data untuk diexport');
+            return;
+        }
+
+        // Siapkan data untuk export dengan format yang lebih sederhana
+        const exportData = [];
+        
+        // Ambil nama perusahaan dari user store atau default
+        const userData = userStore.user;
+        console.log('User Data:', userData);
+        const nmPerusahaan = userData?.perusahaan?.name || userData?.cabang?.perusahaan?.name || userData?.perusahaan?.nmPerusahaan || userData?.cabang?.perusahaan?.nmPerusahaan || 'Perusahaan';
+        
+        // Tambahkan title
+        exportData.push([`Rekapitulasi data Stock In ${nmPerusahaan}`]);
+        exportData.push([]); // Baris kosong
+        
+        // Tambahkan header utama
+        exportData.push(['No. Stock In', 'Tanggal', 'Gudang', 'Status', 'No. PO', 'Penerima', 'Produk', 'Deskripsi', 'Quantity']);
+        exportData.push(['-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10), '-'.repeat(10)]); // Garis pemisah header
+        
+        // Tambahkan data dengan detail item
+        stockInData.forEach((stockIn) => {
+            if (stockIn.stockInDetails && stockIn.stockInDetails.length > 0) {
+                stockIn.stockInDetails.forEach(detail => {
+                    exportData.push([
+                        stockIn.noSi || '-',
+                        stockIn.date ? new Date(stockIn.date).toLocaleDateString() : '-',
+                        stockIn.warehouse?.name || '-',
+                        stockIn.status || '-',
+                        stockIn.purchaseOrder?.noPo || '-',
+                        stockIn.purchaseOrder?.receivedByUser?.fullName || stockIn.postedByUser?.fullName || '-',
+                        detail.product?.name || '-',
+                        detail.description || '-',
+                        detail.quantity || 0
+                    ]);
+                });
+            } else {
+                // Jika tidak ada detail item, tetap tampilkan header stock in
+                exportData.push([
+                    stockIn.noSi || '-',
+                    stockIn.date ? new Date(stockIn.date).toLocaleDateString() : '-',
+                    stockIn.warehouse?.name || '-',
+                    stockIn.status || '-',
+                    stockIn.purchaseOrder?.noPo || '-',
+                    stockIn.purchaseOrder?.receivedByUser?.fullName || stockIn.postedByUser?.fullName || '-',
+                    '-',
+                    'Tidak ada detail item',
+                    '-'
+                ]);
+            }
+        });
+        
+        // Tambahkan informasi tambahan
+        exportData.push([]); // Baris kosong
+        exportData.push(['='.repeat(100)]); // Garis pemisah
+        exportData.push([`Total Data: ${stockInData.length} Stock In`]);
+        exportData.push([`Tanggal Export: ${new Date().toLocaleDateString('id-ID')}`]);
+        exportData.push([`Waktu Export: ${new Date().toLocaleTimeString('id-ID')}`]);
+        
+        // Buat file CSV dengan border dan styling
+        let csvContent = '';
+        
+        // Tambahkan BOM untuk UTF-8
+        csvContent += '\uFEFF';
+        
+        // Proses setiap baris dengan border
+        exportData.forEach((row, index) => {
+            if (index === 0) {
+                // Title - center align dengan border
+                csvContent += `"${row[0]}"\n`;
+            } else if (row.length === 0) {
+                // Baris kosong
+                csvContent += '\n';
+            } else if (index === 2) {
+                // Header - dengan border dan styling
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            } else if (index === 3) {
+                // Garis pemisah header
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            } else if (row.length === 1) {
+                // Informasi tambahan atau garis pemisah (single cell)
+                if (row[0].includes('=')) {
+                    // Garis pemisah
+                    csvContent += `"${row[0]}"\n`;
+                } else {
+                    // Informasi tambahan
+                    csvContent += `"${row[0]}"\n`;
+                }
+            } else {
+                // Data rows - dengan border
+                csvContent += row.map(cell => `"${cell}"`).join(',') + '\n';
+            }
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `stock-in-report-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        const toast = useToast();
+        toast.success({
+            title: 'Success',
+            message: 'Export CSV dengan detail item berhasil!',
+            color: 'green'
+        });
+        
+    } catch (error) {
+        console.error('Error exporting to CSV:', error);
+        const toast = useToast();
+        toast.error({
+            title: 'Error',
+            message: 'Gagal export CSV: ' + (error.message || 'Unknown error'),
+            color: 'red'
+        });
+    } finally {
+        loading.value = false;
     }
 };
 
@@ -378,10 +448,10 @@ const deleteStockIn = async (id) => {
         try {
             await stockInStore.deleteStockIn(id);
             loadLazyData(); // Muat ulang data
-            toast('success', 'Stock In berhasil dihapus.');
+            toast.success('Stock In berhasil dihapus.');
 
         } catch (error) {
-            toast('error', error.message);
+            toast.error(error.message);
         }
     }
 };

@@ -24,7 +24,7 @@
       <ul class="menu-inner py-7">
         <!-- Dashboards -->
         <li class="menu-item" :class="{ active: $route.path === '/dashboard' }">
-          <a href="/dashboard" class="menu-link">
+          <a href="/dashboard" class="menu-link" @click="handleMenuClick">
             <i class="menu-icon tf-icons ri-home-smile-line"></i>
             <div data-i18n="Dashboards">Dashboards</div>
           </a>
@@ -64,7 +64,7 @@
                   :class="{ active: detail.route === $route.path }"
                   @mouseenter="handlePrefetch(detail.route)"
                 >
-                  <NuxtLink :to="detail.route" class="menu-link">
+                  <NuxtLink :to="detail.route" class="menu-link" @click="handleMenuClick">
                     <div>{{ detail.name }}</div>
                   </NuxtLink>
                 </li>
@@ -93,6 +93,7 @@
     const userStore = useUserStore();
 
     const openGroupIds = ref(new Set());
+    const isNavigatingFromMenu = ref(false);
 
     const isSuperAdmin = computed(() => {
       return userStore.user?.roles.some(role => role.name === 'superadmin');
@@ -119,6 +120,19 @@
       if (prefetchMap[route]) {
         prefetchMap[route]();
       }
+    };
+
+    const handleMenuClick = () => {
+      // Set flag bahwa navigasi berasal dari menu
+      isNavigatingFromMenu.value = true;
+      // Tutup sidebar ketika menu diklik
+      if (layoutStore.isSidebarExpanded) {
+        layoutStore.toggleSidebar();
+      }
+      // Reset flag setelah delay singkat
+      setTimeout(() => {
+        isNavigatingFromMenu.value = false;
+      }, 200);
     };
 
     const handleMouseEnter = () => {
@@ -176,6 +190,10 @@
 
     watch(() => route.path, () => {
       setActiveGroup();
+      // Tutup sidebar otomatis ketika berpindah halaman (hanya jika bukan dari klik menu)
+      if (!isNavigatingFromMenu.value && layoutStore.isSidebarExpanded) {
+        layoutStore.toggleSidebar();
+      }
     });
 
     // --- Transition Hooks for smooth animation ---
