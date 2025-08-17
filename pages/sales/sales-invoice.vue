@@ -143,6 +143,13 @@
                                             </span>
                                         </template>
                                     </Column>
+                                    <Column field="email" header="Email Penagihan" :sortable="true">
+                                        <template #body="slotProps">
+                                            <span>
+                                                {{ slotProps.data.email || '-' }}
+                                            </span>
+                                        </template>
+                                    </Column>
                                     <Column field="date" header="Tanggal" :sortable="true">
                                         <template #body="slotProps">
                                             {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
@@ -287,6 +294,12 @@
                                         </div>
                                     </div>
                                     <div class="col-md-3">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" v-model="form.email" class="form-control" placeholder="Email">
+                                            <label>Email Penagihan</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
                                         <v-select
                                             v-model="form.status"
                                             :options="statusOptions"
@@ -302,10 +315,10 @@
                                             <input type="number" v-model="form.discountPercent" class="form-control" placeholder="Discount (%)" :readonly="!!form.salesOrderId">
                                             <label>Discount Invoice (%)</label>
                                             <div v-if="form.salesOrderId" class="form-text">
-                                                <small class="text-muted">📋 Diambil dari Sales Order</small>
+                                                <small class="text-muted">Diambil dari Sales Order</small>
                                             </div>
                                             <div class="form-text mt-1">
-                                                <small class="text-info">💰 {{ formatRupiah(discountAmount) }}</small>
+                                                <small class="text-muted">{{ formatRupiah(discountAmount) }}</small>
                                             </div>
                                         </div>
                                     </div>
@@ -314,10 +327,10 @@
                                             <input type="number" v-model="form.taxPercent" class="form-control" placeholder="Tax (%)" :readonly="!!form.salesOrderId">
                                             <label>Tax Invoice (%)</label>
                                             <div v-if="form.salesOrderId" class="form-text">
-                                                <small class="text-muted">📋 Diambil dari Sales Order</small>
+                                                <small class="text-muted">Diambil dari Sales Order</small>
                                             </div>
                                             <div class="form-text mt-1">
-                                                <small class="text-info">💰 {{ formatRupiah(taxAmount) }}</small>
+                                                <small class="text-muted">{{ formatRupiah(taxAmount) }}</small>
                                             </div>
                                         </div>
                                     </div>
@@ -326,7 +339,7 @@
                                             <input type="text" :value="formatRupiah(form.total)" @input="updateTotalFromInput" class="form-control" placeholder="Total" :readonly="!!form.salesOrderId">
                                             <label>Total</label>
                                             <div v-if="form.salesOrderId" class="form-text">
-                                                <small class="text-muted">📋 Diambil dari Sales Order</small>
+                                                <small class="text-muted">Diambil dari Sales Order</small>
                                             </div>
                                         </div>
                                     </div>
@@ -335,7 +348,7 @@
                                             <input type="text" :value="formatRupiah(form.dpp)" class="form-control" placeholder="DPP" readonly>
                                             <label>DPP (Dasar Pengenaan Pajak)</label>
                                             <div class="form-text">
-                                                <small class="text-info">🧮 Otomatis: Subtotal Items × 11/12</small>
+                                                <small class="text-muted">Otomatis: Subtotal Items × 11/12</small>
                                             </div>
                                         </div>
                                     </div>
@@ -350,13 +363,13 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
+                                    <div class="col-md-6">
                                         <div class="form-floating form-floating-outline">
                                             <input type="text" :value="formatRupiah(form.remainingAmount)" class="form-control" readonly>
                                             <label>Sisa Pembayaran</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-12">
                                         <div class="form-floating form-floating-outline">
                                             <textarea v-model="form.description" class="form-control" placeholder="Deskripsi Invoice"></textarea>
                                             <label>Deskripsi Invoice</label>

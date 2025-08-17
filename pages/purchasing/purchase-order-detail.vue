@@ -56,36 +56,45 @@
                         </div>
                         <div class="card-body py-6 px-0">
                             <div class="d-flex justify-content-between flex-wrap gap-6">
-                            <div>
-                                <h6>Invoice To:</h6>
-                                <p class="mb-1">{{ purchaseOrder.up }}</p>
-                                <p class="mb-1">{{ purchaseOrder.vendor.name }}</p>
-                                <p class="mb-1">{{ purchaseOrder.vendor.address }}</p>
-                                <p class="mb-1">{{ purchaseOrder.vendor.phone }}</p>
-                                <p class="mb-0">{{ purchaseOrder.vendor.email }}</p>
-                            </div>
-                            <div>
-                                <h6>Bill To:</h6>
-                                <p class="mb-1">{{ purchaseOrder.perusahaan.nmPerusahaan }}</p>
-                                <p class="mb-1">{{ purchaseOrder.perusahaan.alamatPerusahaan }}</p>
-                            </div>
+                                <div>
+                                    <h6>Invoice To:</h6>
+                                    <p class="mb-1">{{ purchaseOrder.up }}</p>
+                                    <p class="mb-1">{{ purchaseOrder.vendor.name }}</p>
+                                    <p class="mb-1">{{ purchaseOrder.vendor.address }}</p>
+                                    <p class="mb-1">{{ purchaseOrder.vendor.phone }}</p>
+                                    <p class="mb-0">{{ purchaseOrder.vendor.email }}</p>
+                                </div>
+                                <div>
+                                    <h6>Bill To:</h6>
+                                    <p class="mb-1">{{ purchaseOrder.perusahaan.nmPerusahaan }}</p>
+                                    <p class="mb-1">{{ purchaseOrder.perusahaan.alamatPerusahaan }}</p>
+                                </div>
                             </div>
                         </div>
-                        
-                        <!-- ✅ TOMBOL RECEIVE ALL -->
-                        <div class="d-flex justify-content-end mb-4">
-                            <button 
-                                type="button" 
-                                class="btn btn-success btn-sm"
-                                @click="receiveAllItems"
-                                :disabled="loading || isAllItemsReceived"
-                            >
-                                <i class="ri-check-double-line me-2"></i>
-                                Receive All ({{ totalPendingQuantity }} items)
-                            </button>
-                        </div>
-                        
                         <div class="table-responsive border rounded-4 border-bottom-0">
+                            <div 
+                                class="p-3 bg-light border-bottom"
+                                style="position: sticky; top: 0; z-index: 1000; left: 0; right: 0; min-width: max-content; width: 100%;"
+                            >
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Receive All Items</h6>
+                                        <small class="text-muted">
+                                            Total pending items: {{ totalPendingItems }} 
+                                            ({{ totalPendingQuantity }} units)
+                                        </small>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="btn btn-secondary btn-sm"
+                                        @click="receiveAllItems"
+                                        :disabled="loading || isAllItemsReceived"
+                                    >
+                                        <i class="ri-check-double-line me-2"></i>
+                                        Receive All ({{ totalPendingQuantity }} items)
+                                    </button>
+                                </div>
+                            </div>
                             <table class="table m-0">
                             <thead>
                                 <tr>

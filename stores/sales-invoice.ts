@@ -51,6 +51,7 @@ export interface SalesInvoice {
   name?           : string
   noInvoice       : string
   up              : string
+  email           : string
   date            : string
   dueDate         : string
   status          : string
@@ -164,6 +165,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
     form: {
         noInvoice       : '',
         up              : '',
+        email           : '',
         date            : '',
         dueDate         : '',
         status          : '',
@@ -295,6 +297,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
             formData.append('customerId', this.form.customerId?.toString() || '');
             formData.append('salesOrderId', this.form.salesOrderId?.toString() || '');
             formData.append('up', this.form.up || '');
+            formData.append('email', this.form.email || '');
             formData.append('date', this.form.date || '');
             formData.append('dueDate', this.form.dueDate || '');
             formData.append('status', this.form.status || 'unpaid');
@@ -493,6 +496,7 @@ export const useSalesInvoiceStore = defineStore('salesInvoice', {
         customerId: null,
         salesOrderId: null,
         up: '',
+        email: '',
         date: new Date().toISOString().split('T')[0],
         dueDate: new Date().toISOString().split('T')[0],
         discountPercent: 0,

@@ -84,7 +84,11 @@
                         </div>
                         <div class="table-responsive border rounded-4 border-bottom-0">
                             <!-- ✅ TOMBOL DELIVER ALL -->
-                            <div v-if="showDeliverAllButton" class="p-3 bg-light border-bottom">
+                            <div 
+                                v-if="showDeliverAllButton" 
+                                class="p-3 bg-light border-bottom"
+                                style="position: sticky; top: 0; z-index: 1000; left: 0; right: 0; min-width: max-content; width: 100%;"
+                            >
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1">Deliver All Items</h6>
@@ -94,13 +98,13 @@
                                         </small>
                                     </div>
                                     <button 
-                                        @click="deliverAllItems"
-                                        class="btn btn-success btn-sm"
-                                        :disabled="loading"
-                                    >
-                                        <i class="ri-truck-line me-2"></i>
-                                        Deliver All
-                                    </button>
+                                         @click="deliverAllItems"
+                                         class="btn btn-secondary btn-sm"
+                                         :disabled="loading || isAllItemsReceived"
+                                     >
+                                         <i class="ri-truck-line me-2"></i>
+                                         Deliver All ({{ totalPendingQuantity }} items)
+                                     </button>
                                 </div>
                             </div>
                             <table class="table m-0">
@@ -127,7 +131,7 @@
                                                 class="btn btn-sm btn-outline-danger me-1 qty-btn" 
                                                 type="button"
                                                 @click="decreaseDeliveredQty(item)"
-                                                :disabled="isReturned(item) || isDelivered || (item.deliveredQty || 0) <= 0"
+                                                :disabled="isReturned(item) || isDelivered || isItemDone(item) || (item.deliveredQty || 0) <= 0"
                                                 title="Kurangi quantity"
                                             >
                                                 <i class="ri-subtract-line"></i>
@@ -149,7 +153,7 @@
                                                     }
                                                 }"
                                                 @blur="updateDeliveredQty(item)"
-                                                :disabled="isReturned(item) || isDelivered"
+                                                :disabled="isReturned(item) || isDelivered || isItemDone(item)"
                                                 min="0"
                                                 :max="item.quantity"
                                                 step="1"
@@ -160,7 +164,7 @@
                                                 class="btn btn-sm btn-outline-success ms-1 qty-btn" 
                                                 type="button"
                                                 @click="increaseDeliveredQty(item)"
-                                                :disabled="isReturned(item) || isDelivered || (item.deliveredQty || 0) >= item.quantity"
+                                                :disabled="isReturned(item) || isDelivered || isItemDone(item) || (item.deliveredQty || 0) >= item.quantity"
                                                 title="Tambah quantity"
                                             >
                                                 <i class="ri-add-line"></i>
@@ -174,15 +178,6 @@
                                         </span>
                                         <span v-else class="badge bg-danger">RETURNED</span>
                                     </td>
-                                    <!-- ✅ OVERLAY untuk RETURNED items -->
-                                    <div v-if="isReturned(item)" class="returned-overlay">
-                                        RETURNED
-                                    </div>
-                                    <!-- ✅ OVERLAY untuk DELIVERED status -->
-                                    <div v-if="isDelivered && !isReturned(item)" class="delivered-overlay">
-                                        <i class="ri-lock-line me-1"></i>
-                                        DELIVERED - LOCKED
-                                    </div>
                                 </tr>
                             </tbody>
                             </table>
@@ -459,9 +454,16 @@ const getDeliveryStatusBadge = (item) => {
     return { text: 'Error', class: 'badge bg-danger' }
 }
 
+// ✅ FUNCTION untuk mengecek apakah item sudah done (deliveredQty = quantity)
+const isItemDone = (item) => {
+    const deliveredQty = Math.floor(Number(item.deliveredQty) || 0)
+    const totalQty = Math.floor(Number(item.quantity) || 0)
+    return deliveredQty === totalQty && totalQty > 0
+}
+
 // ✅ FUNCTION untuk increase delivered quantity
 const increaseDeliveredQty = (item) => {
-    if (isReturned(item) || isDelivered.value) return
+    if (isReturned(item) || isDelivered.value || isItemDone(item)) return
     
     const currentQty = Math.floor(Number(item.deliveredQty) || 0)
     const maxQty = Math.floor(Number(item.quantity) || 0)
@@ -474,7 +476,7 @@ const increaseDeliveredQty = (item) => {
 
 // ✅ FUNCTION untuk decrease delivered quantity
 const decreaseDeliveredQty = (item) => {
-    if (isReturned(item) || isDelivered.value) return
+    if (isReturned(item) || isDelivered.value || isItemDone(item)) return
     
     const currentQty = Math.floor(Number(item.deliveredQty) || 0)
     
@@ -500,6 +502,19 @@ const updateDeliveredQty = async (item) => {
     }
 
     if (isReturned(item)) return
+    
+    // Validasi: Cek apakah item sudah done
+    if (isItemDone(item)) {
+        toast.warning({
+            title: 'Aksi Tidak Diizinkan',
+            message: `Item ini sudah selesai dikirim (${item.deliveredQty}/${item.quantity}) dan tidak dapat diubah lagi.`,
+            icon: 'ri-alert-line',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        })
+        return
+    }
     
     // Pastikan deliveredQty memiliki nilai default dan bulatkan ke bawah
     if (item.deliveredQty === null || item.deliveredQty === undefined || item.deliveredQty === '') {
@@ -534,7 +549,7 @@ const updateDeliveredQty = async (item) => {
         await refreshSalesOrderDetails()
         
         // Check if all items are now done
-        checkAllItemsStatus()
+        await checkAllItemsStatus()
         
     } catch (error) {
         console.error('Failed to update delivered quantity:', error)
@@ -547,7 +562,7 @@ const updateDeliveredQty = async (item) => {
 }
 
 // ✅ FUNCTION untuk check status semua items
-const checkAllItemsStatus = () => {
+const checkAllItemsStatus = async () => {
     if (!salesOrder.value || !salesOrder.value.salesOrderItems) return
     
     const allItemsDone = salesOrder.value.salesOrderItems.every(item => {
@@ -556,11 +571,17 @@ const checkAllItemsStatus = () => {
     })
     
     if (allItemsDone && salesOrder.value.status !== 'delivered') {
-        toast.success({
-            title: 'Semua Item Selesai!',
-            message: 'Semua item telah dikirim sepenuhnya. Status berubah menjadi Delivered.',
-            color: 'green'
-        })
+        // Refresh data untuk mendapatkan status terbaru dari backend
+        await refreshSalesOrderDetails()
+        
+        // Tampilkan notifikasi jika status berubah
+        if (salesOrder.value.status === 'delivered') {
+            toast.success({
+                title: 'Semua Item Selesai!',
+                message: 'Semua item telah dikirim sepenuhnya. Status berubah menjadi Delivered.',
+                color: 'green'
+            })
+        }
     }
 }
 
@@ -646,16 +667,19 @@ const totalBeforeTax = computed(() => {
     return 0
 })
 
+// ✅ COMPUTED untuk cek apakah semua item sudah diterima
+const isAllItemsReceived = computed(() => {
+    return totalPendingQuantity.value === 0
+})
+
 const showDeliverAllButton = computed(() => {
     if (!salesOrder.value || !salesOrder.value.salesOrderItems) return false;
     
-    // Hanya tampilkan jika status approved dan ada pending items
-    if (salesOrder.value.status == 'draft') return false;
+    // Hanya tampilkan jika status bukan draft
+    if (salesOrder.value.status === 'draft') return false;
     
-    return salesOrder.value.salesOrderItems.some(item => {
-        if (isReturned(item)) return false; // Exclude returned items
-        return Math.floor(Number(item.deliveredQty) || 0) < Math.floor(Number(item.quantity) || 0);
-    });
+    // Selalu tampilkan tombol, tapi akan disabled jika semua item done
+    return true;
 });
 
 const totalPendingItems = computed(() => {
