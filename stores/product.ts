@@ -4,16 +4,8 @@ import Swal from 'sweetalert2'
 import type { Category } from './kategori'
 import type { Customer } from './customer'
 import type { Unit } from './unit'
+import type { Stock } from './stocks'
 import { useImageUrl } from '~/composables/useImageUrl'
-
-export interface Stock {
-  id: string
-  productId: number
-  warehouseId: number
-  quantity: number
-  createdAt: string
-  updatedAt: string
-}
 
 export interface ProductCustomer {
   id: number

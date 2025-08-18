@@ -22,9 +22,7 @@ export interface QuotationItem {
   product?       : Product
 }
 
-export interface CustomerProduct extends Product {
-  priceSell: number
-}
+// CustomerProduct interface sudah didefinisikan di customer.ts
 
 export interface Quotation {
   id                 : string

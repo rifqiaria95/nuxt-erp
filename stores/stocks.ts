@@ -75,7 +75,7 @@ export interface StockOutDetail {
   updatedAt : string
 }
 
-export interface StockTransfer {
+export interface StockTransferItem {
   id             : string
   purchaseOrderId: string
   productId      : number
@@ -104,7 +104,7 @@ interface StockState {
   stockOuts      : StockOut[]
   stockInDetails : StockInDetail[]
   stockOutDetails: StockOutDetail[]
-  stockTransfers : StockTransfer[]
+  stockTransfers : StockTransferItem[]
   stats          : Stats
   loading        : boolean
   error          : any

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
 import { useUserStore } from './user'
+import type { MenuDetail } from './menu-detail'
 
 export interface MenuGroup {
   id: number
@@ -10,15 +11,6 @@ export interface MenuGroup {
   order: number
   jenisMenu: number
   menuDetails?: MenuDetail[]
-}
-
-export interface MenuDetail {
-  id: number
-  name: string
-  route: string
-  status: number
-  order: number
-  menuGroupId: number
 }
 
 interface MenuGroupState {

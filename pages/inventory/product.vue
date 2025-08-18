@@ -14,6 +14,9 @@
                     <h4 class="mb-1">List Product</h4>
                     <p class="mb-6">
                         List product yang terdaftar di sistem
+                        <span v-if="globalFilterValue" class="text-muted">
+                            - Menampilkan {{ totalRecords }} hasil untuk "{{ globalFilterValue }}"
+                        </span>
                     </p>
                     <div class="row g-6 mb-6">
                         <div class="col-xl-4 col-lg-6 col-md-6">
@@ -67,11 +70,24 @@
                                             <span class="p-input-icon-left">
                                                 <InputText
                                                     v-model="globalFilterValue"
-                                                    placeholder="Cari product..."
+                                                    placeholder="Cari berdasarkan nama, SKU, atau part number..."
                                                     class="w-full md:w-20rem"
                                                 />
                                             </span>
+                                            <button 
+                                                v-if="globalFilterValue" 
+                                                @click="clearSearch" 
+                                                class="btn btn-outline-secondary" 
+                                                type="button"
+                                                title="Hapus pencarian"
+                                            >
+                                                <i class="ri-close-line"></i>
+                                            </button>
                                         </div>
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="ri-information-line me-1"></i>
+                                            Pencarian mendukung nama produk, SKU, dan part number
+                                        </small>
                                     </div>
                                 </div>
                                 <div class="card-datatable table-responsive py-3 px-3">
@@ -453,6 +469,11 @@ const debouncedSearch = useDebounceFn(() => {
 }, 500)
 watch(globalFilterValue, debouncedSearch);
 
+const clearSearch = () => {
+    globalFilterValue.value = '';
+    productStore.setSearch('');
+};
+
 const onPage = (event) => productStore.setPagination(event);
 
 const handleRowsChange = () => {
@@ -538,5 +559,15 @@ const getFieldError = (fieldName) => {
         margin-top: 0.25rem;
         font-size: 0.875rem;
         color: #dc3545;
+    }
+
+    /* Search styling */
+    .input-group .btn {
+        border-left: none;
+    }
+
+    .input-group .form-control:focus + .btn {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
 </style>

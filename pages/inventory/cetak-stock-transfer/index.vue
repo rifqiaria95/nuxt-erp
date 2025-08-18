@@ -10,12 +10,12 @@
         <div v-if="stockTransfer.perusahaan">
           <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
             <span class="app-brand-logo demo">
-              <img src="{{ stockTransfer.perusahaan.logoPerusahaan }}" alt="logo" width="200">
+              <img v-if="stockTransfer.perusahaan.logoPerusahaan" :src="getLogoUrl(stockTransfer.perusahaan.logoPerusahaan)" alt="logo" width="200">
             </span>
           </div>
-          <p class="mb-1">{{ stockTransfer.perusahaan.alamatPerusahaan }}</p>
-          <p class="mb-0">{{ stockTransfer.perusahaan.tlpPerusahaan }}</p>
-          <p class="mb-0">{{ stockTransfer.perusahaan.emailPerusahaan }}</p>
+          <p class="mb-1">{{ stockTransfer.perusahaan.alamatPerusahaan || '-' }}</p>
+          <p class="mb-0">{{ stockTransfer.perusahaan.tlpPerusahaan || '-' }}</p>
+          <p class="mb-0">{{ stockTransfer.perusahaan.emailPerusahaan || '-' }}</p>
         </div>
         <div>
           <h5 class="mb-6 text-capitalize">NO. BERITA ACARA : {{ stockTransfer.noTransfer }}</h5>

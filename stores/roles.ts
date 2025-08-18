@@ -1,11 +1,7 @@
 import { defineStore } from 'pinia'
 import { useNuxtApp } from '#app'
 import Swal from 'sweetalert2'
-
-export interface Permission {
-  id: number
-  name: string
-}
+import type { Permission } from './permissions'
 
 export interface Role {
   id: number
