@@ -338,19 +338,49 @@
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
+                                <div class="alert alert-info mb-4">
+                                    <i class="ri-information-line me-2"></i>
+                                    <strong>Info:</strong> 
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>Pilih customer terlebih dahulu</strong> di tab "Informasi Quotation"</li>
+                                        <li>Hanya produk yang dimiliki oleh customer yang dipilih yang akan ditampilkan</li>
+                                        <li>Anda dapat <strong>mencari produk berdasarkan nama atau SKU</strong></li>
+                                        <li>Harga yang digunakan adalah <strong>harga khusus customer (priceSell)</strong></li>
+                                        <li>Jika customer tidak memiliki produk, silakan tambahkan produk untuk customer tersebut</li>
+                                    </ul>
+                                </div>
                                 <div v-for="(item, index) in form.quotationItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
                                         <div class="col-md-4">
                                             <v-select 
                                                 v-model="item.productId" 
-                                                :options="products || []" 
-                                                :get-option-label="p => `${p.name} (${p.unit?.name})`" 
+                                                :options="customerProducts || []" 
+                                                :get-option-label="p => `${p.name} (${p.sku}) - ${p.unit?.name || 'No Unit'}`" 
                                                 :reduce="p => p.id" 
                                                 placeholder="Pilih Produk" 
                                                 @update:modelValue="onProductChange(index)" 
                                                 class="v-select-style"
+                                                :filter="customFilter"
+                                                :disabled="!form.customerId"
                                             />
-                                            <small class="text-muted">Selected: {{ item.productId }}</small>
+                                            <small class="text-muted">
+                                                <span v-if="loading">
+                                                    <i class="ri-loader-4-line me-1"></i>
+                                                    Memuat produk...
+                                                </span>
+                                                <span v-else>
+                                                    <span v-if="form.customerId && customerProducts.length === 0" class="text-warning">
+                                                        <i class="ri-error-warning-line me-1"></i>
+                                                        Customer ini tidak memiliki produk
+                                                    </span>
+                                                    <span v-else-if="customerProducts.length > 0">
+                                                        {{ customerProducts.length }} produk tersedia
+                                                    </span>
+                                                    <span v-else>
+                                                        Pilih customer terlebih dahulu
+                                                    </span>
+                                                </span>
+                                            </small>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-floating form-floating-outline">
@@ -383,7 +413,16 @@
                                     <hr class="my-4">
                                 </div>
                                 <div class="mt-4">
-                                    <button @click.prevent="quotationStore.addItem()" class="btn btn-primary">Tambah Item</button>
+                                    <button 
+                                        @click.prevent="quotationStore.addItem()" 
+                                        class="btn btn-primary"
+                                        :disabled="!form.customerId"
+                                    >
+                                        Tambah Item
+                                    </button>
+                                    <small v-if="!form.customerId" class="text-muted d-block mt-2">
+                                        Pilih customer terlebih dahulu untuk menambah item
+                                    </small>
                                 </div>
                                 <div class="d-flex justify-content-end mt-4">
                                     <span class="fw-bold fs-5">Grand Total: {{ formatRupiah(grandTotal) }}</span>
@@ -445,7 +484,7 @@ const formatRupiah                       = useFormatRupiah()
 const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore                    = usePermissionsStore()
 
-const { quotations, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(quotationStore)
+const { quotations, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, customerProducts } = storeToRefs(quotationStore)
 const { customers }     = storeToRefs(customerStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
 const { cabangs }     = storeToRefs(cabangStore)
@@ -539,6 +578,102 @@ watch(() => form.value?.perusahaanId, (newPerusahaanId) => {
     }
 });
 
+// ✅ NEW: Watcher untuk customerId - fetch products untuk customer yang dipilih
+watch(() => form.value?.customerId, (newCustomerId, oldCustomerId) => {
+    if (newCustomerId) {
+        quotationStore.fetchProductsForCustomer(newCustomerId);
+        
+        // ✅ NEW: Jika customer berubah dan ada item yang sudah dipilih, reset item yang tidak valid
+        if (oldCustomerId && form.value && form.value.quotationItems) {
+            setTimeout(() => {
+                form.value.quotationItems.forEach((item, index) => {
+                    if (item.productId) {
+                        const isValidProduct = quotationStore.customerProducts.some(p => p.id === item.productId);
+                        if (!isValidProduct) {
+                            // Reset item yang tidak valid
+                            item.productId = null;
+                            item.price = 0;
+                            item.subtotal = 0;
+                            calculateSubtotal(index);
+                        }
+                    }
+                });
+            }, 500); // Tunggu sebentar agar customerProducts sudah ter-load
+        }
+    } else {
+        // Reset customer products jika customer dihapus
+        quotationStore.customerProducts = [];
+        
+        // Reset semua item jika customer dihapus
+        if (form.value && form.value.quotationItems) {
+            form.value.quotationItems.forEach((item, index) => {
+                item.productId = null;
+                item.price = 0;
+                item.subtotal = 0;
+                calculateSubtotal(index);
+            });
+        }
+    }
+});
+
+// ✅ NEW: Watcher untuk customerProducts
+watch(() => customerProducts, (newProducts) => {
+    if (newProducts && newProducts.length > 0) {
+        console.log('Customer products loaded:', newProducts.length);
+        
+
+        
+        // ✅ NEW: Log untuk debugging
+        console.log('Customer products loaded:', newProducts.length, 'products');
+        if (newProducts.length > 0) {
+            console.log('Sample product:', newProducts[0]);
+        }
+        
+        // ✅ NEW: Update harga untuk item yang sudah ada jika dalam edit mode
+        if (form.value && form.value.quotationItems && isEditMode.value && newProducts.length > 0) {
+            form.value.quotationItems.forEach((item, index) => {
+                if (item.productId) {
+                    const selectedProduct = newProducts.find(p => p.id === item.productId);
+                    if (selectedProduct) {
+                        item.price = Number(selectedProduct.priceSell) || 0;
+                        calculateSubtotal(index);
+                    } else {
+                        // Jika produk tidak ditemukan di customerProducts, reset item
+                        item.productId = null;
+                        item.price = 0;
+                        item.subtotal = 0;
+                        calculateSubtotal(index);
+                    }
+                }
+            });
+        }
+        
+        // ✅ NEW: Tampilkan toast jika tidak ada produk (hanya untuk create mode)
+        if (form.value?.customerId && newProducts.length === 0 && !isEditMode.value) {
+            const toast = useToast();
+            toast.warning({
+                title: 'Peringatan',
+                message: 'Customer yang dipilih tidak memiliki produk. Silakan tambahkan produk untuk customer ini.',
+                color: 'orange',
+                position: 'topRight',
+                layout: 2,
+            });
+        }
+        
+        // ✅ NEW: Tampilkan toast jika berhasil memuat produk (hanya untuk create mode)
+        if (form.value?.customerId && newProducts.length > 0 && !isEditMode.value) {
+            const toast = useToast();
+            toast.success({
+                title: 'Berhasil',
+                message: `Berhasil memuat ${newProducts.length} produk untuk customer yang dipilih.`,
+                color: 'green',
+                position: 'topRight',
+                layout: 2,
+            });
+        }
+    }
+});
+
 const filteredCabangs = computed(() => {
     if (!form.value?.perusahaanId || !cabangs.value) return [];
     return (cabangs.value || []).filter(c => c.perusahaanId === form.value.perusahaanId);
@@ -596,13 +731,25 @@ const onProductChange = (index) => {
   if (!form.value || !form.value.quotationItems) return;
   
   const selectedProductId = form.value.quotationItems[index].productId;
-  const selectedProduct = (products.value || []).find(p => p.id === selectedProductId);
+  const selectedProduct = customerProducts.value.find(p => p.id === selectedProductId);
 
   if (selectedProduct) {
     const item = form.value.quotationItems[index];
-    item.price = Number(selectedProduct.priceBuy) || 0;
+    // ✅ NEW: Gunakan priceSell dari customerProducts untuk harga jual
+    item.price = Number(selectedProduct.priceSell) || 0;
     calculateSubtotal(index);
   }
+};
+
+// ✅ NEW: Custom filter untuk v-select yang mendukung pencarian berdasarkan nama dan SKU
+const customFilter = (option, label, search) => {
+  if (!search) return true;
+  
+  const searchLower = search.toLowerCase();
+  const productName = option.name ? option.name.toLowerCase() : '';
+  const productSku = option.sku ? option.sku.toLowerCase() : '';
+  
+  return productName.includes(searchLower) || productSku.includes(searchLower);
 };
 
 const onQuantityChange = (index) => {

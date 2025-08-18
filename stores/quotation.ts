@@ -22,6 +22,10 @@ export interface QuotationItem {
   product?       : Product
 }
 
+export interface CustomerProduct extends Product {
+  priceSell: number
+}
+
 export interface Quotation {
   id                 : string
   name?              : string
@@ -76,6 +80,7 @@ interface QuotationState {
   isEditMode      : boolean
   showModal       : boolean
   validationErrors: any[]
+  customerProducts: CustomerProduct[]
 }
 
 export const useQuotationStore = defineStore('quotation', {
@@ -116,6 +121,7 @@ export const useQuotationStore = defineStore('quotation', {
     isEditMode      : false,
     showModal       : false,
     validationErrors: [],
+    customerProducts: [],
   }),
   actions: {
     async fetchQuotations() {
@@ -207,6 +213,11 @@ export const useQuotationStore = defineStore('quotation', {
             if (!dataToAppend.customerId) {
                 throw new Error('Customer harus dipilih');
             }
+            
+            // ✅ NEW: Validasi bahwa customer memiliki produk
+            if (this.customerProducts.length === 0) {
+                throw new Error('Customer yang dipilih tidak memiliki produk. Silakan pilih customer lain atau tambahkan produk untuk customer ini.');
+            }
             if (!dataToAppend.up || dataToAppend.up.trim() === '') {
                 throw new Error('Untuk Perhatian harus diisi');
             }
@@ -242,6 +253,14 @@ export const useQuotationStore = defineStore('quotation', {
             const validItems = this.form.quotationItems.filter((item: any) => 
                 item.productId && item.quantity && item.quantity > 0 && item.price && item.price > 0
             );
+            
+            // ✅ NEW: Validasi bahwa semua produk adalah produk customer
+            const customerProductIds = this.customerProducts.map(p => p.id);
+            for (const item of validItems) {
+                if (!customerProductIds.includes(item.productId)) {
+                    throw new Error(`Produk dengan ID ${item.productId} tidak dimiliki oleh customer yang dipilih`);
+                }
+            }
             
             if (validItems.length === 0) {
                 throw new Error('Minimal harus ada 1 item produk yang valid (produk, quantity > 0, harga > 0)');
@@ -503,6 +522,11 @@ export const useQuotationStore = defineStore('quotation', {
                 this.form.quotationItems = [];
                 this.addItem();
             }
+            
+            // ✅ NEW: Jika ada customerId, fetch products untuk customer
+            if (this.form.customerId) {
+                this.fetchProductsForCustomer(this.form.customerId);
+            }
         } else {
             this.form = {
                 noQuotation: '',
@@ -645,6 +669,11 @@ export const useQuotationStore = defineStore('quotation', {
                 
                 // Panggil openModal dengan data lengkap
                 this.openModal(resData.data);
+                
+                // ✅ NEW: Fetch products untuk customer jika ada customerId
+                if (resData.data.customerId) {
+                    this.fetchProductsForCustomer(resData.data.customerId);
+                }
             } else {
                 console.error('Invalid data structure received:', resData);
                 throw new Error('Data tidak valid diterima dari API.');
@@ -662,6 +691,42 @@ export const useQuotationStore = defineStore('quotation', {
         } finally {
             this.loading = false;
         }
+    },
+
+    async fetchProductsForCustomer(customerId: number) {
+      this.loading = true;
+      this.error = null;
+      const { $api } = useNuxtApp();
+      if (!customerId) {
+        this.customerProducts = []
+        return
+      }
+      try {
+        const token = localStorage.getItem('token');
+
+        const response = await fetch($api.customer() + '/' + customerId, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+          credentials: 'include',
+        })
+        if (!response.ok) throw new Error('Gagal mengambil data produk untuk customer')
+        const result = await response.json()
+        this.customerProducts = result.data.customerProducts || []
+      } catch (error) {
+        console.error('Error fetching products for customer:', error)
+        // Jangan hapus produk yang ada jika fetch gagal
+        // this.customerProducts = [] 
+        const toast = useToast();
+        toast.error({
+          title: 'Error',
+          message: 'Gagal memuat produk untuk customer yang dipilih.',
+          color: 'red'
+        });
+      } finally {
+        this.loading = false
+      }
     },
   }
 })
