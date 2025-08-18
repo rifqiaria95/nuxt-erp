@@ -14,12 +14,14 @@
             </span>
           </div>
           <h4 class="mb-2 text-primary text-nowrap fw-bold">{{ quotation.perusahaan.nmPerusahaan }}</h4>
-          <p class="mb-1">{{ quotation.perusahaan.alamatPerusahaan }}</p>
-          <p class="mb-0">{{ quotation.perusahaan.tlpPerusahaan }}</p>
-          <p class="mb-0">{{ quotation.perusahaan.emailPerusahaan }}</p>
+          <p class="mb-1" style="font-size: 12px;">{{ quotation.perusahaan.alamatPerusahaan }}</p>
+          <p class="mb-0" style="font-size: 12px;">{{ quotation.perusahaan.tlpPerusahaan }}</p>
+          <p class="mb-0" style="font-size: 12px;">{{ quotation.perusahaan.emailPerusahaan }}</p>
         </div>
         <div class="w-40">
-          <h6 class="mb-6 text-capitalize text-end fw-bold">QUOTATION NUMBER : {{ quotation.noQuotation }}</h6>
+          <h6 class="mb-6 text-capitalize text-end fw-bold">QUOTATION NUMBER : <br>
+            {{ quotation.noQuotation }}
+          </h6>
           <div style="margin-left: 100px;">
             <table class="table table-borderless" style="font-size: 12px; width: auto;">
               <tr>
@@ -56,11 +58,11 @@
         <table class="table m-0" style="font-size: 12px; width: 100%;">
           <thead style="background-color: #f4cccc;">
             <tr>
-              <th>Sales Person</th>
-              <th>PR Number</th>
-              <th>Ship Date</th>
-              <th>FOB Point</th>
-              <th>Terms of Payment</th>
+              <th class="text-nowrap">Sales Person</th>
+              <th class="text-nowrap">PR Number</th>
+              <th class="text-nowrap">Ship Date</th>
+              <th class="text-nowrap">FOB Point</th>
+              <th class="text-nowrap">Terms of Payment</th>
             </tr>
           </thead>
           <tbody>
@@ -85,12 +87,12 @@
           <thead style="background-color: #f4cccc;">
             <tr>
               <th>No</th>
-              <th>Part Number</th>
-              <th>Product</th>
-              <th>Description</th>
+              <th class="text-nowrap">Part Number</th>
+              <th class="text-nowrap">Remarks</th>
+              <th class="text-nowrap">Product</th>
               <th>Qty</th>
-              <th>Unit Price</th>
-              <th>Amount</th>
+              <th class="text-nowrap">Unit Price</th>
+              <th class="text-nowrap">Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -98,8 +100,8 @@
             <tr v-for="(item, index) in quotation.quotationItems" :key="item.id">
               <td>{{ index + 1 }}</td>
               <td>{{ item.product?.sku || '-' }}</td>
-              <td>{{ item.product?.name || '-' }}</td> 
               <td>{{ item.description || '-' }}</td>
+              <td>{{ item.product?.name || '-' }}</td> 
               <td>{{ Number(item.quantity) }}</td>
               <td>{{ formatRupiah(item.price || 0) }}</td>
               <td>{{ formatRupiah(item.subtotal || 0) }}</td>
@@ -109,8 +111,8 @@
               <tr v-for="(item, index) in quotation.salesOrder.salesOrderItems" :key="`fallback-${item.id}`">
                 <td>{{ index + 1 }}</td>
                 <td>{{ item.product?.sku || '-' }}</td>
-                <td>{{ item.product?.name || '-' }}</td>
                 <td>{{ item.description || '-' }}</td>
+                <td>{{ item.product?.name || '-' }}</td>
                 <td>{{ Number(item.quantity) }}</td>
                 <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
                 <td>{{ formatRupiah(item.price || 0) }}</td>

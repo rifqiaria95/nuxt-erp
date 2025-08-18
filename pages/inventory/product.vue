@@ -70,7 +70,7 @@
                                             <span class="p-input-icon-left">
                                                 <InputText
                                                     v-model="globalFilterValue"
-                                                    placeholder="Cari berdasarkan nama, SKU, atau part number..."
+                                                    placeholder="Cari berdasarkan nama, atau part number..."
                                                     class="w-full md:w-20rem"
                                                 />
                                             </span>
@@ -84,10 +84,6 @@
                                                 <i class="ri-close-line"></i>
                                             </button>
                                         </div>
-                                        <small class="text-muted d-block mt-1">
-                                            <i class="ri-information-line me-1"></i>
-                                            Pencarian mendukung nama produk, SKU, dan part number
-                                        </small>
                                     </div>
                                 </div>
                                 <div class="card-datatable table-responsive py-3 px-3">

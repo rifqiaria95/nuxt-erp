@@ -410,6 +410,17 @@
                                 </div>
                             </div>
                             <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
+                                <div class="alert alert-info mb-4">
+                                    <i class="ri-information-line me-2"></i>
+                                    <strong>Info:</strong> 
+                                    <ul class="mb-0 mt-2">
+                                        <li>Anda dapat <strong>mencari produk berdasarkan part number (SKU) atau nama produk</strong></li>
+                                        <li>Format tampilan: <strong>Part Number | Nama Produk</strong></li>
+                                        <li>Pencarian bersifat <strong>case-insensitive</strong> dan mendukung <strong>partial match</strong></li>
+                                        <li><strong>💡 Tips:</strong> Ketik untuk mencari berdasarkan SKU atau nama produk</li>
+                                        <li><strong>🔧 Debug:</strong> Buka console browser untuk melihat log data produk</li>
+                                    </ul>
+                                </div>
                                 <div v-for="(item, index) in form.purchaseOrderItems" :key="index" class="repeater-item mb-4">
                                     <div class="row g-3">
                                         <div class="col-12">
@@ -428,15 +439,28 @@
                                         <div class="col-md-4">
                                             <v-select 
                                                 v-model="item.productId" 
-                                                :options="products || []" 
-                                                :get-option-label="p => `${p.name} (${p.unit?.name})`" 
+                                                :options="filteredProducts" 
+                                                label="displayName"
                                                 :reduce="p => p.id" 
-                                                placeholder="Pilih Produk" 
+                                                placeholder="Cari berdasarkan SKU atau nama produk..." 
                                                 @update:modelValue="onProductChange(index)" 
                                                 class="v-select-style"
                                                 :loading="productStore.loading"
-                                            />
-                                            <small class="text-muted">Produk tersedia: {{ products?.length || 0 }} | Selected: {{ item.productId }}</small>
+                                                :searchable="true"
+                                                :clearable="true"
+                                                :close-on-select="true"
+                                                :preserve-search="false"
+                                            >
+                                                <template #option="option">
+                                                    <div class="d-flex justify-content-between align-items-center w-100">
+                                                        <div>
+                                                            <div class="fw-bold">{{ option.sku }} | {{ option.name }}</div>
+                                                            <small class="text-muted">{{ option.unit?.name || 'No Unit' }} - {{ formatRupiah(option.priceBuy) }}</small>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </v-select>
+                                            <small class="text-muted">Produk tersedia: {{ filteredProducts?.length || 0 }} | Selected: {{ item.productId }}</small>
                                         </div>
                                         <div class="col-md-2">
                                             <div class="form-floating form-floating-outline">
@@ -659,6 +683,7 @@ watch(showModal, (newValue) => {
 
 watch(products, (newProducts) => {
     if (newProducts && newProducts.length > 0) {
+    } else {
     }
 })
 
@@ -723,6 +748,19 @@ const filteredCabangs = computed(() => {
 
 const isExternalPO = computed(() => {
     return form.value?.poType === 'external';
+});
+
+const filteredProducts = computed(() => {
+    if (!products.value || !Array.isArray(products.value)) {
+        return [];
+    }
+    
+    const limited = products.value.slice(0, 100);
+    
+    return limited.map(product => ({
+        ...product,
+        displayName: `${product.sku || ''} | ${product.name || ''}`
+    }));
 });
 
 const debouncedSearch = useDebounceFn(() => {
@@ -825,7 +863,7 @@ const onProductChange = (index) => {
   if (!form.value || !form.value.purchaseOrderItems) return;
   
   const selectedProductId = form.value.purchaseOrderItems[index].productId;
-  const selectedProduct = (products.value || []).find(p => p.id === selectedProductId);
+  const selectedProduct = (filteredProducts.value || []).find(p => p.id === selectedProductId);
 
   if (selectedProduct) {
     const item = form.value.purchaseOrderItems[index];
@@ -924,5 +962,28 @@ const handlePoTypeChange = (selectedType) => {
     :deep(.cabang .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
+    }
+
+    /* ✅ NEW: Styling untuk search input yang lebih responsif */
+    :deep(.v-select-style .vs__search) {
+        padding: 8px 12px !important;
+        font-size: 14px !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* ✅ NEW: Memastikan dropdown muncul dengan benar */
+    :deep(.v-select-style .vs__dropdown-menu) {
+        max-height: 300px !important;
+        overflow-y: auto !important;
+    }
+
+    /* ✅ NEW: Styling untuk option yang dipilih */
+    :deep(.v-select-style .vs__dropdown-option--highlight) {
+        background-color: #696cff !important;
+        color: white !important;
     }
 </style>
