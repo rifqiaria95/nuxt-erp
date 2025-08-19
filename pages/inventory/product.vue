@@ -248,9 +248,6 @@
                                     class="form-control" 
                                     v-model="form.berat" 
                                     placeholder="Masukkan berat"
-                                    @input="form.berat = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="decimal"
-                                    pattern="[0-9]*"
                                     >
                                     <label>Berat</label>
                                 </div>
