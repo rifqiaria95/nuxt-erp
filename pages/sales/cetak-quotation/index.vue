@@ -87,12 +87,12 @@
           <thead style="background-color: #f4cccc;">
             <tr>
               <th>No</th>
-              <th class="text-nowrap">Part Number</th>
-              <th class="text-nowrap">Remarks</th>
-              <th class="text-nowrap">Product</th>
+              <th>Part Number</th>
+              <th>Product</th>
+              <th>Remarks</th>
               <th>Qty</th>
-              <th class="text-nowrap">Unit Price</th>
-              <th class="text-nowrap">Amount</th>
+              <th>Unit Price</th>
+              <th>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -100,23 +100,23 @@
             <tr v-for="(item, index) in quotation.quotationItems" :key="item.id">
               <td>{{ index + 1 }}</td>
               <td>{{ item.product?.sku || '-' }}</td>
-              <td>{{ item.description || '-' }}</td>
               <td>{{ item.product?.name || '-' }}</td> 
+              <td>{{ item.description || '-' }}</td>
               <td>{{ Number(item.quantity) }}</td>
-              <td>{{ formatRupiah(item.price || 0) }}</td>
-              <td>{{ formatRupiah(item.subtotal || 0) }}</td>
+              <td class="text-nowrap">{{ formatRupiah(item.price || 0) }}</td>
+              <td class="text-nowrap">{{ formatRupiah(item.subtotal || 0) }}</td>
             </tr>
             <!-- ✅ FALLBACK: jika tidak ada salesInvoiceItems, tampilkan dari salesOrder -->
             <template v-if="(!quotation.quotationItems || quotation.quotationItems.length === 0) && quotation.salesOrder?.salesOrderItems">
               <tr v-for="(item, index) in quotation.salesOrder.salesOrderItems" :key="`fallback-${item.id}`">
                 <td>{{ index + 1 }}</td>
                 <td>{{ item.product?.sku || '-' }}</td>
-                <td>{{ item.description || '-' }}</td>
                 <td>{{ item.product?.name || '-' }}</td>
+                <td>{{ item.description || '-' }}</td>
                 <td>{{ Number(item.quantity) }}</td>
                 <td>{{ Number(item.deliveredQty || item.quantity) }}</td>
-                <td>{{ formatRupiah(item.price || 0) }}</td>
-                <td>{{ formatRupiah(item.subtotal || 0) }}</td>
+                <td class="text-nowrap">{{ formatRupiah(item.price || 0) }}</td>
+                <td class="text-nowrap">{{ formatRupiah(item.subtotal || 0) }}</td>
               </tr>
             </template>
             <!-- ✅ MESSAGE jika tidak ada items sama sekali -->

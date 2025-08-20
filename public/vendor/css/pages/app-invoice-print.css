@@ -25,3 +25,58 @@ body {
 .dark-style .invoice-print th {
   color: #fff !important;
 }
+
+/* Print-specific styles for better table display */
+@media print {
+  /* Ensure table headers are always visible */
+  table thead {
+    display: table-header-group !important;
+    break-inside: avoid !important;
+  }
+
+  /* Force background colors to print */
+  table thead th {
+    background-color: #f4cccc !important;
+    color: #000 !important;
+    font-weight: bold !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure table borders are visible */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  table td, table th {
+    border: 1px solid #ddd !important;
+    padding: 8px !important;
+  }
+
+  /* Ensure text is readable */
+  * {
+    color: #000 !important;
+  }
+
+  /* Prevent page breaks inside tables */
+  table {
+    page-break-inside: avoid !important;
+  }
+
+  /* Ensure proper spacing */
+  .p-6 {
+    padding: 1.5rem !important;
+  }
+
+  /* Ensure images print properly */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Hide elements that shouldn't print */
+  .no-print, .alert {
+    display: none !important;
+  }
+}
