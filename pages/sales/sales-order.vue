@@ -176,7 +176,7 @@
                                         </template>
                                     </Column>
                                     <Column field="up" header="Untuk Perhatian" :sortable="true"></Column>
-                                    <Column field="date" header="Tanggal SO" :sortable="true">
+                                    <Column field="created_at" header="Tanggal SO" :sortable="true">
                                         <template #body="slotProps">
                                             {{ slotProps.data.date ? new Date(slotProps.data.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
                                         </template>

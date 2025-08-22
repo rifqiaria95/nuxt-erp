@@ -91,8 +91,8 @@ export const useQuotationStore = defineStore('quotation', {
     params        : {
         first    : 0,
         rows     : 10,
-        sortField: 'id',
-        sortOrder: 1,
+        sortField: 'created_at',
+        sortOrder: 2, // 2 = descending, 1 = ascending
         draw     : 1,
         search   : '',
         customerId : null,

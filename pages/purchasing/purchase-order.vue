@@ -8,64 +8,41 @@
             </p>
             <!-- purchaseOrder cards -->
             <div class="row g-6 mb-6">
-                <!-- Static cards for display, can be made dynamic later -->
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="mb-1">Total Orders</h5>
-                                <span class="badge bg-label-primary rounded-pill">Yearly</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <h1 class="mb-0 display-4">15</h1>
-                                <i class="ri-arrow-up-s-line ri-24px text-success"></i>
-                                <span class="fw-medium text-success">15.8%</span>
-                            </div>
-                            <p class="mb-0 mt-2">Analytics for last year</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="mb-1">Pending Orders</h5>
-                                <span class="badge bg-label-warning rounded-pill">Weekly</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <h1 class="mb-0 display-4">5</h1>
-                                <i class="ri-arrow-down-s-line ri-24px text-danger"></i>
-                                <span class="fw-medium text-danger">8.2%</span>
-                            </div>
-                            <p class="mb-0 mt-2">Analytics for last week</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-4 col-lg-6 col-md-6">
-                    <div class="card h-100">
-                        <div class="row h-100">
-                            <div class="col-sm-5">
-                                <div class="d-flex align-items-end h-100 justify-content-center">
-                                    <img src="/img/illustrations/add-new-role-illustration.png" class="img-fluid" alt="Image" width="70">
-                                </div>
-                            </div>
-                            <div class="col-sm-7">
-                                <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_purchase_order')" @click="purchaseOrderStore.openModal()" class="btn btn-primary mb-2 text-wrap add-new-role">
-                                        Tambah Purchase Order
-                                    </button>
-                                    <p class="mb-0 mt-1">Buat Purchase Order baru</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Cards untuk Statistik Pegawai -->
+                <CardBox
+                    title="Total Purchase Order"
+                    :total="(stats.total || 0) + ' Purchase Order'"
+                />
+                <CardBox
+                    title="Purchase Order Approved"
+                    :total="(stats.approved || 0) + ' Purchase Order'"
+                />
+                <CardBox
+                    title="Purchase Order Rejected"
+                    :total="(stats.rejected || 0) + ' Purchase Order'"
+                />
+                <CardBox
+                    title="Purchase Order Received"
+                    :total="(stats.received || 0) + ' Purchase Order'"
+                />
+                <CardBox
+                    title="Purchase Order Draft"
+                    :total="(stats.draft || 0) + ' Purchase Order'"
+                />
+                <CardBox
+                    v-if="userHasRole('superadmin') || userHasPermission('create_purchase_order')"
+                    :isAddButtonCard="true"
+                    image-src="/img/illustrations/add-new-role-illustration.png"
+                    image-alt="Tambah Purchase Order"
+                    button-text="Tambah Purchase Order"
+                    @button-click="purchaseOrderStore.openModal()"
+                />
             </div>
 
             <div class="row g-6">
                 <div class="col-12">
-                    <h4 class="mt-6 mb-1">Total Purchase Order</h4>
-                    <p class="mb-0">Find all of your company's administrator accounts and their associate Purchase Order.</p>
+                    <h4 class="mt-6 mb-1">Filter & Daftar Purchase Order</h4>
+                    <p class="mb-0">Cari dan kelola semua purchase order perusahaan Anda beserta detailnya.</p>
                 </div>
                 <div class="col-12">
                     <div class="card">
@@ -527,19 +504,22 @@ import { useWarehouseStore } from '~/stores/warehouse'
 import { useUserStore } from '~/stores/user'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
-import Modal from '~/components/modal/Modal.vue'
-import MyDataTable from '~/components/table/MyDataTable.vue'
-import TableControls from '~/components/table/TableControls.vue'
-import vSelect from 'vue-select'
-import Dropdown from 'primevue/dropdown'
-import Column from 'primevue/column'
-import InputText from 'primevue/inputtext'
 import 'vue-select/dist/vue-select.css'
 import { useDebounceFn } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
 import { useImageUrl } from '~/composables/useImageUrl'
 import Swal from 'sweetalert2'
+
+// Components
+import Modal from '~/components/modal/Modal.vue'
+import MyDataTable from '~/components/table/MyDataTable.vue'
+import TableControls from '~/components/table/TableControls.vue'
+import vSelect from 'vue-select'
+import Dropdown from 'primevue/dropdown'
+import CardBox from '~/components/cards/Cards.vue'
+import Column from 'primevue/column'
+import InputText from 'primevue/inputtext'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
@@ -561,7 +541,7 @@ const formatRupiah          = useFormatRupiah()
 const { userHasPermission, userHasRole } = usePermissions();
 const permissionStore       = usePermissionsStore()
 
-const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(purchaseOrderStore)
+const { purchaseOrders, loading, totalRecords, params, form, isEditMode, showModal, validationErrors, stats } = storeToRefs(purchaseOrderStore)
 const { vendors }     = storeToRefs(vendorStore)
 const { perusahaans } = storeToRefs(perusahaanStore)
 const { cabangs }     = storeToRefs(cabangStore)
@@ -638,9 +618,14 @@ onMounted(async () => {
             permissionStore.fetchPermissions()
         ]);
         
-        // Load purchase orders after other data is ready
-        purchaseOrderStore.fetchPurchaseOrders();
-        setListTitle('Purchase Order', purchaseOrders.value.length)
+        // Load purchase orders and stats after other data is ready
+        await Promise.all([
+            purchaseOrderStore.fetchPurchaseOrders(),
+            purchaseOrderStore.fetchStats()
+        ]);
+        
+        // Set title after data is loaded
+        setListTitle('Purchase Order', stats.value.total || 0)
         
         // Untuk cabang, kita akan load setelah perusahaan dipilih
     } catch (error) {
@@ -712,6 +697,8 @@ watch(() => form.value?.purchaseOrderItems, (newItems) => {
     if (newItems && newItems.length > 0) {
     }
 }, { deep: true })
+
+
 
 watch(() => form.value?.perusahaanId, async (newPerusahaanId) => {
     if (newPerusahaanId && form.value) {

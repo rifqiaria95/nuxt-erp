@@ -82,11 +82,12 @@ interface PurchaseOrderState {
   isEditMode      : boolean
   showModal       : boolean
   validationErrors: any[]
+  stats: any
 }
 
 export const usePurchaseOrderStore = defineStore('purchaseOrder', {
   state: (): PurchaseOrderState => ({
-    purchaseOrders: [],
+    purchaseOrders: [] as PurchaseOrder[], // Explicitly type as array
     purchaseOrder : null,
     loading       : true,
     error         : null,
@@ -94,8 +95,8 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
     params        : {
         first    : 0,
         rows     : 10,
-        sortField: 'id',
-        sortOrder: 1,
+        sortField: 'created_at',
+        sortOrder: 2, // 2 = descending, 1 = ascending
         draw     : 1,
         search   : '',
         vendorId : null,
@@ -118,6 +119,13 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         status: 'draft',
         poType: 'internal',
         purchaseOrderItems: []
+    },
+    stats: {
+        total: undefined,
+        approved: undefined,
+        rejected: undefined,
+        received: undefined,
+        draft: undefined
     },
     isEditMode      : false,
     showModal       : false,
@@ -168,11 +176,14 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
 
         const result = await response.json()
         
-        this.purchaseOrders = result.data
-        this.totalRecords = result.meta.total
+        // Pastikan purchaseOrders selalu berupa array
+        this.purchaseOrders = Array.isArray(result.data) ? result.data : []
+        this.totalRecords = result.meta?.total || 0
       } catch (e: any) {
         console.error('Gagal mengambil data purchaseOrder:', e)
         this.error = e
+        // Pastikan tetap array kosong jika error
+        this.purchaseOrders = []
         toast.error({
           title: 'Error',
           message: `Tidak dapat memuat data Purchase Order: ${e.message}`,
@@ -180,6 +191,10 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         });
       } finally {
         this.loading = false
+        // Pastikan purchaseOrders selalu berupa array setelah operasi selesai
+        if (!Array.isArray(this.purchaseOrders)) {
+          this.purchaseOrders = []
+        }
       }
     },
 
@@ -887,6 +902,33 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             });
         } finally {
             this.loading = false;
+        }
+    },
+
+    async fetchStats() {
+        const toast = useToast();
+        const { $api } = useNuxtApp()
+        const defaultStats = { total: 0, approved: 0, rejected: 0, draft: 0, received: 0 };
+        try {
+            const token = localStorage.getItem('token');
+            
+            const response = await fetch($api.countPurchaseOrderByStatus(), {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                this.stats = result;
+            } else {
+                this.stats = defaultStats;
+            }
+        } catch (error) {
+            this.stats = defaultStats;
         }
     },
   }

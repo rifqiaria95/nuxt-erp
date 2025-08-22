@@ -140,8 +140,8 @@ export const useSalesOrderStore = defineStore('salesOrder', {
     params: {
         first     : 0,
         rows      : 10,
-        sortField : 'createdAt',
-        sortOrder : -1,
+        sortField : 'created_at',
+        sortOrder : 2, // 2 = descending, 1 = ascending
         draw      : 1,
         search    : '',
         customerId: null,
