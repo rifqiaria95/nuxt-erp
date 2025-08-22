@@ -389,12 +389,6 @@
                                     <strong>Info:</strong> 
                                     <ul class="mb-0 mt-2">
                                         <li><strong>Pilih customer terlebih dahulu</strong> di tab "Informasi Sales Order"</li>
-                                        <li>Hanya produk yang dimiliki oleh customer yang dipilih yang akan ditampilkan</li>
-                                        <li>Anda dapat <strong>mencari produk berdasarkan part number (SKU) atau nama produk</strong></li>
-                                        <li>Format tampilan: <strong>Part Number | Nama Produk</strong></li>
-                                        <li>Pencarian bersifat <strong>case-insensitive</strong> dan mendukung <strong>partial match</strong></li>
-                                        <li><strong>💡 Tips:</strong> Ketik untuk mencari berdasarkan SKU atau nama produk</li>
-                                        <li><strong>🔧 Debug:</strong> Buka console browser untuk melihat log data produk</li>
                                     </ul>
                                 </div>
                                 <div v-for="(item, index) in form.salesOrderItems" :key="index" class="repeater-item mb-4">

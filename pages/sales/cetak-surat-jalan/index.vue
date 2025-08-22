@@ -6,53 +6,32 @@
     </div>
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
     <div v-else-if="suratJalan" class="p-6">
-      <div class="d-flex justify-content-between flex-row">
-        <div v-if="suratJalan.salesOrder.perusahaan" class="w-60">
-          <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
+      <div class="d-flex justify-content-between align-items-start align-content-center mb-6">
+        <!-- Logo Section - Left -->
+        <div v-if="suratJalan.salesOrder.perusahaan" class="logo-section">
+          <div class="d-flex svg-illustration align-content-center gap-2 mb-4">
             <span class="app-brand-logo demo">
-              <img src="~/public/img/branding/andara.png" alt="logo" width="200">
+              <img src="~/public/img/branding/andara.png" alt="logo" width="250">
             </span>
           </div>
-          <h5 class="mb-2 text-primary fw-bold text-nowrap">{{ suratJalan.salesOrder.perusahaan.nmPerusahaan }}</h5>
-          <p class="mb-1">{{ suratJalan.salesOrder.perusahaan.alamatPerusahaan }}</p>
-          <p class="mb-0">{{ suratJalan.salesOrder.perusahaan.tlpPerusahaan }}</p>
-          <p class="mb-0">{{ suratJalan.salesOrder.perusahaan.emailPerusahaan }}</p>
-        </div>
-        <div class="w-40">
-          <h6 class="mb-2 text-capitalize text-end fw-bold">SURAT JALAN NUMBER : {{ suratJalan.noSuratJalan }}</h6>
-          <p class="text-end mb-6" style="font-size: 14px;"> Tanggal:
-            {{ suratJalan.createdAt ? new Date(suratJalan.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-' }}
-          </p>
-          <!-- Geser tabel info customer ke kanan dengan margin-left lebih besar -->
-          <div style="margin-left: 100px;">
-            <table class="table table-borderless" style="font-size: 12px; width: auto;">
-              <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">Kepada Yth</td>
-                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ suratJalan.customer?.name || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap; vertical-align: top;">Alamat</td>
-                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
-                <td class="text-start" style="font-size: 12px; white-space: pre-line;">{{ suratJalan.alamatPengiriman || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">U.P</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ suratJalan.picName || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">No. Telp</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ suratJalan.customer?.phone || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; padding-right: 60px; white-space: nowrap;">No. PO</td>
-                <td style="font-size: 12px; width: 10px;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ suratJalan.salesOrder?.noPo || '-' }}</td>
-              </tr>
-            </table>
+          <div class="text-start text-secondary-medium mt-6 mb-0" style="font-size: 12px; width: 220px; min-width: 220px;">
+            <p class="mb-0">
+              Alamat: {{ suratJalan.salesOrder.perusahaan?.alamatPerusahaan || suratJalan.salesOrder.perusahaan?.alamatPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Telepon: {{ suratJalan.salesOrder.perusahaan?.tlpPerusahaan || suratJalan.salesOrder.perusahaan?.tlpPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Email: {{ suratJalan.salesOrder.perusahaan?.emailPerusahaan || suratJalan.salesOrder.perusahaan?.emailPerusahaan || '-' }}
+            </p>
           </div>
+        </div>
+        
+        <!-- Invoice Header - Right -->
+        <div class="invoice-header text-end">
+          <h2 class="mb-4 text-capitalize fw-bold">SURAT JALAN</h2>
+          <p class="mb-1" style="font-size: 12px;">No. Surat Jalan: {{ suratJalan.noSuratJalan }}</p>
+          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(suratJalan.date).toLocaleDateString('id-ID') }}</p>
         </div>
       </div>
 
@@ -69,7 +48,7 @@
 
       <div class="table-responsive border border-bottom-0 rounded">
         <table class="table m-0" style="font-size: 12px;">
-          <thead>
+          <thead class="table-dark table-head-white borderless">
             <tr>
               <th>No</th>
               <th>Part Number</th>

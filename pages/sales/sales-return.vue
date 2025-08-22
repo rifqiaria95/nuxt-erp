@@ -319,14 +319,14 @@
                                     <div class="row g-3">
                                         <div class="col-6">
                                             <v-select v-model="item.warehouseId" :options="warehouses"
-                                            :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style" @update:modelValue="updateStockInfo(index)" readonly/>
+                                            :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style" readonly/>
                                         </div>
                                         <div class="col-md-6">
                                             <v-select v-model="item.productId" :options="allAvailableProducts" :get-option-label="p => `${p.name} (${p.unit?.name})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style" readonly/>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-floating form-floating-outline">
-                                                <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty" readonly>
+                                                <input type="number" v-model.number="item.quantity" class="form-control" placeholder="Qty" readonly>
                                                 <label>Jumlah</label>
                                             </div>
                                         </div>
@@ -380,7 +380,7 @@ import { usePerusahaanStore } from '~/stores/perusahaan'
 import { useCabangStore } from '~/stores/cabang'
 import { useProductStore } from '~/stores/product'
 import { useWarehouseStore } from '~/stores/warehouse'
-import { useStocksStore } from '~/stores/stocks'
+
 import { useUserStore } from '~/stores/user'
 import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
@@ -409,7 +409,7 @@ const perusahaanStore       = usePerusahaanStore()
 const warehouseStore        = useWarehouseStore()
 const cabangStore           = useCabangStore()
 const productStore          = useProductStore()
-const stockStore            = useStocksStore()
+
 const userStore             = useUserStore()
 const formatRupiah          = useFormatRupiah()
 const { userHasPermission, userHasRole } = usePermissions();
@@ -481,12 +481,7 @@ watch(showModal, (newValue) => {
                 attachmentPreview.value = null
             }
             
-            // Fetch stock for existing items
-            if (form.value.salesReturnItems && form.value.salesReturnItems.length > 0) {
-                form.value.salesReturnItems.forEach((item, index) => {
-                    updateStockInfo(index);
-                });
-            }
+
         } else {
             attachmentPreview.value = null
         }
@@ -590,8 +585,6 @@ const onProductChange = (index) => {
   if (selectedProduct) {
     const item = form.value.salesReturnItems[index];
     item.price = Number(selectedProduct.priceSell) || 0;
-    calculateSubtotal(index);
-    updateStockInfo(index)
   }
 };
 

@@ -2,12 +2,13 @@
   <div class="content-wrapper">
     <!-- Content -->
     <div class="container-xxl flex-grow-1 container-p-y">
-      <div v-if="loading" class="text-center">
+      <div v-if="loading" class="text-center p-6">
         <div class="spinner-border" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
+        <p class="mt-3">Memuat detail Sales Invoice...</p>
       </div>
-      <template v-else-if="salesInvoice">
+      <template v-else-if="salesInvoice && !loading">
         <div class="row invoice-preview">
           <!-- Invoice -->
           <div class="col-xl-9 col-md-8 col-12 mb-md-0 mb-6">
@@ -143,17 +144,17 @@
                         <div class="d-flex flex-column gap-1 align-items-end" style="min-width: 170px;">
                           <span class="fw-medium mb-1" style="color: #6c757d;">{{ formatRupiah(subtotalAmount) }}</span>
                           <span class="fw-medium mb-1" style="color: #6c757d;">
-                            {{ (typeof salesInvoice.discountPercent === 'number' ? salesInvoice.discountPercent : Number(salesInvoice.discountPercent) || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',00','') }}% ({{ formatRupiah(discountAmount) }})
+                            {{ (typeof salesInvoice?.discountPercent === 'number' ? salesInvoice.discountPercent : Number(salesInvoice?.discountPercent) || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',00','') }}% ({{ formatRupiah(discountAmount) }})
                           </span>
                           <span class="fw-medium mb-1" style="color: #6c757d;">
-                            {{ (typeof salesInvoice.taxPercent === 'number' ? salesInvoice.taxPercent : Number(salesInvoice.taxPercent) || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',00','') }}% ({{ formatRupiah(taxAmount) }})
+                            {{ (typeof salesInvoice?.taxPercent === 'number' ? salesInvoice.taxPercent : Number(salesInvoice?.taxPercent) || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(',00','') }}% ({{ formatRupiah(taxAmount) }})
                           </span>
-                          <span class="fw-medium mb-1 border-bottom pb-2" style="color: #6c757d;">{{ formatRupiah(salesInvoice.total) }}</span>
-                          <span class="fw-medium mb-1 text-success" style="color: #6c757d !important;">{{ formatRupiah(salesInvoice.paidAmount) }}</span>
+                          <span class="fw-medium mb-1 border-bottom pb-2" style="color: #6c757d;">{{ formatRupiah(salesInvoice?.total || 0) }}</span>
+                          <span class="fw-medium mb-1 text-success" style="color: #6c757d !important;">{{ formatRupiah(salesInvoice?.paidAmount || 0) }}</span>
                           <span class="fw-medium mb-0 pt-2"
-                                :class="salesInvoice.remainingAmount > 0 ? 'text-danger' : 'text-success'"
-                                :style="salesInvoice.remainingAmount > 0 ? 'color:#ea5455' : 'color:#28c76f'">
-                            {{ formatRupiah(salesInvoice.remainingAmount) }}
+                                :class="(salesInvoice?.remainingAmount || 0) > 0 ? 'text-danger' : 'text-success'"
+                                :style="(salesInvoice?.remainingAmount || 0) > 0 ? 'color:#ea5455' : 'color:#28c76f'">
+                            {{ formatRupiah(salesInvoice?.remainingAmount || 0) }}
                           </span>
                         </div>
                       </td>
@@ -218,25 +219,9 @@
           <div class="col-xl-3 col-md-4 col-12 invoice-actions">
             <div class="card">
               <div class="card-body">
-                <button class="btn btn-primary d-grid w-100 mb-4" @click="printSalesInvoice(salesInvoice.id)">
+                <button class="btn btn-primary d-grid w-100 mb-4" @click="printSalesInvoice(salesInvoice?.id)" :disabled="!salesInvoice?.id">
                   <span class="d-flex align-items-center justify-content-center text-nowrap">
                     <i class="ri-printer-line ri-16px me-2"></i>Print Invoice
-                  </span>
-                </button>
-                <button class="btn btn-outline-secondary d-grid w-100 mb-4" @click="downloadInvoice">
-                  Download PDF
-                </button>
-                <div class="d-flex mb-4">
-                  <button class="btn btn-outline-secondary d-grid w-100 me-4" @click="editInvoice">
-                    Edit
-                  </button>
-                  <button class="btn btn-outline-primary d-grid w-100" @click="viewSalesOrder">
-                    View Sales Order
-                  </button>
-                </div>
-                <button class="btn btn-success d-grid w-100" @click="addPayment">
-                  <span class="d-flex align-items-center justify-content-center text-nowrap">
-                    <i class="ri-money-dollar-circle-line ri-16px me-2"></i>Add Payment
                   </span>
                 </button>
               </div>
@@ -245,8 +230,25 @@
           <!-- /Invoice Actions -->
         </div>
       </template>
-      <div v-else class="text-center">
-        <p>Sales Invoice not found.</p>
+      <div v-else-if="error" class="text-center p-6">
+        <div class="alert alert-danger" role="alert">
+          <h5 class="alert-heading">Terjadi Kesalahan</h5>
+          <p>{{ error.message || 'Gagal memuat detail Sales Invoice.' }}</p>
+          <hr>
+          <button class="btn btn-outline-secondary" @click="$router.go(-1)">
+            <i class="ri-arrow-left-line me-2"></i>Kembali
+          </button>
+        </div>
+      </div>
+      <div v-else-if="!loading && !salesInvoice" class="text-center p-6">
+        <div class="alert alert-warning" role="alert">
+          <h5 class="alert-heading">Sales Invoice Tidak Ditemukan</h5>
+          <p>Sales Invoice yang Anda cari tidak ditemukan atau telah dihapus.</p>
+          <hr>
+          <button class="btn btn-outline-secondary" @click="$router.go(-1)">
+            <i class="ri-arrow-left-line me-2"></i>Kembali
+          </button>
+        </div>
       </div>
     </div>
     <!-- / Content -->
@@ -254,7 +256,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSalesInvoiceStore } from '~/stores/sales-invoice'
 import { storeToRefs } from 'pinia'
@@ -269,7 +271,7 @@ const router = useRouter()
 const salesInvoiceStore = useSalesInvoiceStore()
 const formatRupiah = useFormatRupiah()
 
-const { loading, salesInvoice } = storeToRefs(salesInvoiceStore)
+const { loading, salesInvoice, error } = storeToRefs(salesInvoiceStore)
 
 const invoiceId = route.query.id
 
@@ -331,6 +333,17 @@ const formatDate = (dateString) => {
 
 // ✅ ACTION METHODS
 const printSalesInvoice = (id) => {
+  if (!id) {
+    console.error('❌ No salesInvoiceId provided for printing')
+    Swal.fire({
+      icon: 'error',
+      title: 'Parameter Tidak Valid',
+      text: 'ID Sales Invoice tidak valid untuk print.',
+      confirmButtonText: 'OK'
+    })
+    return
+  }
+  
   router.push({
     path: '/sales/cetak-invoice',
     query: { id: id, print: true }
@@ -350,6 +363,13 @@ const viewSalesOrder = () => {
     router.push({
       path: '/sales/sales-order-detail',
       query: { id: salesInvoice.value.salesOrderId }
+    })
+  } else {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Data Tidak Tersedia',
+      text: 'Sales Order ID tidak tersedia.',
+      confirmButtonText: 'OK'
     })
   }
 }
@@ -387,8 +407,14 @@ async function fetchInvoiceDetails() {
 
 onMounted(() => {
   fetchInvoiceDetails()
-  setDetailTitle('Sales Invoice', salesInvoice.value.noInvoice)
 })
+
+// Watch untuk update title ketika data salesInvoice tersedia
+watch(() => salesInvoice.value, (newSalesInvoice) => {
+  if (newSalesInvoice && newSalesInvoice.noInvoice) {
+    setDetailTitle('Sales Invoice', newSalesInvoice.noInvoice)
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>

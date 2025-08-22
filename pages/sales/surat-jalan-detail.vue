@@ -28,11 +28,11 @@
                     </div>
                     <div>
                       <div class="d-flex align-items-center gap-3 mb-6">
-                        <h5 class="mb-0">No. SJ : {{ suratJalan.noSuratJalan }}</h5>
+                        <h5 class="mb-0">No. SJ : {{ suratJalan?.noSuratJalan || '-' }}</h5>
                       </div>
                       <div class="mb-1">
                         <span>Date Issues: </span>
-                        <span>{{ formatDate(suratJalan.date) }}</span>
+                        <span>{{ formatDate(suratJalan?.date) }}</span>
                       </div>
                       <div>
                         <span>Sales Order: </span>
@@ -72,7 +72,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr v-for="item in suratJalan.suratJalanItems" :key="item.id">
+                      <tr v-for="item in suratJalan?.suratJalanItems || []" :key="item.id">
                         <td class="text-nowrap text-heading">{{ item.product?.sku || 'Part Number' }}</td>
                         <td class="text-nowrap text-heading">{{ item.product?.name || 'Product Name' }}</td>
                         <td class="text-nowrap">{{ item.description || '-' }}</td>
@@ -91,7 +91,7 @@
                         <td class="align-top px-0 py-6">
                           <p class="mb-1">
                             <span class="me-2 fw-medium text-heading">Description:</span><br>
-                            <span>{{ suratJalan.description || '-' }}</span>
+                            <span>{{ suratJalan?.description || '-' }}</span>
                           </p>
                         </td>
                       </tr>
@@ -148,12 +148,12 @@
             <div class="col-xl-3 col-md-4 col-12 invoice-actions">
               <div class="card">
                 <div class="card-body">
-                  <button class="btn btn-primary d-grid w-100 mb-4" @click="printSuratJalan(suratJalan.id)">
+                  <button class="btn btn-primary d-grid w-100 mb-4" @click="printSuratJalan(suratJalan?.id)" :disabled="!suratJalan?.id">
                     <span class="d-flex align-items-center justify-content-center text-nowrap">
                       <i class="ri-printer-line ri-16px me-2"></i>Print Surat Jalan
                     </span>
                   </button>
-                  <button class="btn btn-outline-secondary d-grid w-100 mb-4" @click="downloadSuratJalan">
+                  <button class="btn btn-outline-secondary d-grid w-100 mb-4" @click="downloadSuratJalan" :disabled="!suratJalan?.id">
                     Download PDF
                   </button>
                 </div>
@@ -171,7 +171,7 @@
   </template>
   
   <script setup>
-  import { computed, onMounted, ref } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import { useSuratJalanStore } from '~/stores/surat-jalan'
   import { storeToRefs } from 'pinia'
@@ -188,7 +188,7 @@
   
   const { loading, suratJalan } = storeToRefs(suratJalanStore)
   
-  const invoiceId = route.query.id
+  const suratJalanId = route.query.id
   
   const formatDate = (dateString) => {
     if (!dateString) return '-'
@@ -201,34 +201,47 @@
   
   // ✅ ACTION METHODS
   const printSuratJalan = (id) => {
+    if (!id) {
+      console.error('❌ No surat jalan ID provided for printing')
+      return
+    }
     router.push({
       path: '/sales/cetak-surat-jalan',
       query: { id: id, print: true }
     })
   }
+
+  const downloadSuratJalan = () => {
+    if (!suratJalan.value?.id) {
+      console.error('❌ No surat jalan ID provided for download')
+      return
+    }
+    // TODO: Implement PDF download functionality
+    console.log('Download PDF for surat jalan:', suratJalan.value.id)
+  }
   
-  // ✅ FETCH INVOICE DETAILS menggunakan store
+  // ✅ FETCH SURAT JALAN DETAILS menggunakan store
   async function fetchSuratJalanDetails() {
-    const invoiceIdToFetch = Array.isArray(invoiceId) ? invoiceId[0] : invoiceId
+    const suratJalanIdToFetch = Array.isArray(suratJalanId) ? suratJalanId[0] : suratJalanId
     
-    if (typeof invoiceIdToFetch === 'string' && invoiceIdToFetch.trim() !== '') {
+    if (typeof suratJalanIdToFetch === 'string' && suratJalanIdToFetch.trim() !== '') {
       try {
-        await suratJalanStore.fetchSuratJalanDetailWithItems(invoiceIdToFetch)
+        await suratJalanStore.fetchSuratJalanDetailWithItems(suratJalanIdToFetch)
       } catch (error) {
-        console.error('❌ Failed to fetch invoice details:', error)
+        console.error('❌ Failed to fetch surat jalan details:', error)
         Swal.fire({
           icon: 'error',
           title: 'Gagal Memuat Data',
-          text: `Tidak dapat memuat detail Sales Invoice dengan ID: ${invoiceIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
+          text: `Tidak dapat memuat detail Surat Jalan dengan ID: ${suratJalanIdToFetch}. ${error.message || 'Silakan coba lagi.'}`,
           confirmButtonText: 'OK'
         })
       }
     } else {
-      console.error('❌ Invalid invoiceId:', invoiceIdToFetch)
+      console.error('❌ Invalid suratJalanId:', suratJalanIdToFetch)
       Swal.fire({
         icon: 'error',
         title: 'Parameter Tidak Valid',
-        text: 'ID Sales Invoice tidak valid atau kosong.',
+        text: 'ID Surat Jalan tidak valid atau kosong.',
         confirmButtonText: 'OK'
       })
     }
@@ -236,8 +249,14 @@
   
   onMounted(() => {
     fetchSuratJalanDetails()
-    setDetailTitle('Surat Jalan', suratJalan.value.noSuratJalan)
   })
+
+  // Watch untuk update title ketika data sudah ter-load
+  watch(suratJalan, (newSuratJalan) => {
+    if (newSuratJalan) {
+      setDetailTitle('Surat Jalan', newSuratJalan.noSuratJalan)
+    }
+  }, { immediate: true })
   </script>
   
   <style scoped>

@@ -1,6 +1,7 @@
 html,
 body {
   background: #fff !important;
+  font-size: 12px !important;
 }
 
 /* body > :not(.invoice-print) {
@@ -18,12 +19,15 @@ body {
 .invoice-print * {
   color: #676b7b !important;
 }
+.invoice-print th {
+  color: #fff !important;
+}
 .invoice-print * .border-top {
   border-top: 1px solid rgba(38, 43, 67, 0.5) !important;
 }
 
 .dark-style .invoice-print th {
-  color: #fff !important;
+  color: #363434 !important;
 }
 
 /* Print-specific styles for better table display */
@@ -36,27 +40,48 @@ body {
 
   /* Force background colors to print */
   table thead th {
-    background-color: #f4cccc !important;
-    color: #000 !important;
+    color: #fff !important;
     font-weight: bold !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Ensure table borders are visible */
-  table {
+  /* Ensure table borders are visible ONLY for tables with border class */
+  .table-responsive.border table {
     border-collapse: collapse !important;
     width: 100% !important;
   }
 
-  table td, table th {
+  .table-responsive.border table td, 
+  .table-responsive.border table th {
     border: 1px solid #ddd !important;
+    padding: 8px !important;
+  }
+
+  /* Remove borders from all other tables */
+  .table-responsive:not(.border) table,
+  .table-borderless table,
+  .customer-info-table,
+  .summary-table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .table-responsive:not(.border) table td, 
+  .table-responsive:not(.border) table th,
+  .table-borderless table td, 
+  .table-borderless table th,
+  .customer-info-table td,
+  .customer-info-table th,
+  .summary-table td,
+  .summary-table th {
+    border: none !important;
     padding: 8px !important;
   }
 
   /* Ensure text is readable */
   * {
-    color: #000 !important;
+    color: #ffffff !important;
   }
 
   /* Prevent page breaks inside tables */

@@ -185,8 +185,10 @@
                                                       </a>
                                                   </li>
                                                   <li v-if="userHasRole('superadmin') || userHasPermission('delete_surat_jalan')">
-                                                      <a class="dropdown-item text-danger" href="javascript:void(0)" @click="suratJalanStore.deleteSuratJalan(slotProps.data.id)">
-                                                          <i class="ri-delete-bin-7-line me-2"></i> Hapus
+                                                      <a class="dropdown-item text-danger" href="javascript:void(0)" @click="suratJalanStore.deleteSuratJalan(slotProps.data.id)" :class="{ 'disabled': loading }">
+                                                          <i v-if="loading" class="ri-loader-4-line me-2 animate-spin"></i>
+                                                          <i v-else class="ri-delete-bin-7-line me-2"></i> 
+                                                          {{ loading ? 'Menghapus...' : 'Hapus' }}
                                                       </a>
                                                   </li>
                                               </ul>
@@ -307,34 +309,98 @@
                               </div>
                           </div>
                           <div class="tab-pane fade" id="form-tabs-items" role="tabpanel">
+                              <!-- Alert Info jika tidak ada item dengan status partial -->
+                              <div v-if="form.salesOrderId && !hasPartialItems" class="alert alert-warning mb-4">
+                                  <i class="ri-alert-line me-2"></i>
+                                  <strong>Info:</strong> 
+                                  <p class="mb-0 mt-2">
+                                      Silakan ubah status partial di halaman sales order detail agar dapat memilih product yang tersedia.
+                                  </p>
+                                  <div class="mt-2">
+                                      <a :href="`/sales/sales-order-detail?id=${form.salesOrderId}`" target="_blank" class="btn btn-sm btn-outline-warning me-2">
+                                          <i class="ri-external-link-line me-1"></i>
+                                          Buka Sales Order Detail
+                                      </a>
+                                      <button @click="refreshSalesOrderItems" class="btn btn-sm btn-outline-info">
+                                          <i class="ri-refresh-line me-1"></i>
+                                          Refresh Data
+                                      </button>
+                                  </div>
+                              </div>
+                              
                               <div v-for="(item, index) in (form.suratJalanItems || [])" :key="index" class="repeater-item mb-4">
                                   <div class="row g-3">
                                       <div class="col-md-6">
-                                          <v-select v-model="item.productId" :options="customerProducts || []" :get-option-label="p => `${p.name} (${p.unit?.name || 'No Unit'})`" :reduce="p => p.id" placeholder="Pilih Produk" @update:modelValue="onProductChange(index)" class="v-select-style"/>
+                                          <v-select 
+                                              v-model="item.productId" 
+                                              :options="customerProducts || []" 
+                                              :get-option-label="p => `${p.name} (${p.unit?.name || 'No Unit'})`" 
+                                              :reduce="p => p.id" 
+                                              placeholder="Pilih Produk" 
+                                              @update:modelValue="onProductChange(index)" 
+                                              class="v-select-style"
+                                              :disabled="form.salesOrderId && !hasPartialItems"
+                                          />
                                       </div>
                                       <div class="col-md-6">
-                                          <v-select v-model="item.warehouseId" :options="warehouses" :get-option-label="w => `${w.name} (${w.code})`" :reduce="w => w.id" placeholder="Pilih Gudang" class="v-select-style" @update:modelValue="updateStockInfo(index)"/>
+                                          <v-select 
+                                              v-model="item.warehouseId" 
+                                              :options="warehouses" 
+                                              :get-option-label="w => `${w.name} (${w.code})`" 
+                                              :reduce="w => w.id" 
+                                              placeholder="Pilih Gudang" 
+                                              class="v-select-style" 
+                                              @update:modelValue="updateStockInfo(index)"
+                                              :disabled="form.salesOrderId && !hasPartialItems"
+                                          />
                                       </div>
                                       <div class="col-md-3">
                                           <div class="form-floating form-floating-outline">
-                                              <input type="number" v-model.number="item.quantity" @input="onQuantityChange(index)" class="form-control" placeholder="Qty" step="1" min="0">
+                                              <input 
+                                                  type="number" 
+                                                  v-model.number="item.quantity" 
+                                                  @input="onQuantityChange(index)" 
+                                                  class="form-control" 
+                                                  placeholder="Qty" 
+                                                  step="1" 
+                                                  min="0"
+                                                  :disabled="form.salesOrderId && !hasPartialItems"
+                                              >
                                               <label>Jumlah</label>
                                           </div>
                                       </div>
                                       <div class="col-md-6">
                                           <div class="form-floating form-floating-outline">
-                                              <input type="text" v-model="item.description" class="form-control" placeholder="Deskripsi item">
+                                              <input 
+                                                  type="text" 
+                                                  v-model="item.description" 
+                                                  class="form-control" 
+                                                  placeholder="Deskripsi item"
+                                                  :disabled="form.salesOrderId && !hasPartialItems"
+                                              >
                                               <label>Deskripsi</label>
                                           </div>
                                       </div>
                                       <div class="col-md-3 d-flex align-items-center">
-                                          <button @click.prevent="removeSuratJalanItem(index)" class="btn btn-outline-danger w-100">Hapus</button>
+                                          <button 
+                                              @click.prevent="removeSuratJalanItem(index)" 
+                                              class="btn btn-outline-danger w-100"
+                                              :disabled="form.salesOrderId && !hasPartialItems"
+                                          >
+                                              Hapus
+                                          </button>
                                       </div>
                                   </div>
                                   <hr class="my-4">
                               </div>
                               <div class="mt-4">
-                                  <button @click.prevent="addSuratJalanItem()" class="btn btn-primary">Tambah Item</button>
+                                  <button 
+                                      @click.prevent="addSuratJalanItem()" 
+                                      class="btn btn-primary"
+                                      :disabled="form.salesOrderId && !hasPartialItems"
+                                  >
+                                      Tambah Item
+                                  </button>
                               </div>
                           </div>
                       </div>
@@ -412,6 +478,7 @@ search: '',
 
 const globalFilterValue = ref('');
 const alamatSamaDenganCustomer = ref(false)
+const salesOrderItems = ref([]) // State untuk menyimpan sales order items
 
 const rowsPerPageOptionsArray = ref([10, 25, 50, 100]);
 const modalTitle = computed(() => isEditMode.value ? 'Edit Surat Jalan' : 'Tambah Surat Jalan');
@@ -479,6 +546,8 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
           const detailedSalesOrder = salesOrderStore.salesOrder;
 
           if (detailedSalesOrder && detailedSalesOrder.salesOrderItems) {
+            // ✅ NEW: Simpan semua sales order items ke state untuk pengecekan
+            salesOrderItems.value = detailedSalesOrder.salesOrderItems;
 
             // Pastikan suratJalanItems selalu ada
             if (!form.value.suratJalanItems) {
@@ -518,6 +587,9 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
               });
 
             
+          } else {
+            // ✅ NEW: Reset sales order items jika tidak ada
+            salesOrderItems.value = [];
           }
         } catch (error) {
           console.error('❌ Error fetching sales order details for auto fill:', error);
@@ -541,6 +613,8 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
       } else {
         form.value.suratJalanItems = [];
       }
+      // ✅ NEW: Reset sales order items
+      salesOrderItems.value = [];
     }
   }
 });
@@ -755,6 +829,63 @@ const filteredSalesOrders = computed(() => {
   return (salesOrders.value || []).filter(so => so.status === 'approved' || so.status === 'partial' || so.status === 'delivered')
 })
 
+// ✅ NEW: Computed property untuk mengecek apakah ada item dengan status partial
+const hasPartialItems = computed(() => {
+  if (!form.value.salesOrderId || !salesOrderItems.value || !Array.isArray(salesOrderItems.value)) {
+    return false;
+  }
+  
+  return salesOrderItems.value.some(item => item.statusPartial === true);
+})
+
+// ✅ NEW: Watcher untuk memantau perubahan sales order items
+watch(salesOrderItems, (newItems) => {
+  console.log('🔍 Sales Order Items updated:', newItems?.length || 0, 'items');
+  console.log('🔍 Has partial items:', hasPartialItems.value);
+}, { deep: true })
+
+// ✅ NEW: Function untuk refresh sales order items
+const refreshSalesOrderItems = async () => {
+  if (form.value.salesOrderId) {
+    try {
+      await salesOrderStore.getSalesOrderDetails(form.value.salesOrderId);
+      const detailedSalesOrder = salesOrderStore.salesOrder;
+      
+      if (detailedSalesOrder && detailedSalesOrder.salesOrderItems) {
+        salesOrderItems.value = detailedSalesOrder.salesOrderItems;
+        
+        // Re-filter items yang status partial = true
+        const partialItems = detailedSalesOrder.salesOrderItems
+          .filter(soItem => soItem.statusPartial === true)
+          .map((soItem, index) => ({
+            productId: soItem.productId,
+            warehouseId: soItem.warehouseId,
+            quantity: Math.floor(Number(soItem.quantity)) || 0,
+            description: soItem.description || '',
+            product: soItem.product ? {
+              id: soItem.product.id,
+              name: soItem.product.name,
+              sku: soItem.product.sku,
+              priceSell: soItem.product.priceSell,
+              unit: soItem.product.unit
+            } : null,
+            warehouse: soItem.warehouse ? {
+              id: soItem.warehouse.id,
+              name: soItem.warehouse.name
+            } : null,
+            salesOrderItemId: soItem.id
+          }));
+        
+        form.value.suratJalanItems = partialItems;
+      }
+    } catch (error) {
+      console.error('❌ Error refreshing sales order items:', error);
+    }
+  }
+}
+
+
+
 </script>
 
 <style scoped>
@@ -769,8 +900,56 @@ const filteredSalesOrders = computed(() => {
   :deep(.vendor .vs__dropdown-toggle),
   :deep(.product-select .vs__dropdown-toggle),
   :deep(.cabang .vs__dropdown-toggle),
-  :deep(.select-payment-method .vs__dropdown-toggle) {
-      height: 48px !important;
-      border-radius: 7px;
-  }
+      :deep(.select-payment-method .vs__dropdown-toggle) {
+        height: 48px !important;
+        border-radius: 7px;
+    }
+
+    /* ✅ NEW: Styling untuk disabled v-select */
+    :deep(.v-select-style.vs--disabled .vs__dropdown-toggle) {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+
+    :deep(.v-select-style.vs--disabled .vs__selected-options) {
+        color: #6c757d !important;
+    }
+
+    /* ✅ NEW: Styling untuk disabled input */
+    .form-control:disabled {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+
+    /* ✅ NEW: Styling untuk disabled button */
+    .btn:disabled {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+    }
+
+    /* ✅ NEW: Styling untuk disabled dropdown item */
+    .dropdown-item.disabled {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+    }
+
+    /* ✅ NEW: Animasi loading spinner */
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
 </style>

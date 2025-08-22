@@ -6,41 +6,32 @@
     </div>
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
     <div v-else-if="quotation" class="p-6">
-      <div class="d-flex justify-content-between flex-row">
-        <div v-if="quotation.perusahaan" class="w-60">
-          <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
+      <div class="d-flex justify-content-between align-items-start align-content-center mb-6">
+        <!-- Logo Section - Left -->
+        <div v-if="quotation.perusahaan" class="logo-section">
+          <div class="d-flex svg-illustration align-content-center gap-2 mb-4">
             <span class="app-brand-logo demo">
-              <img src="~/public/img/branding/andara.png" alt="logo" width="200">
+              <img src="~/public/img/branding/andara.png" alt="logo" width="250">
             </span>
           </div>
-          <h4 class="mb-2 text-primary text-nowrap fw-bold">{{ quotation.perusahaan.nmPerusahaan }}</h4>
-          <p class="mb-1" style="font-size: 12px;">{{ quotation.perusahaan.alamatPerusahaan }}</p>
-          <p class="mb-0" style="font-size: 12px;">{{ quotation.perusahaan.tlpPerusahaan }}</p>
-          <p class="mb-0" style="font-size: 12px;">{{ quotation.perusahaan.emailPerusahaan }}</p>
-        </div>
-        <div class="w-40">
-          <h6 class="mb-6 text-capitalize text-end fw-bold">QUOTATION NUMBER : <br>
-            {{ quotation.noQuotation }}
-          </h6>
-          <div style="margin-left: 100px;">
-            <table class="table table-borderless" style="font-size: 12px; width: auto;">
-              <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">Customer</td>
-                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ quotation.customer?.name || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap;">PIC</td>
-                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
-                <td class="text-start" style="font-size: 12px;">{{ quotation.up || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; white-space: nowrap; vertical-align: top;">Alamat</td>
-                <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
-                <td class="text-start" style="font-size: 12px; white-space: pre-line;">{{ quotation.customer?.address || '-' }}</td>
-              </tr>
-            </table>
+          <div class="text-start text-secondary-medium mt-6 mb-0" style="font-size: 12px; width: 220px; min-width: 220px;">
+            <p class="mb-0">
+              Alamat: {{ quotation.perusahaan?.alamatPerusahaan || quotation.perusahaan?.alamatPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Telepon: {{ quotation.perusahaan?.tlpPerusahaan || quotation.perusahaan?.tlpPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Email: {{ quotation.perusahaan?.emailPerusahaan || quotation.perusahaan?.emailPerusahaan || '-' }}
+            </p>
           </div>
+        </div>
+        
+        <!-- Invoice Header - Right -->
+        <div class="invoice-header text-end">
+          <h2 class="mb-4 text-capitalize fw-bold">QUOTATION</h2>
+          <p class="mb-1" style="font-size: 12px;">No. Quotation: {{ quotation.noQuotation }}</p>
+          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(quotation.date).toLocaleDateString('id-ID') }}</p>
         </div>
       </div>
 
@@ -54,9 +45,9 @@
           <strong>Quotation Items:</strong> Menampilkan {{ quotation.quotationItems.length }} item dari Quotation Items
         </div>
       </div>
-      <div class="table-responsive border border-bottom-0 mb-5">
+      <div class="table-responsive rounded border border-bottom-0 mb-6">
         <table class="table m-0" style="font-size: 12px; width: 100%;">
-          <thead style="background-color: #f4cccc;">
+          <thead class="table-dark table-head-white">
             <tr>
               <th class="text-nowrap">Sales Person</th>
               <th class="text-nowrap">PR Number</th>
@@ -82,9 +73,9 @@
           </tbody>
         </table>
       </div>
-      <div class="table-responsive border border-bottom-0 rounded">
-        <table class="table m-0" style="font-size: 12px;">
-          <thead style="background-color: #f4cccc;">
+      <div class="table-responsive border border-bottom-0 rounded mt-3">
+        <table class="table m-0 mb-6" style="font-size: 12px;">
+          <thead class="table-dark table-head-white borderless">
             <tr>
               <th>No</th>
               <th>Part Number</th>
@@ -296,6 +287,49 @@
     /* Hide alert info when printing */
     .alert {
       display: none !important;
+    }
+    /* Remove borders from customer info table */
+    .table-borderless td, 
+    .table-borderless th,
+    .customer-info-table td,
+    .customer-info-table th {
+      border: none !important;
+    }
+
+    /* Remove borders from subtotal section */
+    .table-borderless .d-flex {
+      border: none !important;
+    }
+
+    /* Remove borders from catatan section */
+    .table-borderless p {
+      border: none !important;
+    }
+
+    /* Ensure only the main items table has borders */
+    .table-responsive.border table td,
+    .table-responsive.border table th {
+      border: 1px solid #ddd !important;
+    }
+
+    /* Remove borders from all other tables */
+    .table-responsive:not(.border) table td,
+    .table-responsive:not(.border) table th,
+    .summary-table td,
+    .summary-table th {
+      border: none !important;
+    }
+
+    /* Override the general table border rule for specific sections */
+    .table-borderless,
+    .table-borderless * {
+      border: none !important;
+    }
+
+    /* Ensure proper layout in print */
+    .logo-section,
+    .invoice-header {
+      max-width: 50% !important;
     }
   }
 </style> 

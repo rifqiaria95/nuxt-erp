@@ -6,58 +6,71 @@
     </div>
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
     <div v-else-if="purchaseOrder" class="p-6">
-      <div class="d-flex justify-content-between flex-row">
-         <div v-if="purchaseOrder.perusahaan" class="w-60">
-          <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
+      <!-- Header Section -->
+      <div class="d-flex justify-content-between align-items-start align-content-center mb-6">
+        <!-- Logo Section - Left -->
+        <div v-if="purchaseOrder.perusahaan" class="logo-section">
+          <div class="d-flex svg-illustration align-content-center gap-2 mb-4">
             <span class="app-brand-logo demo">
-              <img 
-                  :src="getCompanyLogo(purchaseOrder.perusahaan.logoPerusahaan)" 
-                  alt="Logo Perusahaan" 
-                  style="width: 200px; object-fit: contain;" 
-                  @error="(e) => handleImageError(e, '/img/default-company-logo.png')"
-              />
+              <img src="~/public/img/branding/andara.png" alt="logo" width="250">
             </span>
           </div>
-          <h5 class="mb-2 text-primary fw-bold">{{ purchaseOrder.perusahaan.nmPerusahaan }}</h5>
-          <p class="mb-1">{{ purchaseOrder.perusahaan.alamatPerusahaan }}</p>
-          <p class="mb-0">{{ purchaseOrder.perusahaan.tlpPerusahaan }}</p>
-          <p class="mb-0">{{ purchaseOrder.perusahaan.emailPerusahaan }}</p>
-        </div>
-        <div class="w-40">
-          <h6 class="mb-6 text-capitalize text-end fw-bold">PURCHASE ORDER NUMBER: {{ purchaseOrder.noPo }}</h6>
-          <div class="d-flex justify-content-end">
-            <table class="table table-borderless" style="font-size: 12px; width: auto;">
-              <tr>
-                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Supplier/Vendor</td>
-                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
-                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.name || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Address</td>
-                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
-                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.address || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">NPWP</td>
-                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
-                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.npwp || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Email</td>
-                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
-                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.email || '-' }}</td>
-              </tr>
-              <tr>
-                <td class="text-start" style="font-size: 12px; min-width: 110px; white-space: nowrap;">Phone</td>
-                <td class="text-start" style="font-size: 12px; min-width: 12px; padding: 0 8px 0 0; text-align: left;">:</td>
-                <td class="text-end" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.phone || '-' }}</td>
-              </tr>
-            </table>
+          <div class="text-start text-secondary-medium mt-6 mb-0" style="font-size: 12px; width: 220px; min-width: 220px;">
+            <p class="mb-0">
+              Alamat: {{ purchaseOrder.perusahaan?.alamatPerusahaan || purchaseOrder.perusahaan?.alamatPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Telepon: {{ purchaseOrder.perusahaan?.tlpPerusahaan || purchaseOrder.perusahaan?.tlpPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Email: {{ purchaseOrder.perusahaan?.emailPerusahaan || purchaseOrder.perusahaan?.emailPerusahaan || '-' }}
+            </p>
           </div>
+        </div>
+        
+        <!-- Invoice Header - Right -->
+        <div class="invoice-header text-end">
+          <h2 class="mb-4 text-capitalize fw-bold">PURCHASE ORDER</h2>
+          <p class="mb-1" style="font-size: 12px;">No. PO: {{ purchaseOrder.noPo }}</p>
+          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(purchaseOrder.date).toLocaleDateString('id-ID') }}</p>
         </div>
       </div>
 
       <hr class="my-6" />
+
+             <!-- vendor Information Section -->
+       <div class="vendor-info-section mb-6">
+         <div class="row">
+           <div class="col-6">
+             <table class="table table-borderless vendor-info-table" style="font-size: 12px;">
+               <tr>
+                 <td class="text-start" style="font-size: 12px; white-space: nowrap; width: 80px;">Vendor</td>
+                 <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
+                 <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.name || purchaseOrder.salesOrder?.vendor?.name || '-' }}</td>
+               </tr>
+               <tr>
+                 <td class="text-start" style="font-size: 12px; white-space: nowrap; vertical-align: top;">NPWP</td>
+                 <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
+                 <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.vendor?.npwp || purchaseOrder.salesOrder?.vendor?.npwp || '-' }}</td>
+               </tr>
+             </table>
+           </div>
+           <div class="col-6">
+             <table class="table table-borderless vendor-info-table" style="font-size: 12px;">
+               <tr>
+                 <td class="text-start" style="font-size: 12px; vertical-align: top; white-space: nowrap; width: 80px;">Alamat</td>
+                 <td style="font-size: 12px; width: 10px; vertical-align: top;">:</td>
+                 <td class="text-start" style="font-size: 12px; white-space: pre-line;">{{ purchaseOrder.vendor?.address || purchaseOrder.salesOrder?.vendor?.address || '-' }}</td>
+               </tr>
+               <tr>
+                 <td class="text-start" style="font-size: 12px; white-space: nowrap;">Attention</td>
+                 <td style="font-size: 12px; width: 10px;">:</td>
+                 <td class="text-start" style="font-size: 12px;">{{ purchaseOrder.up || '-' }}</td>
+               </tr>
+             </table>
+           </div>
+         </div>
+       </div>
 
       <!-- ✅ INFO SECTION -->
       <div v-if="purchaseOrder.purchaseOrderItems && purchaseOrder.purchaseOrderItems.length > 0"
@@ -75,9 +88,9 @@
         </div>
       </div>
 
-      <div class="table-responsive border border-bottom-0 rounded">
+      <div class="table-responsive border border-bottom-0 rounded mb-6">
         <table class="table m-0" style="font-size: 12px;">
-          <thead>
+          <thead class="table-dark table-head-white">
             <tr>
               <th>No</th>
               <th>Part Number</th>
@@ -317,6 +330,50 @@
     /* Hide alert info when printing */
     .alert {
       display: none !important;
+    }
+    
+    /* Remove borders from customer info table */
+    .table-borderless td, 
+    .table-borderless th,
+    .customer-info-table td,
+    .customer-info-table th {
+      border: none !important;
+    }
+
+    /* Remove borders from subtotal section */
+    .table-borderless .d-flex {
+      border: none !important;
+    }
+
+    /* Remove borders from catatan section */
+    .table-borderless p {
+      border: none !important;
+    }
+
+    /* Ensure only the main items table has borders */
+    .table-responsive.border table td,
+    .table-responsive.border table th {
+      border: 1px solid #ddd !important;
+    }
+
+    /* Remove borders from all other tables */
+    .table-responsive:not(.border) table td,
+    .table-responsive:not(.border) table th,
+    .summary-table td,
+    .summary-table th {
+      border: none !important;
+    }
+
+    /* Override the general table border rule for specific sections */
+    .table-borderless,
+    .table-borderless * {
+      border: none !important;
+    }
+
+    /* Ensure proper layout in print */
+    .logo-section,
+    .invoice-header {
+      max-width: 50% !important;
     }
   }
 </style> 

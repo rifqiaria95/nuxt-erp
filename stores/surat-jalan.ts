@@ -156,7 +156,6 @@ export const useSuratJalanStore = defineStore('suratJalan', {
   },
   actions: {
     async fetchSuratJalans() {
-      const toast     = useToast();
       this.loading = true
       this.error   = null
       const { $api } = useNuxtApp()
@@ -197,18 +196,13 @@ export const useSuratJalanStore = defineStore('suratJalan', {
       } catch (e: any) {
         console.error('Gagal mengambil data suratJalan:', e)
         this.error = e
-        toast.error({
-          title: 'Error',
-          message: `Tidak dapat memuat data Surat Jalan: ${e.message}`,
-          color: 'red'
-        });
+        this.loading = false
       } finally {
         this.loading = false
       }
     },
 
     async fetchSuratJalanDetails(suratJalanId: string) {
-      const toast     = useToast();
       this.loading = true
       this.error = null
       const { $api } = useNuxtApp()
@@ -235,18 +229,13 @@ export const useSuratJalanStore = defineStore('suratJalan', {
         }
       } catch (error) {
         console.error('Error fetching suratJalan:', error)
-        toast.error({
-          title: 'Error',
-          message: 'Gagal memuat data suratJalan.',
-          color: 'red'
-        });
       } finally {
         this.loading = false
       }
     },
 
     async saveSuratJalan() {
-      const toast     = useToast();
+        const toast     = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
@@ -301,37 +290,42 @@ export const useSuratJalanStore = defineStore('suratJalan', {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                if (response.status === 422) {
-                    this.validationErrors = errorData.errors;
-                    toast.error({
-                      title: 'Error',
-                      message: errorData.errors.map((e: any) => e.message).join('<br>'),
-                      color: 'red'
-                    });
-                } else {
-                    throw new Error(errorData.message || 'Gagal menyimpan data suratJalan');
-                }
+              const errorData = await response.json();
+              if (response.status === 422) {
+                  this.validationErrors = errorData.errors;
+                  toast.error({
+                    title: 'Error',
+                    message: errorData.errors.map((e: any) => e.message).join('<br>'),
+                    color: 'red',
+                    position: 'topRight'
+                  });
+              } else {
+                  throw new Error(errorData.message || 'Gagal menyimpan data suratJalan');
+              }
             } else {
-                this.closeModal();
-                // ✅ PERBAIKAN: Clear cache data sebelum fetch ulang
-                this.suratJalan = null;
-                this.selectedSuratJalan = null;
-                await this.fetchSuratJalans();
-                toast.success({
+              this.closeModal();
+              this.suratJalan = null;
+              this.selectedSuratJalan = null;
+              await this.fetchSuratJalans();
+              
+              toast.success({
                   title: 'Success',
                   message: `Surat Jalan berhasil ${this.isEditMode ? 'diperbarui' : 'dibuat'}.`,
-                  color: 'green'
-                });
+                  color: 'green',
+                  position: 'topRight'
+              });
             }
 
         } catch (error: any) {
+            // Error saving surat jalan
             // Clear validation errors on new general error
             this.validationErrors = [];
+            
             toast.error({
               title: 'Error',
               message: error.message || 'Operasi gagal',
-              color: 'red'
+              color: 'red',
+              position: 'topRight'
             });
         } finally {
             this.loading = false;
@@ -340,6 +334,7 @@ export const useSuratJalanStore = defineStore('suratJalan', {
 
     async deleteSuratJalan(id: string) {
       const toast     = useToast();
+      this.error = null;
       this.loading = true;
       const { $api } = useNuxtApp();
 
@@ -360,33 +355,52 @@ export const useSuratJalanStore = defineStore('suratJalan', {
       }
 
       try {
-          const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token');
+        const deleteUrl = `${$api.suratJalan()}/${id}`;
+        
+        const response = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+            },
+            credentials: 'include',
+        });
 
-          const response = await fetch(`${$api.suratJalan()}/${id}`, {
-              method: 'DELETE',
-              headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Accept': 'application/json',
-              },
-              credentials: 'include',
-          });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Gagal menghapus Surat Jalan');
+        }
 
-          if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.message || 'Gagal menghapus Surat Jalan');
-          }
+        // Optimistic update - remove from list immediately
+        this.suratJalans = this.suratJalans.filter(item => item.id !== id);
 
+        // Refresh data
+        try {
           await this.fetchSuratJalans();
-          toast.success({
-            title: 'Success',
-            message: 'Surat Jalan berhasil dihapus.',
-            color: 'green'
-          });
+        } catch (fetchError) {
+          this.loading = false;
+        }
+        
+        toast.success({
+          title: 'Success',
+          message: `Surat Jalan berhasil dihapus.`,
+          color: 'green',
+          position: 'topRight'
+        });
+
       } catch (error: any) {
+          let errorMessage = 'Gagal menghapus Surat Jalan';
+          
+          if (error?.message) {
+            errorMessage = error.message;
+          }
+          
           toast.error({
             title: 'Error',
-            message: error.message || 'Gagal menghapus Surat Jalan',
-            color: 'red'
+            message: errorMessage,
+            color: 'red',
+            position: 'topRight'
           });
       } finally {
           this.loading = false;
@@ -406,7 +420,8 @@ export const useSuratJalanStore = defineStore('suratJalan', {
               toast.error({
                 title: 'Error',
                 message: 'Tidak dapat memuat data Surat Jalan.',
-                color: 'red'
+                color: 'red',
+                position: 'topRight'
               });
               return;
           }
@@ -512,17 +527,10 @@ export const useSuratJalanStore = defineStore('suratJalan', {
         if (resData && resData.data) {
           this.selectedSuratJalan = resData.data;
         } else {
-          console.error('❌ Store Debug - Invalid response structure:', resData);
           throw new Error('Struktur data tidak valid diterima dari API.');
         }
       } catch (e: any) {
-        console.error('❌ Store Debug - fetchSuratJalanById Error details:', {
-          message: e.message,
-          status: e.status,
-          statusText: e.statusText,
-          data: e.data,
-          response: e.response
-        });
+        // Error fetching surat jalan by ID
         
         this.error = e;
         
@@ -571,17 +579,10 @@ export const useSuratJalanStore = defineStore('suratJalan', {
           this.suratJalan = resData.data;
           return resData.data;
         } else {
-          console.error('❌ Store Debug - Invalid response structure:', resData);
           throw new Error('Struktur data tidak valid diterima dari API.');
         }
       } catch (e: any) {
-        console.error('❌ Store Debug - fetchSuratJalanDetailWithItems Error details:', {
-          message: e.message,
-          status: e.status,
-          statusText: e.statusText,
-          data: e.data,
-          response: e.response
-        });
+        // Error fetching surat jalan detail with items
         
         this.error = e;
         

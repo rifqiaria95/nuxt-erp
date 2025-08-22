@@ -3,8 +3,6 @@ import { apiFetch } from '~/utils/apiFetch'
 import Swal from 'sweetalert2'
 import { useNuxtApp } from '#app'
 import { useUserStore } from '~/stores/user'
-import { useStocksStore } from '~/stores/stocks'
-import { useProductStore } from '~/stores/product'
 import { useSalesOrderStore } from '~/stores/sales-order'
 import type { Customer } from './customer'
 import type { User } from './userManagement'
@@ -267,59 +265,11 @@ export const useSalesReturnStore = defineStore('salesReturn', {
     },
 
     async saveSalesReturn() {
-      const toast     = useToast();
+        const toast     = useToast();
         this.loading = true;
         this.validationErrors = [];
         const { $api } = useNuxtApp();
         const userStore = useUserStore();
-        const stockStore = useStocksStore();
-        const productStore = useProductStore();
-
-        // Kumpulkan semua item yang perlu divalidasi
-        const itemsToValidate = this.form.salesReturnItems
-            .filter((item: any) => item.productId && item.warehouseId && item.quantity > 0)
-            .map((item: any) => ({
-                productId: item.productId,
-                warehouseId: item.warehouseId,
-                quantity: item.quantity,
-            }));
-
-        if (itemsToValidate.length > 0) {
-            try {
-                const validationResults = await stockStore.validateStockBatch(itemsToValidate);
-
-                const invalidItem = validationResults.find((result: any) => !result.hasEnoughStock);
-
-                if (invalidItem) {
-                    // Buat daftar produk gabungan yang aman secara lokal
-                    const generalProducts = productStore.products || [];
-                    const customerSpecificProducts = this.salesOrders || [];
-                    const allProducts = [...generalProducts, ...customerSpecificProducts];
-
-                    const product = allProducts.find(p => p && p.id === invalidItem.productId);
-                    const productName = product ? product.name : `ID ${invalidItem.productId}`;
-                    const errorMessage = `Stok untuk produk "${productName}" tidak mencukupi. Stok tersedia: ${Math.floor(Number(invalidItem.availableStock))}, kuantitas diminta: ${invalidItem.requestedQuantity}.`;
-                    
-                    this.validationErrors = [{ message: errorMessage, field: 'quantity' }];
-                    toast.error({
-                      title: 'Error',
-                      message: errorMessage,
-                      color: 'red'
-                    });
-                    this.loading = false;
-                    return; // Hentikan proses
-                }
-            } catch (error) {
-                console.error('Gagal memvalidasi stok:', error);
-                toast.error({
-                  title: 'Error',
-                  message: 'Gagal memvalidasi stok untuk produk.',
-                  color: 'red'
-                });
-                this.loading = false;
-                return;
-            }
-        }
 
         try {
             const token        = localStorage.getItem('token');

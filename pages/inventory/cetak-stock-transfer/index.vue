@@ -6,23 +6,32 @@
     </div>
     <div v-else-if="error" class="alert alert-danger m-6">{{ error.message }}</div>
     <div v-else-if="stockTransfer" class="p-6">
-      <div class="d-flex justify-content-between flex-row">
-        <div v-if="stockTransfer.perusahaan">
-          <div class="d-flex svg-illustration align-items-center gap-2 mb-6">
+      <div class="d-flex justify-content-between align-items-start align-content-center mb-6">
+        <!-- Logo Section - Left -->
+        <div v-if="stockTransfer.perusahaan" class="logo-section">
+          <div class="d-flex svg-illustration align-content-center gap-2 mb-4">
             <span class="app-brand-logo demo">
-              <img v-if="stockTransfer.perusahaan.logoPerusahaan" :src="getLogoUrl(stockTransfer.perusahaan.logoPerusahaan)" alt="logo" width="200">
+              <img src="~/public/img/branding/andara.png" alt="logo" width="250">
             </span>
           </div>
-          <p class="mb-1">{{ stockTransfer.perusahaan.alamatPerusahaan || '-' }}</p>
-          <p class="mb-0">{{ stockTransfer.perusahaan.tlpPerusahaan || '-' }}</p>
-          <p class="mb-0">{{ stockTransfer.perusahaan.emailPerusahaan || '-' }}</p>
-        </div>
-        <div>
-          <h5 class="mb-6 text-capitalize">NO. BERITA ACARA : {{ stockTransfer.noTransfer }}</h5>
-          <div class="mb-1 text-end">
-            <span class="me-2">Tanggal:</span>
-            <span>{{ new Date(stockTransfer.date).toLocaleDateString() }}</span>
+          <div class="text-start text-secondary-medium mt-6 mb-0" style="font-size: 12px; width: 220px; min-width: 220px;">
+            <p class="mb-0">
+              Alamat: {{ stockTransfer.perusahaan?.alamatPerusahaan || stockTransfer.perusahaan?.alamatPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Telepon: {{ stockTransfer.perusahaan?.tlpPerusahaan || stockTransfer.perusahaan?.tlpPerusahaan || '-' }}
+            </p>
+            <p class="mb-0">
+              Email: {{ stockTransfer.perusahaan?.emailPerusahaan || stockTransfer.perusahaan?.emailPerusahaan || '-' }}
+            </p>
           </div>
+        </div>
+        
+        <!-- Invoice Header - Right -->
+        <div class="invoice-header text-end">
+          <h2 class="mb-4 text-capitalize fw-bold">STOCK TRANSFER</h2>
+          <p class="mb-1" style="font-size: 12px;">No. Stock Transfer: {{ stockTransfer.noTransfer }}</p>
+          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(stockTransfer.date).toLocaleDateString('id-ID') }}</p>
         </div>
       </div>
 
@@ -30,20 +39,20 @@
 
       <div class="d-flex justify-content-between mb-6">
         <div class="col-3">
-          <h6><strong>Gudang Asal:</strong></h6>
-          <p class="mb-1">{{ stockTransfer.fromWarehouse?.name }}</p>
-          <p class="mb-0">{{ stockTransfer.fromWarehouse?.address }}</p>
+          <h5><strong>Gudang Asal:</strong></h5>
+          <p class="mb-1 fw-semibold" style="font-size: 12px;">{{ stockTransfer.fromWarehouse?.name }}</p>
+          <p class="mb-0" style="font-size: 12px;">{{ stockTransfer.fromWarehouse?.address }}</p>
         </div>
         <div class="text-end col-3">
-          <h6><strong>Gudang Tujuan:</strong></h6>
-          <p class="mb-1">{{ stockTransfer.toWarehouse?.name }}</p>
-          <p class="mb-0">{{ stockTransfer.toWarehouse?.address }}</p>
+          <h5><strong>Gudang Tujuan:</strong></h5>
+          <p class="mb-1 fw-semibold" style="font-size: 12px;">{{ stockTransfer.toWarehouse?.name }}</p>
+          <p class="mb-0" style="font-size: 12px;">{{ stockTransfer.toWarehouse?.address }}</p>
         </div>
       </div>
 
       <div class="table-responsive border border-bottom-0 rounded">
         <table class="table m-0">
-          <thead>
+          <thead class="table-dark table-head-white">
             <tr>
               <th>No</th>
               <th>Produk</th>
