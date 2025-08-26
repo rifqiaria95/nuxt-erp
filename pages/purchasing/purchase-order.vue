@@ -793,7 +793,31 @@ const onSort = (event) => {
 
 const exportData = (format) => {
     if (format === 'csv' && myDataTableRef.value) {
-        myDataTableRef.value.exportCSV();
+        // Ambil nama perusahaan dari user store atau default
+        const userData = userStore.user;
+        
+        // Coba berbagai cara untuk mendapatkan nama perusahaan
+        let nmPerusahaan = userData?.perusahaan?.nmPerusahaan || 
+        userData?.cabang?.perusahaan?.nmPerusahaan || 
+        userData?.perusahaan?.nmPerusahaan || 
+        userData?.cabang?.perusahaan?.nmPerusahaan || 
+        userData?.pegawai?.perusahaan?.nmPerusahaan ||
+        userData?.pegawai?.cabang?.perusahaan?.nmPerusahaan ||
+        userData?.pegawai?.PegawaiHistory?.[0]?.perusahaan?.nmPerusahaan ||
+        userData?.pegawai?.PegawaiHistory?.[0]?.cabang?.perusahaan?.nmPerusahaan;
+        
+        // Jika tidak ada data perusahaan dari user, gunakan data dari perusahaan store
+        if (!nmPerusahaan && perusahaans.value && perusahaans.value.length > 0) {
+            nmPerusahaan = perusahaans.value[0].nmPerusahaan;
+        }
+        
+        // Export dengan judul dan border, termasuk detail items
+        myDataTableRef.value.exportCSV({
+            title: `Rekapan Purchase Order ${nmPerusahaan}`,
+            border: true,
+            data: purchaseOrders.value,
+            includeItems: true
+        });
     }
 };
 
