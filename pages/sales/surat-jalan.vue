@@ -592,7 +592,6 @@ watch(() => form.value.salesOrderId, async (newSalesOrderId, oldSalesOrderId) =>
             salesOrderItems.value = [];
           }
         } catch (error) {
-          console.error('❌ Error fetching sales order details for auto fill:', error);
           // Fallback: buat array kosong
           form.value.suratJalanItems = [];
         }
@@ -840,8 +839,7 @@ const hasPartialItems = computed(() => {
 
 // ✅ NEW: Watcher untuk memantau perubahan sales order items
 watch(salesOrderItems, (newItems) => {
-  console.log('🔍 Sales Order Items updated:', newItems?.length || 0, 'items');
-  console.log('🔍 Has partial items:', hasPartialItems.value);
+  // Watcher untuk memantau perubahan sales order items
 }, { deep: true })
 
 // ✅ NEW: Function untuk refresh sales order items
@@ -878,9 +876,9 @@ const refreshSalesOrderItems = async () => {
         
         form.value.suratJalanItems = partialItems;
       }
-    } catch (error) {
-      console.error('❌ Error refreshing sales order items:', error);
-    }
+            } catch (error) {
+          // Error refreshing sales order items
+        }
   }
 }
 

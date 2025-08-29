@@ -315,18 +315,6 @@ export const useStockOutStore = defineStore('stockOut', {
         }
 
         const result = await response.json();
-        console.log('API Response for Export:', result);
-        console.log('Data length:', result.data?.length || 0);
-        if (result.data && result.data.length > 0) {
-            console.log('First item structure:', result.data[0]);
-            console.log('First item keys:', Object.keys(result.data[0]));
-            if (result.data[0].stockOutDetails) {
-                console.log('Stock Out Details length:', result.data[0].stockOutDetails.length);
-                if (result.data[0].stockOutDetails.length > 0) {
-                    console.log('First Stock Out Detail:', result.data[0].stockOutDetails[0]);
-                }
-            }
-        }
         return result.data || [];
       } catch (error) {
           throw error;

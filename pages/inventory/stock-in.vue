@@ -289,16 +289,6 @@ const exportStockInWithDetails = async () => {
         
         // Ambil data stock in dengan detail
         const stockInData = await stockInStore.exportStockInWithDetails();
-        if (stockInData && stockInData.length > 0) {
-            console.log('First Stock In item:', stockInData[0]);
-            console.log('First Stock In item keys:', Object.keys(stockInData[0]));
-            if (stockInData[0].stockInDetails) {
-                console.log('First Stock In Details:', stockInData[0].stockInDetails);
-                if (stockInData[0].stockInDetails.length > 0) {
-                    console.log('First Stock In Detail item:', stockInData[0].stockInDetails[0]);
-                }
-            }
-        }
         
         if (!stockInData || stockInData.length === 0) {
             toast.warning('Tidak ada data untuk diexport');
@@ -310,7 +300,6 @@ const exportStockInWithDetails = async () => {
         
         // Ambil nama perusahaan dari user store atau default
         const userData = userStore.user;
-        console.log('User Data:', userData);
         const nmPerusahaan = userData?.perusahaan?.name || userData?.cabang?.perusahaan?.name || userData?.perusahaan?.nmPerusahaan || userData?.cabang?.perusahaan?.nmPerusahaan || 'Perusahaan';
         
         // Tambahkan title
@@ -413,7 +402,6 @@ const exportStockInWithDetails = async () => {
         });
         
     } catch (error) {
-        console.error('Error exporting to CSV:', error);
         const toast = useToast();
         toast.error({
             title: 'Error',

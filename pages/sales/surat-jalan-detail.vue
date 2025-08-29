@@ -202,7 +202,6 @@
   // ✅ ACTION METHODS
   const printSuratJalan = (id) => {
     if (!id) {
-      console.error('❌ No surat jalan ID provided for printing')
       return
     }
     router.push({
@@ -213,11 +212,9 @@
 
   const downloadSuratJalan = () => {
     if (!suratJalan.value?.id) {
-      console.error('❌ No surat jalan ID provided for download')
       return
     }
     // TODO: Implement PDF download functionality
-    console.log('Download PDF for surat jalan:', suratJalan.value.id)
   }
   
   // ✅ FETCH SURAT JALAN DETAILS menggunakan store
@@ -228,7 +225,6 @@
       try {
         await suratJalanStore.fetchSuratJalanDetailWithItems(suratJalanIdToFetch)
       } catch (error) {
-        console.error('❌ Failed to fetch surat jalan details:', error)
         Swal.fire({
           icon: 'error',
           title: 'Gagal Memuat Data',
@@ -237,7 +233,6 @@
         })
       }
     } else {
-      console.error('❌ Invalid suratJalanId:', suratJalanIdToFetch)
       Swal.fire({
         icon: 'error',
         title: 'Parameter Tidak Valid',

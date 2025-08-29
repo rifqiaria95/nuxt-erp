@@ -83,9 +83,7 @@ export const usePerusahaanStore = defineStore('perusahaan', {
         const result = await response.json()
         this.perusahaans = result.data
         this.totalRecords = result.meta.total
-        console.log('Perusahaans loaded:', this.perusahaans.length, this.perusahaans);
       } catch (error: any) {
-        console.error('Gagal mengambil data perusahaan:', error)
         this.error = error.message;
         toast.error({
           title: 'Error',
@@ -137,7 +135,6 @@ export const usePerusahaanStore = defineStore('perusahaan', {
                 try {
                     errorData = await response.json();
                 } catch (parseError) {
-                    console.error('Failed to parse error response as JSON:', parseError);
                     throw new Error('Server response tidak valid');
                 }
                 

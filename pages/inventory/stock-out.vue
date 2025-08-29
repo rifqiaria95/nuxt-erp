@@ -283,16 +283,6 @@ const exportStockOutWithDetails = async () => {
         
         // Ambil data stock out dengan detail
         const stockOutData = await stockOutStore.exportStockOutWithDetails();
-        if (stockOutData && stockOutData.length > 0) {
-            console.log('First Stock Out item:', stockOutData[0]);
-            console.log('First Stock Out item keys:', Object.keys(stockOutData[0]));
-            if (stockOutData[0].stockOutDetails) {
-                console.log('First Stock Out Details:', stockOutData[0].stockOutDetails);
-                if (stockOutData[0].stockOutDetails.length > 0) {
-                    console.log('First Stock Out Detail item:', stockOutData[0].stockOutDetails[0]);
-                }
-            }
-        }
         
         if (!stockOutData || stockOutData.length === 0) {
             toast.warning('Tidak ada data untuk diexport');
@@ -304,7 +294,6 @@ const exportStockOutWithDetails = async () => {
         
         // Ambil nama perusahaan dari user store atau default
         const userData = userStore.user;
-        console.log('User Data:', userData);
         const nmPerusahaan = userData?.perusahaan?.name || userData?.cabang?.perusahaan?.name || userData?.perusahaan?.nmPerusahaan || userData?.cabang?.perusahaan?.nmPerusahaan || 'Perusahaan';
         
         // Tambahkan title
@@ -406,7 +395,6 @@ const exportStockOutWithDetails = async () => {
         });
         
     } catch (error) {
-        console.error('Error exporting to CSV:', error);
         toast.error({
             title: 'Error',
             message: 'Gagal export CSV: ' + (error.message || 'Unknown error'),

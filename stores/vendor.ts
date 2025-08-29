@@ -85,10 +85,8 @@ export const useVendorStore = defineStore('vendor', {
         const result = await response.json()
         this.vendors = result.data
         this.totalRecords = result.meta.total
-        console.log('Vendors loaded:', this.vendors.length, this.vendors);
       } catch (e: any) {
         this.error = e.message
-        console.error('Error fetching vendors:', e);
         toast.error({
           title: 'Error',
           message: `Tidak dapat memuat data vendor: ${e.message}`,
