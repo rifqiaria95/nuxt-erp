@@ -95,28 +95,29 @@
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
                             <Column field="id" header="#" :sortable="true"></Column> 
-                                <Column field="fullName" header="Nama Lengkap" :sortable="true"></Column>
-                                <Column field="email" header="Email" :sortable="true"></Column>
-                                <Column field="roles" header="Role" :sortable="false">
-                                    <template #body="slotProps">
-                                        <span v-for="role in slotProps.data.roles" :key="role.id">
-                                            {{ role.name }}
-                                        </span>
-                                    </template>
-                                </Column>
-                                <Column field="isActive" header="Status" :sortable="true">
-                                    <template #body="slotProps">
-                                        <span :class="getStatusBadge(slotProps.data.isActive).class">
-                                            {{ getStatusBadge(slotProps.data.isActive).text }}
-                                        </span>
-                                    </template>
-                                </Column>
-                                <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                    <template #body="slotProps">
-                                        <button @click="userStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                        <button @click="userStore.deleteUser(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                    </template>
-                                </Column>
+                            <Column field="username" header="Username" :sortable="true"></Column>
+                            <Column field="fullName" header="Nama Lengkap" :sortable="true"></Column>
+                            <Column field="email" header="Email" :sortable="true"></Column>
+                            <Column field="roles" header="Role" :sortable="false">
+                                <template #body="slotProps">
+                                    <span v-for="role in slotProps.data.roles" :key="role.id">
+                                        {{ role.name }}
+                                    </span>
+                                </template>
+                            </Column>
+                            <Column field="isActive" header="Status" :sortable="true">
+                                <template #body="slotProps">
+                                    <span :class="getStatusBadge(slotProps.data.isActive).class">
+                                        {{ getStatusBadge(slotProps.data.isActive).text }}
+                                    </span>
+                                </template>
+                            </Column>
+                            <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                <template #body="slotProps">
+                                    <button @click="userStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                    <button @click="userStore.deleteUser(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                </template>
+                            </Column>
                         </MyDataTable>
                         </div>
                     </div>
@@ -135,6 +136,19 @@
                 <template #default>
                     <form @submit.prevent="userStore.saveUser()">
                         <div class="row g-6">
+                            <div class="col-md-12">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="username" 
+                                        v-model="form.username" 
+                                        placeholder="Masukkan username"
+                                        required
+                                    >
+                                    <label for="username">Username</label>
+                                </div>
+                            </div>
                             <div class="col-md-12">
                                 <div class="form-floating form-floating-outline">
                                     <input 

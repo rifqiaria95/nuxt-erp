@@ -44,13 +44,17 @@
                                     </span>
                                 </div>
                                 <div class="mb-1">
-                                    <span>Date Issues: </span>
+                                    <span>Tanggal: </span>
                                     <span>{{ new Date(purchaseOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
                                 </div>
-                                <div>
-                                    <span>Date Due: </span>
+                                <div class="mb-1">
+                                    <span>Jatuh Tempo: </span>
                                     <span>{{ new Date(purchaseOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</span>
                                 </div>
+                                <div class="mb-1">
+                                    <span>Term Of Payment: </span>
+                                    <span>{{ purchaseOrder.termOfPayment }}</span>
+                                    </div>
                             </div>
                             </div>
                         </div>

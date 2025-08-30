@@ -30,9 +30,19 @@
         
         <!-- Invoice Header - Right -->
         <div class="invoice-header text-end">
-          <h2 class="mb-4 text-capitalize fw-bold">INVOICE</h2>
-          <p class="mb-1" style="font-size: 12px;">No. Invoice: {{ salesInvoice.noInvoice }}</p>
-          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(salesInvoice.date).toLocaleDateString('id-ID') }}</p>
+          <h2 class="mb-4 text-capitalize fw-bold">SALES INVOICE</h2>
+          <table style="font-size: 12px; width: 100%;">
+            <tr>
+              <td style="text-align: right;">No. Invoice</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 30%;">{{ salesInvoice.noInvoice }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">Tanggal</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 30%;">{{ new Date(salesInvoice.date).toLocaleDateString('id-ID') }}</td>
+            </tr>
+          </table>
         </div>
       </div>
 

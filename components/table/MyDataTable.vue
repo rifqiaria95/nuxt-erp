@@ -12,6 +12,7 @@
     v-bind="$attrs"
     @page="emit('page', $event)"
     @sort="emit('sort', $event)"
+    @selection-change="emit('selection-change', $event)"
   >
     <slot></slot>
   </DataTable>
@@ -51,7 +52,7 @@ const props = defineProps({
     },
 })
 
-const emit = defineEmits(['page', 'sort'])
+const emit = defineEmits(['page', 'sort', 'selection-change'])
 
 const dt = ref()
 

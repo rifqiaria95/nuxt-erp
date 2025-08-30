@@ -55,12 +55,16 @@
                                     </h6>
                                 </div>
                                 <div class="mb-1">
-                                <span>Date Issues: </span>
-                                <span>{{ salesOrder.date ? new Date(salesOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' }}</span>
+                                    <span>Tanggal: </span>
+                                    <span>{{ salesOrder.date ? new Date(salesOrder.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' }}</span>
                                 </div>
-                                <div>
-                                <span>Date Due: </span>
-                                <span>{{ salesOrder.dueDate ? new Date(salesOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' }}</span>
+                                <div class="mb-1">
+                                    <span>Jatuh Tempo: </span>
+                                    <span>{{ salesOrder.dueDate ? new Date(salesOrder.dueDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' }}</span>
+                                </div>
+                                <div class="mb-1">
+                                    <span>Term Of Payment: </span>
+                                    <span>{{ salesOrder.termOfPayment || '-' }}</span>
                                 </div>
                             </div>
                             </div>

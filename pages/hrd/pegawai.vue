@@ -117,8 +117,9 @@
                                         </div>
                                     </template>
                                 </Column>
-                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:17%"></Column>
-                                <Column field="email" sortField="users.email" header="Email" :sortable="true" style="width:17%"></Column>
+                                <Column field="nm_pegawai" header="Nama Pegawai" :sortable="true" style="width:15%"></Column>
+                                <Column field="username" header="Username" :sortable="true" style="width:12%"></Column>
+                                <Column field="email" sortField="users.email" header="Email" :sortable="true" style="width:15%"></Column>
                                 <Column field="tmp_lahir_pegawai" header="Tempat Lahir" :sortable="true" style="width:12%"></Column>
                                 <Column field="tgl_lahir_pegawai" header="Tanggal Lahir" :sortable="true" style="width:10%">
                                     <template #body="slotProps">
@@ -315,6 +316,12 @@
                                         <div class="form-floating form-floating-outline">
                                             <input type="text" id="full_name" class="form-control" placeholder="Full Name" v-model="form.full_name" />
                                             <label for="full_name">Full Name</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="username" class="form-control" placeholder="Username" v-model="form.username" readonly />
+                                            <label for="username">Username (Auto-generated)</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -583,6 +590,21 @@ const debouncedSearch = useDebounceFn(() => {
 }, 500)
 
 watch(globalFilterValue, debouncedSearch);
+
+// Watcher untuk mengupdate username secara otomatis
+watch(() => form.value.nm_pegawai, (newName) => {
+    if (newName && !isEditMode.value) {
+        // Generate username dari nama depan
+        const firstName = newName.trim().split(' ')[0]
+        const username = firstName.toLowerCase()
+            .replace(/[^a-z0-9]/g, '') // Hapus karakter khusus
+            .replace(/\s+/g, '') // Hapus spasi
+        
+        if (username) {
+            form.value.username = username
+        }
+    }
+}, { immediate: true })
 
 const onPage = (event) => {
     pegawaiStore.setPagination(event);

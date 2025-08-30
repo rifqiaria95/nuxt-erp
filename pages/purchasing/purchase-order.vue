@@ -301,16 +301,22 @@
                                             <label>Untuk Perhatian</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="date" v-model="form.date" class="form-control" required>
                                             <label>Tanggal PO</label>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <div class="form-floating form-floating-outline">
                                             <input type="date" v-model="form.dueDate" class="form-control" required>
                                             <label>Jatuh Tempo</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" v-model="form.termOfPayment" class="form-control" required>
+                                            <label>Term Of Payment</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">

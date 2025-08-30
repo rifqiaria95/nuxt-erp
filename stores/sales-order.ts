@@ -59,6 +59,7 @@ export interface SalesOrder {
   perusahaanId    : number
   cabangId        : number
   quotationId     : string
+  termOfPayment   : string
   date            : string
   dueDate         : string
   status          : string
@@ -158,6 +159,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         perusahaanId   : null,
         quotationId    : null,
         cabangId       : null,
+        termOfPayment  : '',
         date           : new Date().toISOString().split('T')[0],
         dueDate        : new Date().toISOString().split('T')[0],
         discountPercent: 0,
@@ -880,6 +882,7 @@ export const useSalesOrderStore = defineStore('salesOrder', {
         perusahaanId: null,
         quotationId: null,
         cabangId: null,
+        termOfPayment: '',
         date: new Date().toISOString().split('T')[0],
         dueDate: new Date().toISOString().split('T')[0],
         discountPercent: 0,

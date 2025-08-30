@@ -36,6 +36,7 @@ export interface Product {
   customer?: Customer
   productCustomer?: ProductCustomer
   stocks?: Stock[]
+  imagePreview?: string
 }
 
 interface ProductState {
@@ -43,6 +44,7 @@ interface ProductState {
   loading: boolean
   error: any
   totalRecords: number
+  totalProducts: number
   params: {
     first: number
     rows: number
@@ -63,6 +65,7 @@ export const useProductStore = defineStore('product', {
     loading: true,
     error: null,
     totalRecords: 0,
+    totalProducts: 0,
     params: {
       first: 0,
       rows: 10,
@@ -198,6 +201,7 @@ export const useProductStore = defineStore('product', {
           
           this.closeModal();
           await this.fetchProducts();
+          await this.fetchTotalProducts();
           Swal.fire('Berhasil!', `Produk berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
 
       } catch (error: any) {
@@ -247,6 +251,7 @@ export const useProductStore = defineStore('product', {
           }
 
           await this.fetchProducts();
+          await this.fetchTotalProducts();
           Swal.fire('Berhasil!', 'Produk berhasil dihapus.', 'success');
       } catch (error: any) {
           console.error('Gagal menghapus produk:', error);
@@ -266,7 +271,7 @@ export const useProductStore = defineStore('product', {
             };
             
             // Set image preview jika ada
-            if (product.image) {
+            if (product.image && typeof product.image === 'string') {
                 const { getProductImage } = useImageUrl();
                 this.form.imagePreview = getProductImage(product.image);
             } else {
@@ -376,6 +381,30 @@ export const useProductStore = defineStore('product', {
 
             this.form.image = file;
             this.form.imagePreview = URL.createObjectURL(file);
+        }
+    },
+
+    async fetchTotalProducts() {
+        const { $api } = useNuxtApp()
+        try {
+            const token = localStorage.getItem('token')
+            const response = await fetch(`${$api.product()}/totalProducts`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memuat total produk');
+            }
+            
+            const result = await response.json()
+            this.totalProducts = result.total
+        } catch (error: any) {
+            console.error('Error fetching total products:', error)
         }
     }
   }

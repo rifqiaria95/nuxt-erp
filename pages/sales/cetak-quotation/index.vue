@@ -30,8 +30,18 @@
         <!-- Invoice Header - Right -->
         <div class="invoice-header text-end">
           <h2 class="mb-4 text-capitalize fw-bold">QUOTATION</h2>
-          <p class="mb-1" style="font-size: 12px;">No. Quotation: {{ quotation.noQuotation }}</p>
-          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(quotation.date).toLocaleDateString('id-ID') }}</p>
+          <table style="font-size: 12px; width: 100%;">
+            <tr>
+              <td style="text-align: right;">No. Quotation</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ quotation.noQuotation }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">Tanggal</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ new Date(quotation.date).toLocaleDateString('id-ID') }}</td>
+            </tr>
+          </table>
         </div>
       </div>
 
@@ -45,7 +55,7 @@
           <strong>Quotation Items:</strong> Menampilkan {{ quotation.quotationItems.length }} item dari Quotation Items
         </div>
       </div>
-      <div class="table-responsive rounded border border-bottom-0 mb-6">
+      <div class="table-responsive rounded border-bottom-0 mb-6">
         <table class="table m-0" style="font-size: 12px; width: 100%;">
           <thead class="table-dark table-head-white">
             <tr>
@@ -73,7 +83,7 @@
           </tbody>
         </table>
       </div>
-      <div class="table-responsive border border-bottom-0 rounded mt-3">
+      <div class="table-responsive border-bottom-0 rounded mt-3">
         <table class="table m-0 mb-6" style="font-size: 12px;">
           <thead class="table-dark table-head-white borderless">
             <tr>
@@ -309,7 +319,7 @@
     /* Ensure only the main items table has borders */
     .table-responsive.border table td,
     .table-responsive.border table th {
-      border: 1px solid #ddd !important;
+      border: none !important;
     }
 
     /* Remove borders from all other tables */

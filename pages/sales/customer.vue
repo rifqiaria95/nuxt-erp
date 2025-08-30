@@ -293,9 +293,6 @@
                                     class="form-control" 
                                     v-model="form.phone" 
                                     placeholder="Masukkan no. telp customer"
-                                    @input="form.phone = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
                                     required
                                     >
                                     <label>No. Telp Customer</label>
@@ -308,10 +305,6 @@
                                     class="form-control" 
                                     v-model="form.npwp" 
                                     placeholder="Masukkan npwp customer"
-                                    @input="form.npwp = $event.target.value.replace(/[^0-9]/g, '')"
-                                    inputmode="numeric"
-                                    pattern="[0-9]*"
-                                    required
                                     >
                                     <label>NPWP Customer</label>
                                 </div>
@@ -350,7 +343,7 @@
                                                 :value="formatRupiah(item.priceSell)"
                                                 @input="e => {
                                                     const angka = e.target.value.replace(/[^0-9]/g, '');
-                                                    item.priceSell = angka;
+                                                    item.priceSell = angka ? parseInt(angka) : 0;
                                                 }"
                                             />
                                             <label>Harga Jual</label>

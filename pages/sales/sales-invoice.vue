@@ -192,7 +192,7 @@
                                                             <i class="ri-eye-line me-2"></i> Lihat Detail
                                                         </a>
                                                     </li>
-                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_invoice') && slotProps.data.status == 'unpaid')">
+                                                    <li v-if="userHasRole('superadmin') || (userHasPermission('edit_sales_invoice') && slotProps.data.status == 'unpaid' && slotProps.data.salesOrder?.status == 'partial')">
                                                         <a class="dropdown-item" href="javascript:void(0)" @click="salesInvoiceStore.openModal(slotProps.data, 'admin')">
                                                             <i class="ri-edit-box-line me-2"></i> Edit
                                                         </a>

@@ -6,6 +6,7 @@ import type { Role } from './roles'
 
 export interface User {
   id: number
+  username: string
   fullName: string
   email: string
   isActive: boolean
@@ -180,6 +181,7 @@ export const useUserManagementStore = defineStore('user-management', {
             let method = 'POST';
 
             const payload: any = {
+                username: this.form.username,
                 full_name: this.form.full_name,
                 email: this.form.email,
                 isActive: this.form.isActive,
@@ -295,11 +297,13 @@ export const useUserManagementStore = defineStore('user-management', {
         if (user) {
             this.form = { 
               ...user,
+              username: user.username,
               full_name: user.fullName,
               role_ids: user.roles.map(role => role.id)
             };
         } else {
             this.form = {
+                username: '',
                 full_name: '',
                 email: '',
                 password: '',

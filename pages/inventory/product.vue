@@ -19,30 +19,53 @@
                         </span>
                     </p>
                     <div class="row g-6 mb-6">
-                        <div class="col-xl-4 col-lg-6 col-md-6">
+                        <!-- Total Products Card -->
+                        <div class="col-6">
                             <div class="card h-100">
-                            <div class="row h-100">
-                                <div class="col-sm-5">
-                                <div class="d-flex align-items-end h-100 justify-content-center">
-                                    <img
-                                    src="/img/illustrations/add-new-role-illustration.png"
-                                    class="img-fluid"
-                                    alt="Image"
-                                    width="70" />
-                                </div>
-                                </div>
-                                <div class="col-sm-7">
-                                <div class="card-body text-sm-end text-center ps-sm-0">
-                                    <button v-if="userHasRole('superadmin') || userHasPermission('create_product')"
-                                    @click="productStore.openModal()"
-                                    class="btn btn-primary mb-2 text-nowrap add-new-role"
-                                    >
-                                    Tambah Product
-                                    </button>
-                                    <p class="mb-0 mt-1">Buat Product baru</p>
-                                </div>
+                                <div class="row h-100">
+                                    <div class="col-sm-5">
+                                        <div class="d-flex align-items-end h-100 justify-content-center">
+                                            <i class="ri-bar-chart-line text-primary" style="font-size: 3rem;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-7">
+                                        <div class="card-body text-sm-end text-center ps-sm-0">
+                                            <h4 class="mb-1">
+                                                <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                <span v-else>{{ totalProducts }}</span>
+                                            </h4>
+                                            <p class="mb-0 mt-1">Total Product</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Add Product Card -->
+                        <div class="col-6">
+                            <div class="card h-100">
+                                <div class="row h-100">
+                                    <div class="col-sm-5">
+                                        <div class="d-flex align-items-end h-100 justify-content-center">
+                                            <img
+                                                src="/img/illustrations/add-new-role-illustration.png"
+                                                class="img-fluid"
+                                                alt="Image"
+                                                width="70" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-7">
+                                        <div class="card-body text-sm-end text-center ps-sm-0">
+                                            <button v-if="userHasRole('superadmin') || userHasPermission('create_product')"
+                                                @click="productStore.openModal()"
+                                                class="btn btn-primary mb-2 text-nowrap add-new-role"
+                                            >
+                                                Tambah Product
+                                            </button>
+                                            <p class="mb-0 mt-1">Buat Product baru</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -103,66 +126,70 @@
                                     paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                                     currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                                     >
-                                    <Column field="id" header="#" :sortable="true"></Column> 
-                                        <Column field="image" header="Gambar" :sortable="true">
-                                            <template #body="slotProps">
-                                                <div v-if="slotProps.data.image">
-                                                    <img 
-                                                        :src="getProductImage(slotProps.data.image)" 
-                                                        alt="Gambar Produk" 
-                                                        style="height: 40px; max-width: 80px; object-fit: contain;" 
-                                                        @error="(e) => handleImageError(e, '/img/default-product-image.png')"
-                                                    />
-                                                </div>
-                                                <div v-else>
-                                                    <img 
-                                                        src="/img/default-product-image.png" 
-                                                        alt="Default Image" 
-                                                        style="height: 40px; max-width: 80px; object-fit: contain;"
-                                                    />
-                                                </div>
-                                            </template>
-                                        </Column>
-                                        <Column field="sku" header="No. Product" :sortable="true"></Column>
-                                        <Column field="name" header="Nama Product" :sortable="true"></Column>
-                                        <Column field="berat" header="Berat" :sortable="true">
-                                            <template #body="slotProps">
-                                                {{ slotProps.data.berat ? slotProps.data.berat + ' ' + units.find(unit => unit.id === slotProps.data.unitId)?.name : '-' }}
-                                            </template>
-                                        </Column>
-                                        <Column field="stockMin" header="Stok Minimum" :sortable="true">
-                                            <template #body="slotProps">
-                                                {{ Math.round(slotProps.data.stockMin) }}
-                                            </template>
-                                        </Column>
-                                        <Column field="priceBuy" header="Harga Beli" :sortable="true" v-if="userHasPermission('show_product')">
-                                            <template #body="slotProps">
-                                                {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
-                                            </template>
-                                        </Column>
-                                        <Column field="priceSell" header="Harga Jual" :sortable="true">
-                                            <template #body="slotProps">
-                                                {{ slotProps.data.priceSell ? formatRupiah(slotProps.data.priceSell) : '-' }}
-                                            </template>
-                                        </Column>
-                                        <Column field="isService" header="Service" :sortable="true">
-                                            <template #body="slotProps">
-                                                <span :class="getStatusBadge(slotProps.data.isService).class">
-                                                    {{ getStatusBadge(slotProps.data.isService).text }}
-                                                </span>
-                                            </template>
-                                        </Column>
-                                        <Column header="Kategori" field="category.name" :sortable="true">
-                                            <template #body="slotProps">
-                                                {{ slotProps.data.category && slotProps.data.category.name ? slotProps.data.category.name : '-' }}
-                                            </template>
-                                        </Column>
-                                        <Column header="Actions" :exportable="false" style="min-width:8rem">
-                                            <template #body="slotProps">
-                                                <button v-if="userHasRole('superadmin') || userHasPermission('edit_product')" @click="productStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
-                                                <button v-if="userHasRole('superadmin') || userHasPermission('delete_product')" @click="productStore.deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
-                                            </template>
-                                        </Column>
+                                    <Column header="#" :sortable="false">
+                                        <template #body="slotProps">
+                                            {{ params.first + slotProps.index + 1 }}
+                                        </template>
+                                    </Column>
+                                    <Column field="image" header="Gambar" :sortable="true">
+                                        <template #body="slotProps">
+                                            <div v-if="slotProps.data.image">
+                                                <img 
+                                                    :src="getProductImage(slotProps.data.image)" 
+                                                    alt="Gambar Produk" 
+                                                    style="height: 40px; max-width: 80px; object-fit: contain;" 
+                                                    @error="(e) => handleImageError(e, '/img/default-product-image.png')"
+                                                />
+                                            </div>
+                                            <div v-else>
+                                                <img 
+                                                    src="/img/default-product-image.png" 
+                                                    alt="Default Image" 
+                                                    style="height: 40px; max-width: 80px; object-fit: contain;"
+                                                />
+                                            </div>
+                                        </template>
+                                    </Column>
+                                    <Column field="sku" header="No. Product" :sortable="true"></Column>
+                                    <Column field="name" header="Nama Product" :sortable="true"></Column>
+                                    <Column field="berat" header="Berat" :sortable="true">
+                                        <template #body="slotProps">
+                                            {{ slotProps.data.berat ? slotProps.data.berat + ' ' + units.find(unit => unit.id === slotProps.data.unitId)?.name : '-' }}
+                                        </template>
+                                    </Column>
+                                    <Column field="stockMin" header="Stok Minimum" :sortable="true">
+                                        <template #body="slotProps">
+                                            {{ Math.round(slotProps.data.stockMin) }}
+                                        </template>
+                                    </Column>
+                                    <Column field="priceBuy" header="Harga Beli" :sortable="true" v-if="userHasPermission('show_product')">
+                                        <template #body="slotProps">
+                                            {{ slotProps.data.priceBuy ? formatRupiah(slotProps.data.priceBuy) : '-' }}
+                                        </template>
+                                    </Column>
+                                    <Column field="priceSell" header="Harga Jual" :sortable="true">
+                                        <template #body="slotProps">
+                                            {{ slotProps.data.priceSell ? formatRupiah(slotProps.data.priceSell) : '-' }}
+                                        </template>
+                                    </Column>
+                                    <Column field="isService" header="Service" :sortable="true">
+                                        <template #body="slotProps">
+                                            <span :class="getStatusBadge(slotProps.data.isService).class">
+                                                {{ getStatusBadge(slotProps.data.isService).text }}
+                                            </span>
+                                        </template>
+                                    </Column>
+                                    <Column header="Kategori" field="category.name" :sortable="true">
+                                        <template #body="slotProps">
+                                            {{ slotProps.data.category && slotProps.data.category.name ? slotProps.data.category.name : '-' }}
+                                        </template>
+                                    </Column>
+                                    <Column header="Actions" :exportable="false" style="min-width:8rem">
+                                        <template #body="slotProps">
+                                            <button v-if="userHasRole('superadmin') || userHasPermission('edit_product')" @click="productStore.openModal(slotProps.data)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon me-2"><i class="ri-edit-box-line"></i></button>
+                                            <button v-if="userHasRole('superadmin') || userHasPermission('delete_product')" @click="productStore.deleteProduct(slotProps.data.id)" class="btn btn-sm btn-icon btn-text-secondary rounded-pill btn-icon"><i class="ri-delete-bin-7-line"></i></button>
+                                        </template>
+                                    </Column>
                                 </MyDataTable>
                                 </div>
                             </div>
@@ -219,6 +246,7 @@
                                         v-model="form.name" 
                                         placeholder="Masukkan nama barang"
                                         required
+                                        @input="form.name = $event.target.value.toUpperCase()"
                                     >
                                     <label>Nama Barang</label>
                                     <div v-if="hasFieldError('name')" class="invalid-feedback">
@@ -399,7 +427,7 @@ const unitStore         = useUnitStore()
 const permissionStore   = usePermissionsStore()
 const userStore         = useUserStore()
 
-const { products, loading, totalRecords, params, form, isEditMode, showModal, validationErrors } = storeToRefs(productStore)
+const { products, loading, totalRecords, totalProducts, params, form, isEditMode, showModal, validationErrors } = storeToRefs(productStore)
 const { kategori } = storeToRefs(kategoriStore)
 const { units } = storeToRefs(unitStore)
 
@@ -437,6 +465,7 @@ const config = useRuntimeConfig();
 let modalInstance = null
 onMounted(() => {
     productStore.fetchProducts();
+    productStore.fetchTotalProducts();
     kategoriStore.fetchKategori();
     unitStore.fetchUnit();
     permissionStore.fetchPermissions()
@@ -562,5 +591,55 @@ const getFieldError = (fieldName) => {
     .input-group .form-control:focus + .btn {
         border-color: #86b7fe;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Info text styling */
+    .form-text {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+
+    .form-text i {
+        color: #0d6efd;
+    }
+
+    /* Card styling */
+    .card h4 {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #566a7f;
+        margin-bottom: 0.5rem;
+    }
+
+    .card .card-body p {
+        color: #a1acb8;
+        font-size: 0.875rem;
+    }
+
+    /* Icon styling */
+    .card .ri-bar-chart-line {
+        color: #696cff !important;
+        opacity: 0.8;
+    }
+
+    .card:hover .ri-bar-chart-line {
+        opacity: 1;
+        transform: scale(1.05);
+        transition: all 0.3s ease;
+    }
+
+    /* Ensure col-6 works properly */
+    .row .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 767.98px) {
+        .row .col-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
     }
 </style>

@@ -73,6 +73,7 @@
                         </div>
                          <div class="card-datatable table-responsive py-3 px-3">
                             <MyDataTable :data="stockTransfer.stockTransferDetails || []" :loading="loading">
+                                <Column field="product.sku" header="Part Number" :sortable="true"></Column>
                                 <Column field="product.name" header="Produk" :sortable="true"></Column>
                                 <Column field="product.kondisi" header="Kondisi" :sortable="true"></Column>
                                 <Column header="Jumlah" :sortable="false">

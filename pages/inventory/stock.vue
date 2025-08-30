@@ -12,11 +12,13 @@
                     v-if="stats.total !== undefined"
                     title="Total Stock"
                     :total="stats.total + ' Stock'"
+                    columnClass="col-6"
                 />
                 <CardBox
                     v-if="stats.perWarehouse.length > 0"
                     title="Total Stock Per Gudang"
                     :total="stats.perWarehouse.length + ' Gudang'"
+                    columnClass="col-6"
                 />
             </div>
             <div class="row g-6">
@@ -106,7 +108,14 @@
                                         {{ slotProps.data.product.name }}
                                     </template>
                                 </Column>
-                                <Column field="warehouse.name" header="Gudang" :sortable="true" class="text-nowrap">
+                                <Column field="warehouse.code" header="Kode Gudang" :sortable="true" class="text-nowrap">
+                                    <template #body="slotProps">
+                                        <span class="badge bg-primary">
+                                            {{ slotProps.data.warehouse.code }}
+                                        </span>
+                                    </template>
+                                </Column>
+                                <Column field="warehouse.name" header="Nama Gudang" :sortable="true" class="text-nowrap" v-if="userHasRole('superadmin') && userHasRole('admin') && userHasRole('admin gudang')">
                                     <template #body="slotProps">
                                         <span class="badge bg-primary">
                                             {{ slotProps.data.warehouse.name }}

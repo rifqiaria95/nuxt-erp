@@ -118,31 +118,40 @@ export const useCustomerStore = defineStore('customer', {
         const token        = localStorage.getItem('token')
 
         const formData = new FormData()
-        Object.keys(this.form).forEach(key => {
+        
+        // Hanya kirim field yang diperlukan untuk backend
+        const fieldsToSend = ['name', 'address', 'email', 'phone', 'npwp'];
+        fieldsToSend.forEach(key => {
             const value = this.form[key as keyof typeof this.form];
-            if (key === 'logo' && value instanceof File) {
-                formData.append(key, value);
-            } else if (key === 'customerProducts' && Array.isArray(value)) {
-                 value.forEach((item, index) => {
-                    if (item.productId) {
-                    formData.append(`customerProducts[${index}][productId]`, String(item.productId))
-                    }
-                    formData.append(`customerProducts[${index}][priceSell]`, String(item.priceSell))
-                })
-            }
-            else if (value !== null && value !== undefined && key !== 'logo') {
+            if (value !== null && value !== undefined) {
                 formData.append(key, String(value));
             }
         });
+        
+        // Handle logo file
+        if (this.form.logo instanceof File) {
+            formData.append('logo', this.form.logo);
+        }
+        
+        // Handle customer products
+        if (this.form.customerProducts && Array.isArray(this.form.customerProducts)) {
+            this.form.customerProducts.forEach((item, index) => {
+                if (item.productId) {
+                    formData.append(`customerProducts[${index}][productId]`, String(item.productId))
+                }
+                formData.append(`customerProducts[${index}][priceSell]`, String(item.priceSell))
+            })
+        }
 
-        let url = $api.customer()
+        let method = 'POST';
+        let url = $api.customer();
         if (this.isEditMode && this.form.id) {
-          url = `${$api.customer()}/${this.form.id}`
-          formData.append('_method', 'PUT'); // AdonisJS needs this for FormData PUT requests
+          url = `${$api.customer()}/${this.form.id}`;
+          method = 'PUT';
         }
 
         const response = await fetch(url, {
-          method: 'POST',
+          method: method,
           body: formData,
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -170,7 +179,7 @@ export const useCustomerStore = defineStore('customer', {
         
         this.closeModal();
         await this.fetchCustomers();
-        Swal.fire('Berhasil!', `Pelanggan berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
+        Swal.fire('Berhasil!', `Customer berhasil ${this.isEditMode ? 'diperbarui' : 'disimpan'}.`, 'success');
 
       } catch (error: any) {
         // Jangan tampilkan Swal jika ada validation errors (sudah ditampilkan di modal)
@@ -216,7 +225,7 @@ export const useCustomerStore = defineStore('customer', {
           }
 
           await this.fetchCustomers();
-          Swal.fire('Berhasil!', 'Pelanggan berhasil dihapus.', 'success');
+          Swal.fire('Berhasil!', 'Customer berhasil dihapus.', 'success');
       } catch (error: any) {
           Swal.fire('Error', error.message || 'Gagal menghapus pelanggan', 'error');
       } finally {
@@ -298,7 +307,15 @@ export const useCustomerStore = defineStore('customer', {
     closeModal() {
         this.showModal = false;
         this.isEditMode = false;
-        this.form = {};
+        this.form = {
+            name: '',
+            address: '',
+            email: '',
+            phone: '',
+            npwp: '',
+            logo: '',
+            customerProducts: [{ productId: null, priceSell: 0 }]
+        };
         this.validationErrors = [];
     },
 

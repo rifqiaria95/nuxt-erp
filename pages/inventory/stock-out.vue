@@ -39,6 +39,17 @@
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
+                                    <button 
+                                        class="btn btn-success" 
+                                        type="button" 
+                                        @click="postAllSelectedStockOut"
+                                        :disabled="stockOutStore.selectedIds.length === 0"
+                                        title="Post semua stock out yang dipilih"
+                                    >
+                                        <i class="ri-upload-2-line me-1"></i> Post All ({{ stockOutStore.selectedIds.length }})
+                                    </button>
+                                </div>
+                                <div class="btn-group me-2">
                                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="ri-upload-2-line me-1"></i> Export
                                     </button>
@@ -77,7 +88,24 @@
                             paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                             currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                             >
-                                <Column header="#" :sortable="false">
+                                <Column header="#" :sortable="false" style="width: 50px;">
+                                    <template #header>
+                                        <Checkbox 
+                                            v-model="stockOutStore.selectAll" 
+                                            @change="stockOutStore.toggleSelectAll"
+                                            :indeterminate="stockOutStore.selectedIds.length > 0 && !stockOutStore.selectAll"
+                                        />
+                                    </template>
+                                    <template #body="slotProps">
+                                        <Checkbox 
+                                            v-model="stockOutStore.selectedIds" 
+                                            :value="slotProps.data.id"
+                                            @change="stockOutStore.toggleSelection(slotProps.data.id)"
+                                            :disabled="slotProps.data.status !== 'draft'"
+                                        />
+                                    </template>
+                                </Column>
+                                <Column header="No." :sortable="false" style="width: 60px;">
                                     <template #body="slotProps">
                                         {{
                                             Number.isFinite(params.page) && Number.isFinite(params.rows)
@@ -157,6 +185,7 @@ import CardBox from '~/components/cards/Cards.vue'
 import MyDataTable from '~/components/table/MyDataTable.vue'
 import Swal from 'sweetalert2'
 import InputText from 'primevue/inputtext'
+import Checkbox from 'primevue/checkbox'
 import 'vue-select/dist/vue-select.css'
 import { useRouter } from 'vue-router'
 import { usePermissions } from '~/composables/usePermissions'
@@ -174,7 +203,7 @@ const userStore                 = useUserStore()
 const permissionStore           = usePermissionsStore()
 const stockOutStore             = useStockOutStore()
 const warehouseStore            = useWarehouseStore()
-const { stockOuts, totalRecords, stats, params, form, validationErrors } = storeToRefs(stockOutStore)
+const { stockOuts, totalRecords, stats, params, form, validationErrors, selectedIds, selectAll } = storeToRefs(stockOutStore)
 const { warehouse: warehouses } = storeToRefs(warehouseStore)
 const selectedStockOut          = ref(null);
 const loading                   = ref(false);
@@ -245,6 +274,67 @@ const postStockOut = async (id) => {
     }
 };
 
+const postAllSelectedStockOut = async () => {
+    if (stockOutStore.selectedIds.length === 0) {
+        toast.warning('Pilih stock out yang akan diposting terlebih dahulu.');
+        return;
+    }
+
+    const result = await Swal.fire({
+        title: 'Konfirmasi Post All',
+        text: `Apakah Anda yakin ingin memposting ${stockOutStore.selectedIds.length} stock out yang dipilih?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Post All!',
+        cancelButtonText: 'Batal'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            loading.value = true;
+            const result = await stockOutStore.postAllStockOut(stockOutStore.selectedIds);
+            
+            // Tampilkan hasil
+            let message = result.message;
+            if (result.results.failed.length > 0) {
+                message += '\n\nGagal:';
+                result.results.failed.forEach(item => {
+                    message += `\n- ${item.id}: ${item.reason}`;
+                });
+            }
+            
+            await Swal.fire({
+                title: 'Hasil Post All',
+                text: message,
+                icon: result.results.failed.length === 0 ? 'success' : 'warning',
+                confirmButtonText: 'OK'
+            });
+            
+            // Refresh data dan clear selection
+            await stockOutStore.fetchStockOutsPaginated();
+            stockOutStore.clearSelection();
+            
+        } catch (error) {
+            let errorMessage = 'Gagal memposting stock out';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            }
+            
+            toast.error({
+                title: 'Error',
+                message: errorMessage,
+                color: 'red'
+            });
+        } finally {
+            loading.value = false;
+        }
+    }
+};
+
 // Fungsi untuk menangani event load lazy data dari jabatan
 const loadLazyData = async () => {
     try {
@@ -266,6 +356,11 @@ onMounted(() => {
     permissionStore.fetchPermissions()
     userStore.loadUser()
     setListTitle('Stock Out', stockOuts.value.length)
+});
+
+// Clear selection saat data berubah
+watch(stockOuts, () => {
+    stockOutStore.clearSelection();
 });
 
 const exportData = (format) => {

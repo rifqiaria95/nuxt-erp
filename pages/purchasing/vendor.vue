@@ -311,7 +311,6 @@
                                     class="form-control" 
                                     v-model="form.npwp" 
                                     placeholder="Masukkan npwp vendor"
-                                    required
                                     >
                                     <label>NPWP Vendor</label>
                                 </div>

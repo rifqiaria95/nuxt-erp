@@ -43,6 +43,10 @@
                             <div class="col-12">
                                 <h4 class="mt-6 mb-1">Total Roles with their Permissions</h4>
                                 <p class="mb-0">Find all of your company's administrator accounts and their associate Permissions.</p>
+                                <div v-if="selectedPermissions.length > 0" class="alert alert-info mt-3 mb-0">
+                                    <i class="ri-information-line me-2"></i>
+                                    <strong>{{ selectedPermissions.length }}</strong> permission dipilih untuk aksi batch.
+                                </div>
                             </div>
                             <div class="col-12">
                                 <!-- permission Table -->
@@ -53,6 +57,20 @@
                                             <Dropdown v-model="lazyParams.rows" :options="rowsPerPageOptionsArray" optionLabel="label" optionValue="value" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                                         </div>
                                         <div class="d-flex align-items-center">
+                                            <!-- Batch Actions -->
+                                            <div v-if="selectedPermissions.length > 0" class="btn-group me-2">
+                                                <button 
+                                                    class="btn btn-sm btn-dark px-2 py-2" 
+                                                    type="button" 
+                                                    aria-expanded="false"
+                                                    @click="deleteBatchPermissions"
+                                                    :disabled="selectedPermissions.length === 0"
+                                                    style="min-width: 120px; min-height: 38px;"
+                                                >
+                                                    <i class="ri-delete-bin-7-line me-1"></i> 
+                                                    Delete ({{ selectedPermissions.length }})
+                                                </button>
+                                            </div>
                                             <div class="btn-group me-2">
                                                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <i class="ri-upload-2-line me-1"></i> Export
@@ -83,13 +101,16 @@
                                         :lazy="true"
                                         @page="onPage($event)"
                                         @sort="onSort($event)"
+                                        @selection-change="onSelectionChange"
                                         responsiveLayout="scroll" 
                                         paginatorPosition="bottom"
                                         paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                                         currentPageReportTemplate="Menampilkan {first} sampai {last} dari {totalRecords} data"
                                         :filters="filters"
                                         :globalFilterFields="['name', 'menuGroups', 'menuDetails']"
+                                        v-model:selection="selectedPermissions"
                                         >
+                                        <Column selectionMode="multiple" headerStyle="width: 3rem" :exportable="false"></Column>
                                         <Column field="id" header="#" :sortable="true" style="width: 50px;"></Column> 
                                             <Column field="name" header="Nama Permission" :sortable="true"></Column>
                                             
@@ -248,6 +269,7 @@ const layoutStore = useLayoutStore()
 const permissions = ref([])
 const totalRecords = ref(0)
 const loading = ref(false)
+const selectedPermissions = ref([])
 const lazyParams = ref({
     first: 0,
     rows: 10,
@@ -364,10 +386,14 @@ const loadLazyData = async () => {
         if (result.draw) {
             lazyParams.value.draw = parseInt(result.draw);
         }
+        
+        // Reset selection when data changes
+        selectedPermissions.value = [];
     } catch (error) {
         console.error('Gagal mengambil data permissions:', error);
         permissions.value = [];
         totalRecords.value = 0;
+        selectedPermissions.value = [];
         throw error;
     }
 };
@@ -457,6 +483,7 @@ const handleSavePermission = async () => {
         }
 
         if (response.ok) {
+            selectedPermissions.value = []; // Reset selection
             await fetchAllPageData();
             handleCloseModal();
             permissionsStore.fetchPermissions();
@@ -500,22 +527,26 @@ const handleSavePermission = async () => {
 const onPage = (event) => {
     lazyParams.value.first = event.first;
     lazyParams.value.rows = event.rows;
+    selectedPermissions.value = []; // Reset selection on page change
     fetchAllPageData();
 };
 
 const handleRowsChange = () => {
     lazyParams.value.first = 0;
+    selectedPermissions.value = []; // Reset selection on rows change
     fetchAllPageData();
 };
 
 const handleSearch = () => {
     lazyParams.value.first = 0;
+    selectedPermissions.value = []; // Reset selection on search
     fetchAllPageData();
 };
 
 const onSort = (event) => {
     lazyParams.value.sortField = event.sortField;
     lazyParams.value.sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
+    selectedPermissions.value = []; // Reset selection on sort
     fetchAllPageData();
 };
 
@@ -689,6 +720,109 @@ const deletePermission = async (permissionId) => {
     }
 };
 
+const deleteBatchPermissions = async () => {
+    if (!selectedPermissions.value || selectedPermissions.value.length === 0) {
+        toast.error({
+            title: 'Peringatan!',
+            icon: 'ri-error-warning-line',
+            message: 'Tidak ada permission yang dipilih untuk dihapus.',
+            timeout: 3000,
+            position: 'topRight',
+            layout: 2,
+        });
+        return;
+    }
+
+    const result = await Swal.fire({
+        title: 'Konfirmasi Hapus Batch',
+        text: `Anda yakin ingin menghapus ${selectedPermissions.value.length} permission yang dipilih? Tindakan ini tidak dapat dibatalkan!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Hapus Semua!',
+        cancelButtonText: 'Batal',
+        reverseButtons: true
+    });
+
+    if (result.isConfirmed) {
+        layoutStore.setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const permissionIds = selectedPermissions.value.map(permission => permission.id);
+            
+            // Delete permissions one by one
+            const deletePromises = permissionIds.map(async (permissionId) => {
+                const url = $api.permissionDelete(permissionId);
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Gagal menghapus permission ID ${permissionId}: ${errorData.message || 'Unknown error'}`);
+                }
+                
+                return { id: permissionId, success: true };
+            });
+
+            const results = await Promise.allSettled(deletePromises);
+            
+            // Count successful and failed deletions
+            const successful = results.filter(result => result.status === 'fulfilled').length;
+            const failed = results.filter(result => result.status === 'rejected').length;
+            
+            // Clear selection
+            selectedPermissions.value = [];
+            
+            // Refresh data
+            await fetchAllPageData();
+            
+            if (failed === 0) {
+                toast.success({
+                    title: 'Berhasil!',
+                    icon: 'ri-check-line',
+                    message: `${successful} permission berhasil dihapus.`,
+                    timeout: 3000,
+                    position: 'topRight',
+                    layout: 2,
+                });
+            } else {
+                toast.warning({
+                    title: 'Peringatan!',
+                    icon: 'ri-error-warning-line',
+                    message: `${successful} permission berhasil dihapus, ${failed} gagal dihapus.`,
+                    timeout: 5000,
+                    position: 'topRight',
+                    layout: 2,
+                });
+            }
+
+        } catch (error) {
+            console.error('Error during batch delete:', error);
+            toast.error({
+                title: 'Error!',
+                icon: 'ri-close-line',
+                message: 'Terjadi kesalahan saat menghapus permissions: ' + error.message,
+                timeout: 5000,
+                position: 'topRight',
+                layout: 2,
+            });
+        } finally {
+            layoutStore.setLoading(false);
+        }
+    }
+};
+
+const onSelectionChange = (event) => {
+    selectedPermissions.value = event.value;
+};
+
 const filteredMenuDetails = computed(() => {
     if (!formPermission.value.menuGroupId || !Array.isArray(menuDetails.value)) {
         return [];
@@ -717,5 +851,44 @@ const fetchMenuGroupsAndDetails = async () => {
     :deep(.menu-detail .vs__dropdown-toggle) {
         height: 48px !important;
         border-radius: 7px;
+    }
+    
+    /* Styling untuk batch actions */
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        color: white;
+    }
+    
+    .btn-danger:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        opacity: 0.65;
+    }
+    
+    /* Styling untuk checkbox selection */
+    :deep(.p-checkbox) {
+        margin: 0;
+    }
+    
+    :deep(.p-checkbox .p-checkbox-box) {
+        border-radius: 4px;
+    }
+    
+    /* Styling untuk alert info */
+    .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+    
+    .alert-info i {
+        color: #0c5460;
     }
 </style>

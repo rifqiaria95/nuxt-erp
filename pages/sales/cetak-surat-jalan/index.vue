@@ -30,8 +30,23 @@
         <!-- Invoice Header - Right -->
         <div class="invoice-header text-end">
           <h2 class="mb-4 text-capitalize fw-bold">SURAT JALAN</h2>
-          <p class="mb-1" style="font-size: 12px;">No. Surat Jalan: {{ suratJalan.noSuratJalan }}</p>
-          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(suratJalan.date).toLocaleDateString('id-ID') }}</p>
+          <table style="font-size: 12px; width: 100%;">
+            <tr>
+              <td style="text-align: right;">No. Surat Jalan</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 40%;">{{ suratJalan.noSuratJalan }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">Tanggal</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 40%;">{{ new Date(suratJalan.date).toLocaleDateString('id-ID') }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">No. Purchase Order</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 40%;">{{ suratJalan.salesOrder.purchaseOrder?.noPo || '-' }}</td>
+            </tr>
+          </table>
         </div>
       </div>
 
@@ -46,7 +61,7 @@
         </div>
       </div>
 
-      <div class="table-responsive border border-bottom-0 rounded">
+      <div class="table-responsive table-striped rounded">
         <table class="table m-0" style="font-size: 12px;">
           <thead class="table-dark table-head-white borderless">
             <tr>

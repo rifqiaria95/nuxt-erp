@@ -455,8 +455,9 @@ const toast = useToast();
 // Store
 const myDataTableRef        = ref(null)
 const suratJalanStore       = useSuratJalanStore()
-const customerStore         = useCustomerStore()
 const perusahaanStore       = usePerusahaanStore()
+const cabangStore           = useCabangStore()
+const customerStore         = useCustomerStore()
 const warehouseStore        = useWarehouseStore()
 const productStore          = useProductStore()
 const userStore             = useUserStore()
@@ -485,13 +486,34 @@ const modalTitle = computed(() => isEditMode.value ? 'Edit Surat Jalan' : 'Tamba
 const modalDescription = computed(() => isEditMode.value ? 'Silakan ubah data Surat Jalan di bawah ini.' : 'Silakan isi form di bawah ini untuk menambahkan data Surat Jalan baru.');
 
 let modalInstance = null;
-onMounted(() => {
+onMounted(async () => {
   userStore.loadUser();
   suratJalanStore.fetchSuratJalans();
   customerStore.fetchCustomers();
   salesOrderStore.fetchSalesOrders();
   warehouseStore.fetchWarehouses();
   permissionStore.fetchPermissions();
+
+  // Gunakan endpoint data baru untuk load data
+  try {
+      const [perusahaanData, cabangData, customerData] = await Promise.all([
+          salesOrderStore.fetchPerusahaanData(),
+          salesOrderStore.fetchCabangData(),
+          salesOrderStore.fetchCustomerData(),
+      ]);
+      
+      // Assign data ke store yang sesuai
+      perusahaanStore.perusahaans = perusahaanData;
+      cabangStore.cabangs         = cabangData;
+      customerStore.customers     = customerData;
+
+  } catch (error) {
+      console.error('Error loading data:', error);
+      // Fallback ke method lama jika endpoint data baru gagal
+      customerStore.fetchCustomers();
+      perusahaanStore.fetchPerusahaans();
+      cabangStore.fetchCabangs();
+  }
 
   const modalElement = document.getElementById('SuratJalanModal')
   if (modalElement) {

@@ -31,8 +31,23 @@
         <!-- Invoice Header - Right -->
         <div class="invoice-header text-end">
           <h2 class="mb-4 text-capitalize fw-bold">PURCHASE ORDER</h2>
-          <p class="mb-1" style="font-size: 12px;">No. PO: {{ purchaseOrder.noPo }}</p>
-          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(purchaseOrder.date).toLocaleDateString('id-ID') }}</p>
+          <table style="font-size: 12px; width: 100%;">
+            <tr>
+              <td style="text-align: right;">No. PO</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ purchaseOrder.noPo }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">Tanggal</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ new Date(purchaseOrder.date).toLocaleDateString('id-ID') }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">Term Of Payment</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ purchaseOrder.termOfPayment || '30 Hari' }}</td>
+            </tr>
+          </table>
         </div>
       </div>
 
@@ -88,7 +103,7 @@
         </div>
       </div>
 
-      <div class="table-responsive border border-bottom-0 rounded mb-6">
+      <div class="table-responsive table-striped rounded mb-6">
         <table class="table m-0" style="font-size: 12px;">
           <thead class="table-dark table-head-white">
             <tr>
@@ -135,7 +150,7 @@
         </table>
       </div>
       
-      <div class="table-responsive">
+      <div class="table-responsive table-striped">
         <table class="table mt-2 table-borderless" style="font-size: 12px;">
           <tbody>
             <tr v-if="purchaseOrder.description">
@@ -181,35 +196,36 @@
               </td>
             </tr>
             <tr>
-              <td class="align-top px-0 py-6">
-              </td>
-              <td></td>
-              <td></td>
-              <td class="align-top px-0 py-6" colspan="2">
-                <p class="mb-1 mt-5 text-center">
-                  <span class="fw-medium text-heading">
-                    Jakarta, 
-                    {{
-                      purchaseOrder.date
-                        ? new Date(purchaseOrder.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
-                        : '-'
-                    }}
-                  </span>
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2"></td>
-            </tr>
-            <tr>
-              <td colspan="2"></td>
-            </tr>
-            <tr>
-              <td colspan="2">
-              </td>
-              <td></td>
-              <td colspan="4" class="text-center py-6 px-0">
-                Ronal Aurora
+              <td colspan="6" class="px-0 py-6">
+                <div class="d-flex justify-content-between align-items-start" style="min-height: 120px;">
+                  <!-- Left Column - Prepared By -->
+                  <div class="text-center" style="width: 45%;">
+                    <p class="mb-6 fw-medium text-heading" style="font-size: 12px;">
+                      Prepared By:
+                    </p>
+                    <div class="mt-8 pt-6" style="border-top: 1px solid #000; display: inline-block; min-width: 150px;">
+                      <p class="mb-0 fw-medium" style="font-size: 12px;">
+                        {{
+                          purchaseOrder.createdByUser.fullName
+                            ? purchaseOrder.createdByUser.fullName
+                            : '-'
+                        }}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- Right Column - Date -->
+                  <div class="text-center" style="width: 45%;">
+                    <p class="mb-6 fw-medium text-heading" style="font-size: 12px;">
+                      Approved By:
+                    </p>
+                    <div class="mt-8 pt-6" style="border-top: 1px solid #000; display: inline-block; min-width: 150px;">
+                      <p class="mb-0 fw-medium" style="font-size: 12px;">
+                        Ronal Aurora
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -374,6 +390,43 @@
     .logo-section,
     .invoice-header {
       max-width: 50% !important;
+    }
+
+    /* Signature section print styles */
+    .d-flex.justify-content-between {
+      page-break-inside: avoid !important;
+      margin-top: 40px !important;
+    }
+
+    /* Ensure signature columns are properly spaced */
+    .d-flex.justify-content-between > div {
+      width: 45% !important;
+      min-width: 200px !important;
+    }
+
+    /* Signature line styling for print */
+    .d-flex.justify-content-between .border-top {
+      border-top: 1px solid #000 !important;
+      min-width: 150px !important;
+    }
+
+    /* Ensure proper font sizes in print */
+    .d-flex.justify-content-between p {
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Enhanced spacing for signature section in print */
+    .d-flex.justify-content-between .mb-6 {
+      margin-bottom: 2rem !important;
+    }
+
+    .d-flex.justify-content-between .mt-8 {
+      margin-top: 3rem !important;
+    }
+
+    .d-flex.justify-content-between .pt-6 {
+      padding-top: 2rem !important;
     }
   }
 </style> 

@@ -31,6 +31,8 @@ interface StockState {
   isEditMode: boolean
   showModal: boolean
   validationErrors: any[]
+  selectedIds: string[]
+  selectAll: boolean
 }
 
 export const useStockStore = defineStore('stock', {
@@ -62,6 +64,8 @@ export const useStockStore = defineStore('stock', {
     isEditMode: false,
     showModal: false,
     validationErrors: [],
+    selectedIds: [],
+    selectAll: false,
   }),
   actions: {
     async fetchStockInsPaginated() {
@@ -301,6 +305,37 @@ export const useStockStore = defineStore('stock', {
       this.error = null;
     },
 
+    // Methods untuk checkbox selection
+    toggleSelectAll() {
+      this.selectAll = !this.selectAll;
+      if (this.selectAll) {
+        // Pilih semua stock in yang berstatus draft
+        this.selectedIds = this.stockIns
+          .filter(stock => stock.status === 'draft')
+          .map(stock => stock.id);
+      } else {
+        this.selectedIds = [];
+      }
+    },
+
+    toggleSelection(id: string) {
+      const index = this.selectedIds.indexOf(id);
+      if (index > -1) {
+        this.selectedIds.splice(index, 1);
+      } else {
+        this.selectedIds.push(id);
+      }
+      
+      // Update selectAll status
+      const draftStockIns = this.stockIns.filter(stock => stock.status === 'draft');
+      this.selectAll = this.selectedIds.length === draftStockIns.length && draftStockIns.length > 0;
+    },
+
+    clearSelection() {
+      this.selectedIds = [];
+      this.selectAll = false;
+    },
+
     // Method untuk export data dengan detail
     async exportStockInWithDetails() {
       try {
@@ -326,6 +361,36 @@ export const useStockStore = defineStore('stock', {
         return result.data || [];
       } catch (error) {
           throw error;
+      }
+    },
+
+    // Method untuk posting multiple stock in
+    async postAllStockIn(ids: string[]) {
+      try {
+        const { $api } = useNuxtApp();
+        const token = localStorage.getItem('token');
+
+        const response = await fetch($api.postAllStockIn(), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids }),
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Gagal memposting stock in' }));
+          throw new Error(errorData.message);
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (e) {
+        console.error('Error posting all stock in:', e);
+        this.error = e;
+        throw e;
       }
     },
   }

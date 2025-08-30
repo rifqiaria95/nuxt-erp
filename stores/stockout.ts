@@ -28,6 +28,8 @@ interface StockState {
   isEditMode: boolean
   showModal: boolean
   validationErrors: any[]
+  selectedIds: string[]
+  selectAll: boolean
 }
 
 export const useStockOutStore = defineStore('stockOut', {
@@ -55,6 +57,8 @@ export const useStockOutStore = defineStore('stockOut', {
     isEditMode: false,
     showModal: false,
     validationErrors: [],
+    selectedIds: [],
+    selectAll: false,
   }),
   actions: {
     async fetchStockOutsPaginated() {
@@ -294,6 +298,37 @@ export const useStockOutStore = defineStore('stockOut', {
         this.error = null;
     },
 
+    // Methods untuk checkbox selection
+    toggleSelectAll() {
+      this.selectAll = !this.selectAll;
+      if (this.selectAll) {
+        // Pilih semua stock out yang berstatus draft
+        this.selectedIds = this.stockOuts
+          .filter(stock => stock.status === 'draft')
+          .map(stock => stock.id);
+      } else {
+        this.selectedIds = [];
+      }
+    },
+
+    toggleSelection(id: string) {
+      const index = this.selectedIds.indexOf(id);
+      if (index > -1) {
+        this.selectedIds.splice(index, 1);
+      } else {
+        this.selectedIds.push(id);
+      }
+      
+      // Update selectAll status
+      const draftStockOuts = this.stockOuts.filter(stock => stock.status === 'draft');
+      this.selectAll = this.selectedIds.length === draftStockOuts.length && draftStockOuts.length > 0;
+    },
+
+    clearSelection() {
+      this.selectedIds = [];
+      this.selectAll = false;
+    },
+
     // Method untuk export data dengan detail
     async exportStockOutWithDetails() {
       try {
@@ -318,6 +353,36 @@ export const useStockOutStore = defineStore('stockOut', {
         return result.data || [];
       } catch (error) {
           throw error;
+      }
+    },
+
+    // Method untuk posting multiple stock out
+    async postAllStockOut(ids: string[]) {
+      try {
+        const { $api } = useNuxtApp();
+        const token = localStorage.getItem('token');
+
+        const response = await fetch($api.postAllStockOut(), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ids }),
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Gagal memposting stock out' }));
+          throw new Error(errorData.message);
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (e) {
+        console.error('Error posting all stock out:', e);
+        this.error = e;
+        throw e;
       }
     },
   }

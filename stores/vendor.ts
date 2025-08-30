@@ -108,8 +108,11 @@ export const useVendorStore = defineStore('vendor', {
 
             // Siapkan FormData untuk pengiriman data, termasuk file logo jika ada
             const formData = new FormData();
-            Object.keys(this.form).forEach(key => {
-                if (key !== 'logo' && this.form[key] !== null && this.form[key] !== undefined) {
+            
+            // Hanya kirim field yang diperlukan untuk backend
+            const fieldsToSend = ['name', 'address', 'email', 'phone', 'npwp'];
+            fieldsToSend.forEach(key => {
+                if (this.form[key] !== null && this.form[key] !== undefined) {
                     formData.append(key, this.form[key]);
                 }
             });
@@ -123,7 +126,7 @@ export const useVendorStore = defineStore('vendor', {
             let url = $api.vendor();
             if (this.isEditMode) {
                 url = `${$api.vendor()}/${this.form.id}`;
-                formData.append('_method', 'PUT');
+                method = 'PUT';
             }
 
             // Kirim data ke API

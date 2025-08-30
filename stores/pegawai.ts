@@ -277,6 +277,7 @@ export const usePegawaiStore = defineStore('pegawai', {
                 this.form.tgl_masuk_pegawai = pegawaiData.tgl_masuk_pegawai ? pegawaiData.tgl_masuk_pegawai.substring(0, 10) : '';
                 this.form.tgl_keluar_pegawai = pegawaiData.tgl_keluar_pegawai ? pegawaiData.tgl_keluar_pegawai.substring(0, 10) : null;
                 this.form.full_name = pegawaiData.nm_pegawai;
+                this.form.username = pegawaiData.username || '';
                 
                 if (pegawaiData.history) {
                     this.form.jabatan_id = pegawaiData.history.jabatan?.id_jabatan ?? pegawaiData.history.jabatan?.id ?? null;
@@ -316,7 +317,7 @@ export const usePegawaiStore = defineStore('pegawai', {
 
             } else {
                 this.form = {
-                    nm_pegawai: '', email: '', full_name: '', tgl_lahir_pegawai: '', tmp_lahir_pegawai: '',
+                    nm_pegawai: '', email: '', username: '', full_name: '', tgl_lahir_pegawai: '', tmp_lahir_pegawai: '',
                     no_tlp_pegawai: '', alamat_pegawai: '', pendidikan_pegawai: null, status_pegawai: 1,
                     no_ktp_pegawai: '', nik_pegawai: '', npwp_pegawai: '', jenis_kelamin_pegawai: null,
                     tgl_masuk_pegawai: '', tgl_keluar_pegawai: null, istri_suami_pegawai: '', anak_1: '', anak_2: '',
@@ -331,7 +332,7 @@ export const usePegawaiStore = defineStore('pegawai', {
             this.showModal = false;
             this.isEditMode = false;
             this.form = {
-                nm_pegawai: '', email: '', full_name: '', tgl_lahir_pegawai: '', tmp_lahir_pegawai: '',
+                nm_pegawai: '', email: '', username: '', full_name: '', tgl_lahir_pegawai: '', tmp_lahir_pegawai: '',
                 no_tlp_pegawai: '', alamat_pegawai: '', pendidikan_pegawai: null, status_pegawai: 1,
                 no_ktp_pegawai: '', nik_pegawai: '', npwp_pegawai: '', jenis_kelamin_pegawai: null,
                 tgl_masuk_pegawai: '', tgl_keluar_pegawai: null, istri_suami_pegawai: '', anak_1: '', anak_2: '',

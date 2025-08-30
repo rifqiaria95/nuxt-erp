@@ -20,13 +20,13 @@
                 <input
                   type="text"
                   class="form-control"
-                  id="email"
-                  v-model="email"
-                  placeholder="Enter your email or username"
+                  id="username"
+                  v-model="username"
+                  placeholder="Enter your username"
                   autofocus
                   required
                 />
-                <label for="email">Email or Username</label>
+                <label for="username">Username</label>
               </div>
               <div class="mb-5">
                 <div class="form-password-toggle">
@@ -99,7 +99,7 @@
   const userStore = useUserStore();
   const router    = useRouter();
 
-  const email      = ref('');
+  const username   = ref('');
   const password   = ref('');
   const pending    = ref(false);
   const error      = ref(null);
@@ -116,7 +116,7 @@
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: email.value,
+          username: username.value,
           password: password.value,
         }),
         credentials: 'include'

@@ -30,8 +30,18 @@
         <!-- Invoice Header - Right -->
         <div class="invoice-header text-end">
           <h2 class="mb-4 text-capitalize fw-bold">STOCK TRANSFER</h2>
-          <p class="mb-1" style="font-size: 12px;">No. Stock Transfer: {{ stockTransfer.noTransfer }}</p>
-          <p class="mb-1" style="font-size: 12px;">Tanggal: {{ new Date(stockTransfer.date).toLocaleDateString('id-ID') }}</p>
+          <table style="font-size: 12px; width: 100%;">
+            <tr>
+              <td style="text-align: right;">No. Stock Transfer</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ stockTransfer.noTransfer }}</td>
+            </tr>
+            <tr>
+              <td style="text-align: right;">Tanggal</td>
+              <td style="width: 20px;">:</td>
+              <td style="width: 50%;">{{ new Date(stockTransfer.date).toLocaleDateString('id-ID') }}</td>
+            </tr>
+          </table>
         </div>
       </div>
 

@@ -30,6 +30,7 @@ export interface PurchaseOrder {
   name?              : string
   noPo               : string
   up                 : string
+  termOfPayment      : string
   extNamaPerusahaan  : string
   vendorId           : number
   perusahaanId       : number
@@ -109,6 +110,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
         vendorId: null,
         perusahaanId: null,
         cabangId: null,
+        termOfPayment: '',
         extNamaPerusahaan: '',
         date: new Date().toISOString().split('T')[0], 
         dueDate: new Date().toISOString().split('T')[0], 
@@ -753,6 +755,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
                 vendorId: null,
                 perusahaanId: null,
                 cabangId: null,
+                termOfPayment: '',
                 extNamaPerusahaan: '',
                 date: new Date().toISOString().split('T')[0], 
                 dueDate: new Date().toISOString().split('T')[0], 
@@ -778,6 +781,7 @@ export const usePurchaseOrderStore = defineStore('purchaseOrder', {
             vendorId: null,
             perusahaanId: null,
             cabangId: null,
+            termOfPayment: '',
             extNamaPerusahaan: '',
             date: new Date().toISOString().split('T')[0], 
             dueDate: new Date().toISOString().split('T')[0], 
