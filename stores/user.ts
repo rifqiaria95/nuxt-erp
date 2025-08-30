@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { User } from './userManagement'
+import type { Permission } from './permissions'
 import { useNuxtApp } from '#app'
 
 export const useUserStore = defineStore('user', {
@@ -11,14 +12,27 @@ export const useUserStore = defineStore('user', {
     // Mendapatkan semua permission user dari semua role
     userPermissions: (state) => {
       if (!state.user || !state.user.roles) return []
-      return state.user.roles.flatMap(role => role.permissions || []).map(p => p.name)
+      return state.user.roles.flatMap(role => {
+        if (!role.permissions) return []
+        return role.permissions.map(p => {
+          if (typeof p === 'object' && p !== null && 'name' in p) {
+            return (p as Permission).name
+          }
+          return null
+        }).filter(Boolean)
+      })
     },
     
     // Fungsi untuk mengecek apakah user memiliki permission tertentu
     hasPermission: (state) => (permissionName: string) => {
       if (!state.user || !state.user.roles) return false
       return state.user.roles.some(role => 
-        role.permissions?.some(permission => permission.name === permissionName)
+        role.permissions?.some(permission => {
+          if (typeof permission === 'object' && permission !== null && 'name' in permission) {
+            return (permission as Permission).name === permissionName
+          }
+          return false
+        })
       )
     },
     
@@ -27,7 +41,12 @@ export const useUserStore = defineStore('user', {
       if (!state.user || !state.user.roles) return false
       return permissionNames.some(permissionName => 
         state.user!.roles.some(role => 
-          role.permissions?.some(permission => permission.name === permissionName)
+          role.permissions?.some(permission => {
+            if (typeof permission === 'object' && permission !== null && 'name' in permission) {
+              return (permission as Permission).name === permissionName
+            }
+            return false
+          })
         )
       )
     }
@@ -40,6 +59,8 @@ export const useUserStore = defineStore('user', {
       this.user = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      // Hapus kredensial yang tersimpan untuk remember me
+      localStorage.removeItem('rememberedCredentials')
     },
     async loadUser() {
       const token = localStorage.getItem('token')

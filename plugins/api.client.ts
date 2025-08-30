@@ -108,6 +108,10 @@ export default defineNuxtPlugin(() => {
 
     // Product
     product: () => `${apiBase}/product`,
+    productExportExcel: () => `${apiBase}/product/export-excel`,
+
+    // Import
+    import: () => `${apiBase}/import`,
 
     // Stock In & Stock Out
     stockIn                : () => `${apiBase}/stock-in`,
@@ -115,6 +119,7 @@ export default defineNuxtPlugin(() => {
     stockOut               : () => `${apiBase}/stock-out`,
     stockOutExport         : () => `${apiBase}/stock-out/export`,
     stock                  : () => `${apiBase}/stock`,
+    stockExportExcel       : () => `${apiBase}/stock/export-excel`,
     validateStockBatch     : () => `${apiBase}/stock/validate-batch`,
     getTotalStock          : () => `${apiBase}/stock/getTotalStock`,
     getStockInDetails      : (id: number | string) => `${apiBase}/stock-in/getStockInDetails/${id}`,

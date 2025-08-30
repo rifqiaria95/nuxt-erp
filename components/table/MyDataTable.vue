@@ -21,6 +21,7 @@
 <script setup>
 import { defineProps, defineExpose, ref, defineEmits } from 'vue'
 import DataTable from 'primevue/datatable'
+import { useExcelExport } from '~/composables/useExcelExport'
 
 // Fungsi formatRupiah
 const formatRupiah = (amount) => {
@@ -360,9 +361,43 @@ const exportPDF = async (exportData = null) => {
      doc.save('sales-orders.pdf');
 }
 
+const exportExcel = async (options = {}) => {
+    try {
+        const { exportToExcel } = useExcelExport();
+        
+        const { title, data = props.data, includeItems = false } = options;
+        
+        if (!data || data.length === 0) {
+            console.warn('No data to export');
+            return;
+        }
+
+        // Ambil kolom yang bisa diexport (exclude attachment dan actions)
+        const exportableColumns = dt.value.columns.filter(col => 
+            col.props.exportable !== false && 
+            col.props.field && 
+            col.props.field !== 'attachment' &&
+            col.props.field !== 'actions'
+        );
+
+        // Konversi kolom ke format yang diharapkan oleh composable
+        const columns = exportableColumns.map(col => ({
+            field: col.props.field,
+            header: col.props.header,
+            exportable: col.props.exportable
+        }));
+
+        await exportToExcel(data, columns, { title });
+    } catch (error) {
+        console.error('Error exporting Excel:', error);
+        throw new Error('Gagal mengekspor file Excel: ' + error.message);
+    }
+}
+
 defineExpose({
     exportCSV,
-    exportPDF
+    exportPDF,
+    exportExcel
 })
 </script>
 <style scoped>

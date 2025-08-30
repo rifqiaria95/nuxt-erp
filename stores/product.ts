@@ -19,6 +19,7 @@ export interface ProductCustomer {
 export interface Product {
   id: number
   sku: string
+  noInterchange: string
   name: string
   unitId: number
   stockMin: number
@@ -77,6 +78,7 @@ export const useProductStore = defineStore('product', {
     form: {
       name: '',
       sku: '',
+      noInterchange: '',
       unitId: undefined,
       stockMin: 0,
       priceBuy: 0,
@@ -281,6 +283,7 @@ export const useProductStore = defineStore('product', {
             this.form = {
                 name: '',
                 sku: '',
+                noInterchange: '',
                 unitId: undefined,
                 stockMin: 0,
                 priceBuy: 0,
@@ -302,6 +305,7 @@ export const useProductStore = defineStore('product', {
         this.form = {
             name: '',
             sku: '',
+            noInterchange: '',
             unitId: undefined,
             stockMin: 0,
             priceBuy: 0,
@@ -405,6 +409,44 @@ export const useProductStore = defineStore('product', {
             this.totalProducts = result.total
         } catch (error: any) {
             console.error('Error fetching total products:', error)
+        }
+    },
+
+    async fetchProductsForExport() {
+        const { $api } = useNuxtApp()
+        try {
+            const token = localStorage.getItem('token')
+            const params = new URLSearchParams({
+                search: this.params.search || '',
+            });
+
+            if (this.params.warehouseId) {
+                params.append('warehouseId', this.params.warehouseId.toString());
+                params.append('includeStocks', 'true');
+            }
+
+            const response = await fetch(`${$api.productExportExcel()}?${params.toString()}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data produk untuk export dengan status: ' + response.status }));
+                throw new Error(errorData.message || 'Gagal memuat data produk untuk export');
+            }
+            
+            const result = await response.json()
+            return {
+              data: result.data || [],
+              nmPerusahaan: result.nmPerusahaan || ''
+            }
+        } catch (error: any) {
+            console.error('Error fetching products for export:', error)
+            throw error
         }
     }
   }

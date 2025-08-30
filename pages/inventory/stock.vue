@@ -41,6 +41,7 @@
                                     </button>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                        <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('excel')">Excel</a></li>
                                         <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
                                     </ul>
                                 </div>
@@ -110,12 +111,12 @@
                                 </Column>
                                 <Column field="warehouse.code" header="Kode Gudang" :sortable="true" class="text-nowrap">
                                     <template #body="slotProps">
-                                        <span class="badge bg-primary">
+                                        <span class="badge bg-secondary">
                                             {{ slotProps.data.warehouse.code }}
                                         </span>
                                     </template>
                                 </Column>
-                                <Column field="warehouse.name" header="Nama Gudang" :sortable="true" class="text-nowrap" v-if="userHasRole('superadmin') && userHasRole('admin') && userHasRole('admin gudang')">
+                                <Column field="warehouse.name" header="Nama Gudang" :sortable="true" class="text-nowrap" v-if="userHasRole('superadmin') || userHasRole('admin') || userHasRole('admin gudang')">
                                     <template #body="slotProps">
                                         <span class="badge bg-primary">
                                             {{ slotProps.data.warehouse.name }}
@@ -167,6 +168,7 @@ import { usePermissionsStore } from '~/stores/permissions'
 import { usePermissions } from '~/composables/usePermissions'
 import { useDynamicTitle } from '~/composables/useDynamicTitle'
 import { useImageUrl } from '~/composables/useImageUrl'
+import Swal from 'sweetalert2'
 
 // Composables
 const { setListTitle, setFormTitle } = useDynamicTitle()
@@ -221,11 +223,26 @@ onMounted(() => {
     setListTitle('Stock', stocks.value.length)
 });
 
-const exportData = (format) => {
-    if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        myDataTableRef.value.exportPDF();
+const exportData = async (format) => {
+    try {
+        if (format === 'csv') {
+            myDataTableRef.value.exportCSV({
+                title: 'Data Stock',
+                border: true
+            });
+        } else if (format === 'excel') {
+            // Ambil data dari API untuk export Excel
+            const exportResult = await stocksStore.fetchStocksForExport();
+            myDataTableRef.value.exportExcel({
+                title: `Data Stock ${exportResult.nmPerusahaan}`,
+                data: exportResult.data
+            });
+        } else if (format === 'pdf') {
+            myDataTableRef.value.exportPDF();
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        Swal.fire('Error', 'Gagal melakukan export data', 'error');
     }
 };
 

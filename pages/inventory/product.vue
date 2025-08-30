@@ -79,16 +79,22 @@
                                         <span class="me-2">Baris:</span>
                                         <Dropdown v-model="params.rows" :options="rowsPerPageOptionsArray" @change="handleRowsChange" placeholder="Jumlah" style="width: 8rem;" />
                                     </div>
-                                    <div class="d-flex align-items-center">
-                                        <div class="btn-group me-2">
-                                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="ri-upload-2-line me-1"></i> Export
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
-                                                <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
-                                            </ul>
-                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="btn-group me-2">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="ri-upload-2-line me-1"></i> Export
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('csv')">CSV</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('excel')">Excel</a></li>
+                                                    <li><a class="dropdown-item" href="javascript:void(0)" @click="exportData('pdf')">PDF</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="btn-group me-2" v-if="userHasRole('superadmin')">
+                                                <NuxtLink to="/inventory/import-product" class="btn btn-dark px-2 py-2" style="min-width: 150px; min-height: 38px;">
+                                                    <i class="ri-download-line me-1"></i> Import Excel
+                                                </NuxtLink>
+                                            </div>
                                         <div class="input-group">
                                             <span class="p-input-icon-left">
                                                 <InputText
@@ -151,6 +157,7 @@
                                         </template>
                                     </Column>
                                     <Column field="sku" header="No. Product" :sortable="true"></Column>
+                                    <Column field="noInterchange" header="No Interchange" :sortable="true"></Column>
                                     <Column field="name" header="Nama Product" :sortable="true"></Column>
                                     <Column field="berat" header="Berat" :sortable="true">
                                         <template #body="slotProps">
@@ -235,6 +242,21 @@
                                     <label>Part Number</label>
                                     <div v-if="hasFieldError('sku')" class="invalid-feedback">
                                         {{ getFieldError('sku') }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating form-floating-outline">
+                                    <input 
+                                        type="text" 
+                                        :class="['form-control', { 'is-invalid': hasFieldError('noInterchange') }]"
+                                        v-model="form.noInterchange" 
+                                        placeholder="Masukkan no interchange"
+                                        required
+                                    >
+                                    <label>No Interchange</label>
+                                    <div v-if="hasFieldError('noInterchange')" class="invalid-feedback">
+                                        {{ getFieldError('noInterchange') }}
                                     </div>
                                 </div>
                             </div>
@@ -346,11 +368,11 @@
                                 <div class="form-check form-switch mt-3 d-flex align-items-center">
                                     <input class="form-check-input me-2" type="checkbox" v-model="form.isService" />
                                     <label class="form-check-label mb-0">
-                                        Service
+                                        Is Service?
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-floating form-floating-outline">
                                     <input 
                                         type="file" 
@@ -505,11 +527,29 @@ const handleRowsChange = () => {
 
 const onSort = (event) => productStore.setSort(event);
 
-const exportData = (format) => {
-    if (format === 'csv') {
-        myDataTableRef.value.exportCSV();
-    } else if (format === 'pdf') {
-        // Implement PDF export if needed
+const exportData = async (format) => {
+    try {
+        if (format === 'csv') {
+            myDataTableRef.value.exportCSV({
+                title: 'Data Produk',
+                border: true
+            });
+        } else if (format === 'excel') {
+            // Ambil data dari API untuk export Excel
+            const exportResult = await productStore.fetchProductsForExport();
+            console.log('Data from API for export:', exportResult);
+            console.log('Sample product data:', exportResult.data[0]);
+            console.log('Category in sample:', exportResult.data[0]?.category);
+            myDataTableRef.value.exportExcel({
+                title: `Data Produk ${exportResult.nmPerusahaan}`,
+                data: exportResult.data
+            });
+        } else if (format === 'pdf') {
+            // Implement PDF export if needed
+        }
+    } catch (error) {
+        console.error('Export error:', error);
+        Swal.fire('Error', 'Gagal melakukan export data', 'error');
     }
 };
 

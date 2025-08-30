@@ -51,7 +51,12 @@
               </div>
               <div class="mb-5 d-flex justify-content-between mt-5">
                 <div class="form-check mt-2">
-                  <input class="form-check-input" type="checkbox" id="remember-me" />
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="remember-me" 
+                    v-model="rememberMe"
+                  />
                   <label class="form-check-label" for="remember-me"> Remember Me </label>
                 </div>
                 <NuxtLink to="/auth/forgot-password" class="float-end mb-1 mt-2">
@@ -99,11 +104,42 @@
   const userStore = useUserStore();
   const router    = useRouter();
 
-  const username   = ref('');
-  const password   = ref('');
-  const pending    = ref(false);
-  const error      = ref(null);
+  const username    = ref('');
+  const password    = ref('');
+  const rememberMe  = ref(false);
+  const pending     = ref(false);
+  const error       = ref(null);
 
+  // Load saved credentials on component mount
+  onMounted(() => {
+    loadSavedCredentials();
+  });
+
+  const loadSavedCredentials = () => {
+    try {
+      const savedCredentials = localStorage.getItem('rememberedCredentials');
+      if (savedCredentials) {
+        const credentials = JSON.parse(savedCredentials);
+        username.value = credentials.username || '';
+        password.value = credentials.password || '';
+        rememberMe.value = true;
+      }
+    } catch (error) {
+      console.error('Error loading saved credentials:', error);
+    }
+  };
+
+  const saveCredentials = () => {
+    if (rememberMe.value) {
+      const credentials = {
+        username: username.value,
+        password: password.value
+      };
+      localStorage.setItem('rememberedCredentials', JSON.stringify(credentials));
+    } else {
+      localStorage.removeItem('rememberedCredentials');
+    }
+  };
 
   const handleLogin = async () => {
     pending.value = true;
@@ -118,6 +154,7 @@
         body: JSON.stringify({
           username: username.value,
           password: password.value,
+          remember_me: rememberMe.value,
         }),
         credentials: 'include'
       });
@@ -157,6 +194,9 @@
         pending.value = false;
         return;
       }
+
+      // Save credentials if remember me is checked
+      saveCredentials();
 
       localStorage.setItem('token', data.token.token);
       userStore.setUser(data.user)

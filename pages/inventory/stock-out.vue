@@ -40,17 +40,18 @@
                             <div class="d-flex align-items-center">
                                 <div class="btn-group me-2">
                                     <button 
-                                        class="btn btn-success" 
+                                        class="btn btn-dark px-2 py-2" 
                                         type="button" 
                                         @click="postAllSelectedStockOut"
                                         :disabled="stockOutStore.selectedIds.length === 0"
                                         title="Post semua stock out yang dipilih"
+                                        style="min-width: 150px; min-height: 38px;"
                                     >
                                         <i class="ri-upload-2-line me-1"></i> Post All ({{ stockOutStore.selectedIds.length }})
                                     </button>
                                 </div>
                                 <div class="btn-group me-2">
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="min-width: 150px; min-height: 38px;">
                                         <i class="ri-upload-2-line me-1"></i> Export
                                     </button>
                                     <ul class="dropdown-menu">

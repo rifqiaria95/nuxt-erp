@@ -115,6 +115,8 @@ interface StockState {
     sortOrder: number | null
     draw: number
     search: string
+    productId?: number
+    warehouseId?: number
   }
   form: any
   isEditMode: boolean
@@ -143,6 +145,8 @@ export const useStocksStore = defineStore('stocks', {
         sortOrder: null,
         draw: 1,
         search: '',
+        productId: undefined,
+        warehouseId: undefined,
     },
     form: {},
     isEditMode: false,
@@ -349,5 +353,58 @@ export const useStocksStore = defineStore('stocks', {
         this.params.first = 0;
         this.fetchStocksPaginated();
     },
+
+    setFilter(filters: { productId?: number; warehouseId?: number }) {
+        if (filters.productId !== undefined) {
+            this.params.productId = filters.productId;
+        }
+        if (filters.warehouseId !== undefined) {
+            this.params.warehouseId = filters.warehouseId;
+        }
+        this.params.first = 0;
+        this.fetchStocksPaginated();
+    },
+
+    async fetchStocksForExport() {
+        const { $api } = useNuxtApp()
+        try {
+            const token = localStorage.getItem('token')
+            const params = new URLSearchParams({
+                search: this.params.search || '',
+                all: 'true' // Tambahkan parameter all untuk mengambil semua data
+            });
+
+            // Tambahkan parameter filter yang aktif
+            if (this.params.productId) {
+                params.append('productId', this.params.productId.toString())
+            }
+            if (this.params.warehouseId) {
+                params.append('warehouseId', this.params.warehouseId.toString())
+            }
+
+            const response = await fetch(`${$api.stockExportExcel()}?${params.toString()}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ message: 'Gagal memuat data stock untuk export dengan status: ' + response.status }));
+                throw new Error(errorData.message || 'Gagal memuat data stock untuk export');
+            }
+            
+            const result = await response.json()
+            return {
+              data: result.data || [],
+              nmPerusahaan: result.nmPerusahaan || '',
+            }
+        } catch (error: any) {
+            console.error('Error fetching stocks for export:', error)
+            throw error
+        }
+    }
   }
 })

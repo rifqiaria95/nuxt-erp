@@ -44,7 +44,7 @@
             <tr>
               <td style="text-align: right;">No. Purchase Order</td>
               <td style="width: 20px;">:</td>
-              <td style="width: 40%;">{{ suratJalan.salesOrder.purchaseOrder?.noPo || '-' }}</td>
+              <td style="width: 40%;">{{ suratJalan.salesOrder.noPo || '-' }}</td>
             </tr>
           </table>
         </div>
